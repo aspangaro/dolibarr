@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2013-2014	Olivier Geffroy		<jeff@jeffinfo.com>
- * Copyright (C) 2013-2016	Alexandre Spangaro	<aspangaro@zendsi.com>
+ * Copyright (C) 2013-2019	Alexandre Spangaro	<aspangaro@open-dsi.fr>
  * Copyright (C) 2014-2015	Ari Elbaz (elarifr)	<github@accedinfo.com>
  * Copyright (C) 2013-2014	Florian Henry		<florian.henry@open-concept.pro>
  * Copyright (C) 2014	  	Juanjo Menent		<jmenent@2byte.es>
@@ -209,9 +209,13 @@ if (empty($chartaccountcode))
 // Customer Invoice lines
 $sql = "SELECT f.rowid as facid, f.facnumber as ref, f.datef, f.type as ftype,";
 $sql.= " l.rowid, l.fk_product, l.description, l.total_ht, l.fk_code_ventilation, l.product_type as type_l, l.tva_tx as tva_tx_line, l.vat_src_code,";
-$sql.= " p.rowid as product_id, p.ref as product_ref, p.label as product_label, p.fk_product_type as type, p.accountancy_code_sell as code_sell, p.tva_tx as tva_tx_prod,";
-$sql.= " aa.rowid as aarowid,";
-$sql.= " co.label as country, s.tva_intra";
+$sql.= " p.rowid as product_id, p.ref as product_ref, p.label as product_label, p.fk_product_type as type,";
+$sql.= " p.accountancy_code_sell as code_sell,";				// Accounting account for classic selling
+$sql.= " p.accountancy_code_sell_intra as code_sell_intra,";	// Accounting account for CEE selling
+$sql.= " p.accountancy_code_sell_export as code_sell_export,";	// Accounting account for export selling
+$sql.= " p.tva_tx as tva_tx_prod,";
+$sql.= " aa.rowid as aarowid, aa2.rowid as aarowid_intra, aa3.rowid as aarowid_export,";
+$sql.= " s.fk_pays as country_sell, co.label as country, s.tva_intra";
 $parameters=array();
 $reshook=$hookmanager->executeHooks('printFieldListSelect',$parameters);    // Note that $action and $object may have been modified by hook
 $sql.=$hookmanager->resPrint;
@@ -433,8 +437,21 @@ if ($result) {
 		}
 		if ($objp->code_sell_l == -1) $objp->code_sell_l='';
 
+		if ($objp->country_sell == '1') {
+            $objp->code_sell_p = $objp->code_sell;
+            $objp->aarowid_suggest = $objp->aarowid;
+        } else {
+            if ($objp->code_zone == 'CEE') {
+                $objp->code_sell_p = $objp->code_sell_intra;
+                $objp->aarowid_suggest = $objp->aarowid_intra;
+            } else {
+                $objp->code_sell_p = $objp->code_sell_export;
+                $objp->aarowid_suggest = $objp->aarowid_export;
+            }
+        }
+
 		if (! empty($objp->code_sell)) {
-			$objp->code_sell_p = $objp->code_sell;       // Code on product
+			// $objp->code_sell_p = $objp->code_sell;       // Code on product
 		} else {
 			$code_sell_p_notset = 'color:orange';
 		}

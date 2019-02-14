@@ -1,9 +1,10 @@
 <?php
-/* Copyright (C) 2005-2009 Regis Houssin               <regis.houssin@inodbox.com>
- * Copyright (C) 2008-2009 Laurent Destailleur (Eldy)  <eldy@users.sourceforge.net>
- * Copyright (C) 2008      Raphael Bertrand (Resultic) <raphael.bertrand@resultic.fr>
- * Copyright (C) 2015	   Marcos García			   <marcosgdf@gmail.com
- * Copyright (C) 2016      Frédéric France              <frederic.france@free.fr>
+/* Copyright (C) 2005-2009  Regis Houssin               <regis.houssin@inodbox.com>
+ * Copyright (C) 2008-2009  Laurent Destailleur (Eldy)  <eldy@users.sourceforge.net>
+ * Copyright (C) 2008       Raphael Bertrand (Resultic) <raphael.bertrand@resultic.fr>
+ * Copyright (C) 2015	     Marcos García               <marcosgdf@gmail.com>
+ * Copyright (C) 2016       Frédéric France             <frederic.france@free.fr>
+ * Copyright (C) 2019       Alexandre Spangaro          <aspangaro@open-dsi.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +22,7 @@
 
 /**
  *	\file       htdocs/compta/bank/treso.php
- *	\ingroup    banque
+ *	\ingroup    bank
  *	\brief      Page to estimate future balance
  */
 
@@ -90,7 +91,7 @@ if ($_REQUEST["account"] || $_REQUEST["ref"])
 	}
 
 
-	// Onglets
+	// Tabs
 	$head=bank_prepare_head($object);
 	dol_fiche_head($head, 'cash', $langs->trans("FinancialAccount"), 0, 'account');
 

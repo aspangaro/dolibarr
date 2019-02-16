@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2016       Laurent Destailleur      <eldy@users.sourceforge.net>
- * Copyright (C) 2016-2018  Alexandre Spangaro       <aspangaro@open-dsi.fr>
+ * Copyright (C) 2016-2019  Alexandre Spangaro       <aspangaro@open-dsi.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,12 +23,15 @@
  */
 
 require '../main.inc.php';
+require_once DOL_DOCUMENT_ROOT . '/accountancy/class/bookkeeping.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/accounting.lib.php';
 
 // Load translation files required by the page
 $langs->loadLangs(array("compta","bills","other","accountancy","loans","banks","admin","dict"));
 
+// Initialize technical object to manage hooks. Note that conf->hooks_modules contains array of hooks
+$hookmanager->initHooks(array('accountancyindex'));
 // Security check
 if ($user->societe_id > 0)
 	accessforbidden();

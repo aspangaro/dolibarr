@@ -1287,7 +1287,7 @@ class Societe extends CommonObject
 			$num=$this->db->num_rows($resql);
 			if ($num > 1)
 			{
-				$this->error='Fetch found several records. Rename one of tirdparties to avoid duplicate.';
+				$this->error='Fetch found several records. Rename one of thirdparties to avoid duplicate.';
 				dol_syslog($this->error, LOG_ERR);
 				$result = -2;
 			}

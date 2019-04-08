@@ -58,6 +58,14 @@ CREATE TABLE llx_pos_cash_fence(
 
 -- For 10.0
 
+-- Uniformize Accounting module
+UPDATE llx_const SET name = __ENCRYPT('ACCOUNTING_COMBO_FOR_AUX')__ WHERE __DECRYPT('name')__ = 'ACCOUNTANCY_COMBO_FOR_AUX';
+UPDATE llx_const SET name = __ENCRYPT('ACCOUNTING_SELL')__ WHERE __DECRYPT('name')__ = 'ACCOUNTANCY_SELL';
+UPDATE llx_const SET name = __ENCRYPT('ACCOUNTING_BUY')__ WHERE __DECRYPT('name')__ = 'ACCOUNTANCY_BUY';
+UPDATE llx_const SET name = __ENCRYPT('ACCOUNTING_SHOW_PROD_DESC')__ WHERE __DECRYPT('name')__ = 'ACCOUNTANCY_SHOW_PROD_DESC';
+
+
+
 DROP TABLE llx_cotisation;
 
 ALTER TABLE llx_loan ADD COLUMN insurance_amount double(24,8) DEFAULT 0;

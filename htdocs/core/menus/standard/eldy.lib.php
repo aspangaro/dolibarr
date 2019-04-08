@@ -1184,7 +1184,7 @@ function print_left_eldy_menu($db, $menu_array_before, $menu_array_after, &$tabM
 		{
 			$langs->load("companies");
 
-			// Accounting Expert
+			// Accounting
 			if (! empty($conf->accounting->enabled))
 			{
 				$langs->load("accounting");
@@ -1346,7 +1346,7 @@ function print_left_eldy_menu($db, $menu_array_before, $menu_array_after, &$tabM
                     if ($usemenuhider || empty($leftmenu) || preg_match('/report/', $leftmenu)) {
                         $newmenu->add("/compta/resultat/index.php?leftmenu=report", $langs->trans("MenuReportInOut"), 1, $user->rights->compta->resultat->lire);
                         $newmenu->add("/compta/resultat/clientfourn.php?leftmenu=report", $langs->trans("ByCompanies"), 2, $user->rights->compta->resultat->lire);
-                        /* On verra ca avec module compabilite expert
+                        /* On verra ca avec module compabilite
                         $newmenu->add("/compta/resultat/compteres.php?leftmenu=report","Compte de resultat",2,$user->rights->compta->resultat->lire);
                         $newmenu->add("/compta/resultat/bilan.php?leftmenu=report","Bilan",2,$user->rights->compta->resultat->lire);
                         */

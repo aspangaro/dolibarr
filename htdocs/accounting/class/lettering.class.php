@@ -20,7 +20,7 @@
 
 /**
  * \file      	htdocs/accounting/class/lettering.class.php
- * \ingroup 	Advanced accounting
+ * \ingroup 	Accounting
  * \brief 		File of class for lettering
  */
 

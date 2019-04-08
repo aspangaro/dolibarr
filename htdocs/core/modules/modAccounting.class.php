@@ -23,12 +23,12 @@
 /**
  * \file		htdocs/core/modules/modAccounting.class.php
  * \ingroup		Accounting
- * \brief		Module to activate Accounting Expert module
+ * \brief		Module to activate Accounting module
  */
 include_once DOL_DOCUMENT_ROOT .'/core/modules/DolibarrModules.class.php';
 
 /**
- * Description and activation class for module accounting expert
+ * Description and activation class for module accounting
  */
 class modAccounting extends DolibarrModules
 {
@@ -48,7 +48,7 @@ class modAccounting extends DolibarrModules
 		$this->module_position = '61';
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
 		$this->name = preg_replace('/^mod/i', '', get_class($this));
-		$this->description = "Advanced accounting management";
+		$this->description = "Accounting management";
 
 		// Possible values for version are: 'development', 'experimental', 'dolibarr' or 'dolibarr_deprecated' or version
 		$this->version = 'dolibarr';

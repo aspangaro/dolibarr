@@ -55,7 +55,7 @@ class Cchargesociales
 	public $fk_pays;
 
 	public $module;
-	public $accountancy_code;
+	public $accounting_code;
 
 
 	/**
@@ -91,7 +91,7 @@ class Cchargesociales
                 'code',
                 'fk_pays',
                 'module',
-                'accountancy_code',
+                'accounting_code',
             )
         );
 
@@ -107,7 +107,7 @@ class Cchargesociales
 		$sql.= 'code,';
 		$sql.= 'fk_pays,';
 		$sql.= 'module';
-		$sql.= 'accountancy_code';
+		$sql.= 'accounting_code';
 
 
 		$sql .= ') VALUES (';
@@ -118,7 +118,7 @@ class Cchargesociales
 		$sql .= ' '.(! isset($this->code)?'NULL':"'".$this->db->escape($this->code)."'").',';
 		$sql .= ' '.(! isset($this->fk_pays)?'NULL':$this->fk_pays).',';
 		$sql .= ' '.(! isset($this->module)?'NULL':"'".$this->db->escape($this->module)."'").',';
-		$sql .= ' '.(! isset($this->accountancy_code)?'NULL':"'".$this->db->escape($this->accountancy_code)."'");
+		$sql .= ' '.(! isset($this->accounting_code)?'NULL':"'".$this->db->escape($this->accounting_code)."'");
 
 
 		$sql .= ')';
@@ -178,7 +178,7 @@ class Cchargesociales
 		$sql .= " t.code,";
 		$sql .= " t.fk_pays,";
 		$sql .= " t.module,";
-		$sql .= " t.accountancy_code";
+		$sql .= " t.accounting_code";
 		$sql .= ' FROM ' . MAIN_DB_PREFIX . $this->table_element . ' as t';
 		if (null !== $ref) {
 			$sql .= " WHERE t.code = '" . $this->db->escape($ref) . "'";
@@ -200,7 +200,7 @@ class Cchargesociales
 				$this->code = $obj->code;
 				$this->fk_pays = $obj->fk_pays;
 				$this->module = $obj->module;
-				$this->accountancy_code = $obj->accountancy_code;
+				$this->accounting_code = $obj->accounting_code;
 			}
 			$this->db->free($resql);
 
@@ -241,7 +241,7 @@ class Cchargesociales
                 'code',
                 'fk_pays',
                 'module',
-                'accountancy_code',
+                'accounting_code',
             )
         );
 
@@ -257,7 +257,7 @@ class Cchargesociales
 		$sql .= ' code = '.(isset($this->code)?"'".$this->db->escape($this->code)."'":"null").',';
 		$sql .= ' fk_pays = '.(isset($this->fk_pays)?$this->fk_pays:"null").',';
 		$sql .= ' module = '.(isset($this->module)?"'".$this->db->escape($this->module)."'":"null").',';
-		$sql .= ' accountancy_code = '.(isset($this->accountancy_code)?"'".$this->db->escape($this->accountancy_code)."'":"null");
+		$sql .= ' accounting_code = '.(isset($this->accounting_code)?"'".$this->db->escape($this->accounting_code)."'":"null");
 		$sql .= ' WHERE id=' . $this->id;
 
 		$this->db->begin();
@@ -505,7 +505,7 @@ class Cchargesociales
 		$this->code = '';
 		$this->fk_pays = '';
 		$this->module = '';
-		$this->accountancy_code = '';
+		$this->accounting_code = '';
 	}
 
     /**

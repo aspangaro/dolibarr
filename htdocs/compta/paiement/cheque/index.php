@@ -89,10 +89,10 @@ $max=10;
 
 $sql = "SELECT bc.rowid, bc.date_bordereau as db, bc.amount, bc.ref as ref,";
 $sql.= " bc.statut, bc.nbcheque,";
-$sql.= " ba.ref as bref, ba.label, ba.rowid as bid, ba.number, ba.currency_code, ba.account_number, ba.fk_accountancy_journal,";
+$sql.= " ba.ref as bref, ba.label, ba.rowid as bid, ba.number, ba.currency_code, ba.account_number, ba.fk_accounting_journal,";
 $sql.= " aj.code";
 $sql.= " FROM ".MAIN_DB_PREFIX."bordereau_cheque as bc, ".MAIN_DB_PREFIX."bank_account as ba";
-$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."accounting_journal as aj ON aj.rowid = ba.fk_accountancy_journal";
+$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."accounting_journal as aj ON aj.rowid = ba.fk_accounting_journal";
 $sql.= " WHERE ba.rowid = bc.fk_bank_account";
 $sql.= " AND bc.entity = ".$conf->entity;
 $sql.= " ORDER BY bc.date_bordereau DESC, rowid DESC";
@@ -123,8 +123,8 @@ if ($resql)
 		$accountstatic->number=$objp->number;
 		$accountstatic->currency_code=$objp->currency_code;
 		$accountstatic->account_number=$objp->account_number;
-		$accountstatic->accountancy_journal=$objp->code;
-		$accountstatic->fk_accountancy_journal=$objp->fk_accountancy_journal;
+		$accountstatic->accounting_journal=$objp->code;
+		$accountstatic->fk_accounting_journal=$objp->fk_accounting_journal;
 
 		print '<tr class="oddeven">'."\n";
 

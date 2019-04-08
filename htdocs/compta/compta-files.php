@@ -32,7 +32,7 @@ require_once DOL_DOCUMENT_ROOT.'/don/class/don.class.php';
 require_once DOL_DOCUMENT_ROOT.'/expensereport/class/expensereport.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture.class.php';
 
-$langs->loadLangs(array("accountancy", "bills", "companies"));
+$langs->loadLangs(array("accounting", "bills", "companies"));
 
 $date_start =GETPOST('date_start', 'alpha');
 $date_startDay= GETPOST('date_startday', 'int');
@@ -291,9 +291,9 @@ llxHeader('', $title, $help_url);
 $h=0;
 $head[$h][0] = $_SERVER["PHP_SELF"].$varlink;
 $head[$h][1] = $langs->trans("AccountantFiles");
-$head[$h][2] = 'AccountancyFiles';
+$head[$h][2] = 'AccountingFiles';
 
-dol_fiche_head($head, 'AccountancyFiles');
+dol_fiche_head($head, 'AccountingFiles');
 
 
 print '<form name="searchfiles" action="?action=searchfiles'.$tail.'" method="POST" >'."\n";

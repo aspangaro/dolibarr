@@ -427,7 +427,7 @@ print '</div>';
 print "<br>";
 
 
-// Select accountancy code numbering module
+// Select accounting code numbering module
 
 print load_fiche_titre($langs->trans("AccountCodeManager"), '', '');
 

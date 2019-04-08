@@ -34,7 +34,7 @@ div.mainmenu.billing::before {
     content: "\f3d1";
 }
 
-div.mainmenu.accountancy::before {
+div.mainmenu.accounting::before {
     content: "\f53d";
 }
 

@@ -61,8 +61,8 @@ $search_tobuy = GETPOST("search_tobuy", 'int');
 $fourn_id = GETPOST("fourn_id", 'int');
 $catid = GETPOST('catid', 'int');
 $search_tobatch = GETPOST("search_tobatch", 'int');
-$search_accountancy_code_sell = GETPOST("search_accountancy_code_sell", 'alpha');
-$search_accountancy_code_buy = GETPOST("search_accountancy_code_buy", 'alpha');
+$search_accounting_code_sell = GETPOST("search_accounting_code_sell", 'alpha');
+$search_accounting_code_buy = GETPOST("search_accounting_code_buy", 'alpha');
 $optioncss = GETPOST('optioncss', 'alpha');
 $type=GETPOST("type", "int");
 
@@ -175,8 +175,8 @@ $arrayfields=array(
 	'p.stock'=>array('label'=>$langs->trans("PhysicalStock"), 'checked'=>1, 'enabled'=>(! empty($conf->stock->enabled) && $user->rights->stock->lire && $contextpage != 'service')),
 	'stock_virtual'=>array('label'=>$langs->trans("VirtualStock"), 'checked'=>1, 'enabled'=>(! empty($conf->stock->enabled) && $user->rights->stock->lire && $contextpage != 'service' && $virtualdiffersfromphysical)),
 	'p.tobatch'=>array('label'=>$langs->trans("ManageLotSerial"), 'checked'=>0, 'enabled'=>(! empty($conf->productbatch->enabled))),
-	'p.accountancy_code_sell'=>array('label'=>$langs->trans("ProductAccountancySellCode"), 'checked'=>0),
-	'p.accountancy_code_buy'=>array('label'=>$langs->trans("ProductAccountancyBuyCode"), 'checked'=>0),
+	'p.accounting_code_sell'=>array('label'=>$langs->trans("ProductAccountingSellCode"), 'checked'=>0),
+	'p.accounting_code_buy'=>array('label'=>$langs->trans("ProductAccountingBuyCode"), 'checked'=>0),
 	'p.datec'=>array('label'=>$langs->trans("DateCreation"), 'checked'=>0, 'position'=>500),
 	'p.tms'=>array('label'=>$langs->trans("DateModificationShort"), 'checked'=>0, 'position'=>500),
 	'p.tosell'=>array('label'=>$langs->trans("Status").' ('.$langs->trans("Sell").')', 'checked'=>1, 'position'=>1000),
@@ -226,8 +226,8 @@ if (empty($reshook))
 		//$search_type='';						// There is 2 types of list: a list of product and a list of services. No list with both. So when we clear search criteria, we must keep the filter on type.
 
 		$show_childproducts = '';
-		$search_accountancy_code_sell='';
-		$search_accountancy_code_buy='';
+		$search_accounting_code_sell='';
+		$search_accounting_code_buy='';
 		$search_array_options=array();
 	}
 
@@ -269,7 +269,7 @@ else
 
 $sql = 'SELECT DISTINCT p.rowid, p.ref, p.label, p.fk_product_type, p.barcode, p.price, p.price_ttc, p.price_base_type, p.entity,';
 $sql.= ' p.fk_product_type, p.duration, p.tosell, p.tobuy, p.seuil_stock_alerte, p.desiredstock,';
-$sql.= ' p.tobatch, p.accountancy_code_sell, p.accountancy_code_sell_intra, p.accountancy_code_sell_export, p.accountancy_code_buy,';
+$sql.= ' p.tobatch, p.accounting_code_sell, p.accounting_code_sell_intra, p.accounting_code_sell_export, p.accounting_code_buy,';
 $sql.= ' p.datec as date_creation, p.tms as date_update, p.pmp,';
 $sql.= ' p.weight, p.weight_units, p.length, p.length_units, p.surface, p.surface_units, p.volume, p.volume_units, p.width, p.width_units, p.height, p.height_units,';
 $sql.= ' MIN(pfp.unitprice) as minsellprice';
@@ -321,8 +321,8 @@ if ($search_categ > 0)   $sql.= " AND cp.fk_categorie = ".$db->escape($search_ca
 if ($search_categ == -2) $sql.= " AND cp.fk_categorie IS NULL";
 if ($fourn_id > 0)  $sql.= " AND pfp.fk_soc = ".$fourn_id;
 if ($search_tobatch != '' && $search_tobatch >= 0)   $sql.= " AND p.tobatch = ".$db->escape($search_tobatch);
-if ($search_accountancy_code_sell) $sql.= natural_search('p.accountancy_code_sell', $search_accountancy_code_sell);
-if ($search_accountancy_code_buy)  $sql.= natural_search('p.accountancy_code_buy', $search_accountancy_code_buy);
+if ($search_accounting_code_sell) $sql.= natural_search('p.accounting_code_sell', $search_accounting_code_sell);
+if ($search_accounting_code_buy)  $sql.= natural_search('p.accounting_code_buy', $search_accounting_code_buy);
 
 // Add where from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
@@ -332,7 +332,7 @@ $reshook=$hookmanager->executeHooks('printFieldListWhere', $parameters);    // N
 $sql.=$hookmanager->resPrint;
 $sql.= " GROUP BY p.rowid, p.ref, p.label, p.barcode, p.price, p.price_ttc, p.price_base_type,";
 $sql.= " p.fk_product_type, p.duration, p.tosell, p.tobuy, p.seuil_stock_alerte, p.desiredstock,";
-$sql.= ' p.datec, p.tms, p.entity, p.tobatch, p.accountancy_code_sell, p.accountancy_code_sell_intra, p.accountancy_code_sell_export, p.accountancy_code_buy, p.pmp,';
+$sql.= ' p.datec, p.tms, p.entity, p.tobatch, p.accounting_code_sell, p.accounting_code_sell_intra, p.accounting_code_sell_export, p.accounting_code_buy, p.pmp,';
 $sql.= ' p.weight, p.weight_units, p.length, p.length_units, p.surface, p.surface_units, p.volume, p.volume_units, p.width, p.width_units, p.height, p.height_units';
 
 if (!empty($conf->variants->enabled) && (!empty($conf->global->PRODUIT_ATTRIBUTES_HIDECHILD) && ! $show_childproducts )) {
@@ -417,8 +417,8 @@ if ($resql)
 	if ($search_type != '') $param.='&search_type='.urlencode($search_type);
 	if ($optioncss != '') $param.='&optioncss='.urlencode($optioncss);
 	if ($search_tobatch) $param="&search_ref_supplier=".urlencode($search_ref_supplier);
-	if ($search_accountancy_code_sell) $param="&search_accountancy_code_sell=".urlencode($search_accountancy_code_sell);
-	if ($search_accountancy_code_buy) $param="&search_accountancy_code_buy=".urlencode($search_accountancy_code_buy);
+	if ($search_accounting_code_sell) $param="&search_accounting_code_sell=".urlencode($search_accounting_code_sell);
+	if ($search_accounting_code_buy) $param="&search_accounting_code_buy=".urlencode($search_accounting_code_buy);
 	// Add $param from extra fields
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 
@@ -629,10 +629,10 @@ if ($resql)
 	if (! empty($arrayfields['stock_virtual']['checked'])) print '<td class="liste_titre">&nbsp;</td>';
 	// To batch
 	if (! empty($arrayfields['p.tobatch']['checked'])) print '<td class="liste_titre center">'.$form->selectyesno($search_tobatch, '', '', '', 1).'</td>';
-	// Accountancy code sell
-	if (! empty($arrayfields['p.accountancy_code_sell']['checked'])) print '<td class="liste_titre"><input class="flat" type="text" name="search_accountancy_code_sell" size="6" value="'.dol_escape_htmltag($search_accountancy_code_sell).'"></td>';
-	// Accountancy code sell
-	if (! empty($arrayfields['p.accountancy_code_buy']['checked'])) print '<td class="liste_titre"><input class="flat" type="text" name="search_accountancy_code_buy" size="6" value="'.dol_escape_htmltag($search_accountancy_code_buy).'"></td>';
+	// Accounting code sell
+	if (! empty($arrayfields['p.accounting_code_sell']['checked'])) print '<td class="liste_titre"><input class="flat" type="text" name="search_accounting_code_sell" size="6" value="'.dol_escape_htmltag($search_accounting_code_sell).'"></td>';
+	// Accounting code sell
+	if (! empty($arrayfields['p.accounting_code_buy']['checked'])) print '<td class="liste_titre"><input class="flat" type="text" name="search_accounting_code_buy" size="6" value="'.dol_escape_htmltag($search_accounting_code_buy).'"></td>';
 	// Extra fields
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_input.tpl.php';
 	// Fields from hook
@@ -720,11 +720,11 @@ if ($resql)
 	if (! empty($arrayfields['p.tobatch']['checked'])) {
         print_liste_field_titre($arrayfields['p.tobatch']['label'], $_SERVER["PHP_SELF"], "p.tobatch", "", $param, '', $sortfield, $sortorder, 'center ');
     }
-	if (! empty($arrayfields['p.accountancy_code_sell']['checked'])) {
-        print_liste_field_titre($arrayfields['p.accountancy_code_sell']['label'], $_SERVER["PHP_SELF"], "p.accountancy_code_sell", "", $param, '', $sortfield, $sortorder);
+	if (! empty($arrayfields['p.accounting_code_sell']['checked'])) {
+        print_liste_field_titre($arrayfields['p.accounting_code_sell']['label'], $_SERVER["PHP_SELF"], "p.accounting_code_sell", "", $param, '', $sortfield, $sortorder);
     }
-	if (! empty($arrayfields['p.accountancy_code_buy']['checked'])) {
-        print_liste_field_titre($arrayfields['p.accountancy_code_buy']['label'], $_SERVER["PHP_SELF"], "p.accountancy_code_buy", "", $param, '', $sortfield, $sortorder);
+	if (! empty($arrayfields['p.accounting_code_buy']['checked'])) {
+        print_liste_field_titre($arrayfields['p.accounting_code_buy']['label'], $_SERVER["PHP_SELF"], "p.accounting_code_buy", "", $param, '', $sortfield, $sortorder);
     }
 	// Extra fields
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
@@ -784,10 +784,10 @@ if ($resql)
 		$product_static->status_batch = $obj->tobatch;
 		$product_static->entity = $obj->entity;
 		$product_static->pmp = $obj->pmp;
-		$product_static->accountancy_code_sell = $obj->accountancy_code_sell;
-		$product_static->accountancy_code_sell_export = $obj->accountancy_code_sell_export;
-		$product_static->accountancy_code_sell_intra = $obj->accountancy_code_sell_intra;
-		$product_static->accountancy_code_buy = $obj->accountancy_code_buy;
+		$product_static->accounting_code_sell = $obj->accounting_code_sell;
+		$product_static->accounting_code_sell_export = $obj->accounting_code_sell_export;
+		$product_static->accounting_code_sell_intra = $obj->accounting_code_sell_intra;
+		$product_static->accounting_code_buy = $obj->accounting_code_buy;
 		$product_static->length = $obj->length;
 		$product_static->length_units = $obj->length_units;
 		$product_static->width = $obj->width;
@@ -1026,16 +1026,16 @@ if ($resql)
 			print '</td>';
 			if (! $i) $totalarray['nbfield']++;
 		}
-		// Accountancy code sell
-		if (! empty($arrayfields['p.accountancy_code_sell']['checked']))
+		// Accounting code sell
+		if (! empty($arrayfields['p.accounting_code_sell']['checked']))
 		{
-			print '<td>'.$obj->accountancy_code_sell.'</td>';
+			print '<td>'.$obj->accounting_code_sell.'</td>';
 			if (! $i) $totalarray['nbfield']++;
 		}
-		// Accountancy code sell
-		if (! empty($arrayfields['p.accountancy_code_buy']['checked']))
+		// Accounting code sell
+		if (! empty($arrayfields['p.accounting_code_buy']['checked']))
 		{
-			print '<td>'.$obj->accountancy_code_buy.'</td>';
+			print '<td>'.$obj->accounting_code_buy.'</td>';
 			if (! $i) $totalarray['nbfield']++;
 		}
 		// Extra fields

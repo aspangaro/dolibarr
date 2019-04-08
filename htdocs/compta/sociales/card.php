@@ -36,7 +36,7 @@ if (! empty($conf->projet->enabled))
 	include_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
 }
 if (! empty($conf->accounting->enabled)) {
-	include_once DOL_DOCUMENT_ROOT . '/accountancy/class/accountingjournal.class.php';
+	include_once DOL_DOCUMENT_ROOT . '/accounting/class/accountingjournal.class.php';
 }
 
 // Load translation files required by the page
@@ -583,7 +583,7 @@ if ($id > 0)
 		 */
 		$sql = "SELECT p.rowid, p.num_paiement, datep as dp, p.amount,";
 		$sql.= " c.code as type_code,c.libelle as paiement_type,";
-		$sql.= ' ba.rowid as baid, ba.ref as baref, ba.label, ba.number as banumber, ba.account_number, ba.fk_accountancy_journal';
+		$sql.= ' ba.rowid as baid, ba.ref as baref, ba.label, ba.number as banumber, ba.account_number, ba.fk_accounting_journal';
 		$sql.= " FROM ".MAIN_DB_PREFIX."paiementcharge as p";
     	$sql.= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'bank as b ON p.fk_bank = b.rowid';
     	$sql.= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'bank_account as ba ON b.fk_account = ba.rowid';
@@ -635,8 +635,8 @@ if ($id > 0)
 							$bankaccountstatic->account_number = $objp->account_number;
 
 							$accountingjournal = new AccountingJournal($db);
-							$accountingjournal->fetch($objp->fk_accountancy_journal);
-							$bankaccountstatic->accountancy_journal = $accountingjournal->getNomUrl(0, 1, 1, '', 1);
+							$accountingjournal->fetch($objp->fk_accounting_journal);
+							$bankaccountstatic->accounting_journal = $accountingjournal->getNomUrl(0, 1, 1, '', 1);
 						}
 
 						print '<td class="right">';

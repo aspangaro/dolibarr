@@ -69,7 +69,7 @@ class PaymentVarious extends CommonObject
      */
     public $label;
 
-	public $accountancy_code;
+	public $accounting_code;
 
     public $subledger_account;
 
@@ -140,7 +140,7 @@ class PaymentVarious extends CommonObject
 		$sql.= " num_payment='".$this->db->escape($this->num_payment)."',";
 		$sql.= " label='".$this->db->escape($this->label)."',";
 		$sql.= " note='".$this->db->escape($this->note)."',";
-		$sql.= " accountancy_code='".$this->db->escape($this->accountancy_code)."',";
+		$sql.= " accounting_code='".$this->db->escape($this->accounting_code)."',";
         $sql.= " subledger_account='".$this->db->escape($this->subledger_account)."',";
 		$sql.= " fk_projet='".$this->db->escape($this->fk_project)."',";
 		$sql.= " fk_bank=".($this->fk_bank > 0 ? $this->fk_bank:"null").",";
@@ -198,7 +198,7 @@ class PaymentVarious extends CommonObject
 		$sql.= " v.num_payment,";
 		$sql.= " v.label,";
 		$sql.= " v.note,";
-		$sql.= " v.accountancy_code,";
+		$sql.= " v.accounting_code,";
 		$sql.= " v.subledger_account,";
 		$sql.= " v.fk_projet as fk_project,";
 		$sql.= " v.fk_bank,";
@@ -231,7 +231,7 @@ class PaymentVarious extends CommonObject
 				$this->label                = $obj->label;
 				$this->note                 = $obj->note;
 				$this->subledger_account    = $obj->subledger_account;
-				$this->accountancy_code     = $obj->accountancy_code;
+				$this->accounting_code      = $obj->accounting_code;
 				$this->fk_project           = $obj->fk_project;
 				$this->fk_bank              = $obj->fk_bank;
 				$this->fk_user_author       = $obj->fk_user_author;
@@ -302,7 +302,7 @@ class PaymentVarious extends CommonObject
 		$this->sens='';
 		$this->amount='';
 		$this->label='';
-		$this->accountancy_code='';
+		$this->accounting_code='';
         $this->subledger_account='';
 		$this->note='';
 		$this->fk_bank='';
@@ -365,7 +365,7 @@ class PaymentVarious extends CommonObject
 		$sql.= ", num_payment";
 		if ($this->note) $sql.= ", note";
 		$sql.= ", label";
-		$sql.= ", accountancy_code";
+		$sql.= ", accounting_code";
 		$sql.= ", subledger_account";
 		$sql.= ", fk_projet";
 		$sql.= ", fk_user_author";
@@ -382,7 +382,7 @@ class PaymentVarious extends CommonObject
 		$sql.= ", '".$this->db->escape($this->num_payment)."'";
 		if ($this->note) $sql.= ", '".$this->db->escape($this->note)."'";
 		$sql.= ", '".$this->db->escape($this->label)."'";
-		$sql.= ", '".$this->db->escape($this->accountancy_code)."'";
+		$sql.= ", '".$this->db->escape($this->accounting_code)."'";
 		$sql.= ", '".$this->db->escape($this->subledger_account)."'";
 		$sql.= ", ".($this->fk_project > 0? $this->fk_project : 0);
 		$sql.= ", ".$user->id;

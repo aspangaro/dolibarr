@@ -20,7 +20,7 @@
 
 /**
  * \file 		htdocs/compta/resultat/result.php
- * \ingroup 	compta, accountancy
+ * \ingroup 	compta, accounting
  * \brief 		Page for accounting result
  */
 
@@ -29,10 +29,10 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/accounting.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/report.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formaccounting.class.php';
-require_once DOL_DOCUMENT_ROOT.'/accountancy/class/accountancycategory.class.php';
+require_once DOL_DOCUMENT_ROOT.'/accounting/class/accountingcategory.class.php';
 
 // Load translation files required by the page
-$langs->loadLangs(array('compta','bills','donation','salaries','accountancy'));
+$langs->loadLangs(array('compta','bills','donation','salaries','accounting'));
 
 $error = 0;
 
@@ -135,7 +135,7 @@ if ($user->societe_id > 0)
 if (! $user->rights->accounting->comptarapport->lire)
 	accessforbidden();
 
-$AccCat = new AccountancyCategory($db);
+$AccCat = new AccountingCategory($db);
 
 
 /*
@@ -205,7 +205,7 @@ elseif ($modecompta=="BOOKKEEPING")
 	$periodlink = $textprevyear . $textnextyear ;
 	$exportlink = '';
 	$description=$langs->trans("RulesResultBookkeepingPersonalized").
-	$description.=' ('.$langs->trans("SeePageForSetup", DOL_URL_ROOT.'/accountancy/admin/categories_list.php?search_country_id='.$mysoc->country_id.'&mainmenu=accountancy&leftmenu=accountancy_admin', $langs->transnoentitiesnoconv("Accountancy").' / '.$langs->transnoentitiesnoconv("Setup").' / '.$langs->transnoentitiesnoconv("AccountingCategory")).')';
+	$description.=' ('.$langs->trans("SeePageForSetup", DOL_URL_ROOT.'/accounting/admin/categories_list.php?search_country_id='.$mysoc->country_id.'&mainmenu=accounting&leftmenu=accounting_admin', $langs->transnoentitiesnoconv("Accounting").' / '.$langs->transnoentitiesnoconv("Setup").' / '.$langs->transnoentitiesnoconv("AccountingCategory")).')';
 	//if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $description.= $langs->trans("DepositsAreNotIncluded");
 	//else  $description.= $langs->trans("DepositsAreIncluded");
 	$builddate=dol_now();
@@ -417,7 +417,7 @@ elseif ($modecompta=="BOOKKEEPING")
 				}
 
 				// Set value into column N and month M ($totCat)
-				// This make 12 calls for each accountancy account (12 monthes M)
+				// This make 12 calls for each accounting account (12 monthes M)
 				foreach ($cpts as $i => $cpt)    // Loop on each account.
 				{
 					// We make 1 loop for each account because we may want detail per account.

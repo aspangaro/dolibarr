@@ -2014,8 +2014,8 @@
           <xsd:element name="supplier" type="xsd:string"/>
           <xsd:element name="customer_code" type="xsd:string"/>
           <xsd:element name="supplier_code" type="xsd:string"/>
-          <xsd:element name="customer_code_accountancy" type="xsd:string"/>
-          <xsd:element name="supplier_code_accountancy" type="xsd:string"/>
+          <xsd:element name="customer_code_accounting" type="xsd:string"/>
+          <xsd:element name="supplier_code_accounting" type="xsd:string"/>
           <xsd:element name="date_creation" type="xsd:dateTime"/>
           <xsd:element name="date_modification" type="xsd:dateTime"/>
           <xsd:element name="note" type="xsd:string"/>
@@ -2202,8 +2202,8 @@
             <supplier xsi:type="xsd:string">?</supplier>
             <customer_code xsi:type="xsd:string">?</customer_code>
             <supplier_code xsi:type="xsd:string">?</supplier_code>
-            <customer_code_accountancy xsi:type="xsd:string">?</customer_code_accountancy>
-            <supplier_code_accountancy xsi:type="xsd:string">?</supplier_code_accountancy>
+            <customer_code_accounting xsi:type="xsd:string">?</customer_code_accounting>
+            <supplier_code_accounting xsi:type="xsd:string">?</supplier_code_accounting>
             <date_creation xsi:type="xsd:dateTime">?</date_creation>
             <date_modification xsi:type="xsd:dateTime">?</date_modification>
             <note xsi:type="xsd:string">?</note>
@@ -2272,8 +2272,8 @@
             <supplier xsi:type="xsd:string">?</supplier>
             <customer_code xsi:type="xsd:string">?</customer_code>
             <supplier_code xsi:type="xsd:string">?</supplier_code>
-            <customer_code_accountancy xsi:type="xsd:string">?</customer_code_accountancy>
-            <supplier_code_accountancy xsi:type="xsd:string">?</supplier_code_accountancy>
+            <customer_code_accounting xsi:type="xsd:string">?</customer_code_accounting>
+            <supplier_code_accounting xsi:type="xsd:string">?</supplier_code_accounting>
             <date_creation xsi:type="xsd:dateTime">?</date_creation>
             <date_modification xsi:type="xsd:dateTime">?</date_modification>
             <note xsi:type="xsd:string">?</note>

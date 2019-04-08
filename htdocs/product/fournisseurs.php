@@ -378,7 +378,7 @@ if ($id > 0 || $ref)
             print '</td></tr>';
 
 			// Cost price. Can be used for margin module for option "calculate margin on explicit cost price
-            // Accountancy sell code
+            // Accounting sell code
             print '<tr><td>';
 			$textdesc =$langs->trans("CostPriceDescription");
 			$textdesc.="<br>".$langs->trans("CostPriceUsage");
@@ -770,7 +770,7 @@ SCRIPT;
 				$num = count($product_fourn_list);
 				if (($num + ($offset * $limit)) < $nbtotalofrecords) $num++;
 
-				print_barre_liste($langs->trans('SupplierPrices'), $page, $_SERVEUR ['PHP_SELF'], $param, $sortfield, $sortorder, '', $num, $nbtotalofrecords, 'title_accountancy.png', 0, '', '', $limit, 1);
+				print_barre_liste($langs->trans('SupplierPrices'), $page, $_SERVEUR ['PHP_SELF'], $param, $sortfield, $sortorder, '', $num, $nbtotalofrecords, 'title_accounting.png', 0, '', '', $limit, 1);
 
 				// Suppliers list title
 				print '<div class="div-table-responsive">';

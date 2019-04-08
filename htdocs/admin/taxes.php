@@ -269,8 +269,8 @@ print '</form>';
 
 if (! empty($conf->accounting->enabled))
 {
-	$langs->load("accountancy");
-	print '<br><br><span class="opacitymedium">'.$langs->trans("AccountingAccountForSalesTaxAreDefinedInto", $langs->transnoentitiesnoconv("MenuAccountancy"), $langs->transnoentitiesnoconv("Setup")).'</span>';
+	$langs->load("accounting");
+	print '<br><br><span class="opacitymedium">'.$langs->trans("AccountingAccountForSalesTaxAreDefinedInto", $langs->transnoentitiesnoconv("MenuAccounting"), $langs->transnoentitiesnoconv("Setup")).'</span>';
 }
 
 // End of page

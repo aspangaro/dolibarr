@@ -103,8 +103,8 @@ $idpays = $p[0];
 $sql = "SELECT f.rowid, f.ref, f.type, f.datef, f.ref_client,";
 $sql.= " fd.product_type, fd.total_ht, fd.total_tva, fd.tva_tx, fd.total_ttc, fd.localtax1_tx, fd.localtax2_tx, fd.total_localtax1, fd.total_localtax2, fd.rowid as id, fd.situation_percent,";
 $sql.= " s.rowid as socid, s.nom as name, s.code_compta, s.client,";
-$sql.= " p.rowid as pid, p.ref as pref, p.accountancy_code_sell,";
-$sql.= " ct.accountancy_code_sell as account_tva, ct.recuperableonly";
+$sql.= " p.rowid as pid, p.ref as pref, p.accounting_code_sell,";
+$sql.= " ct.accounting_code_sell as account_tva, ct.recuperableonly";
 $sql.= " FROM ".MAIN_DB_PREFIX."facturedet as fd";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product as p ON p.rowid = fd.fk_product";
 $sql.= " JOIN ".MAIN_DB_PREFIX."facture as f ON f.rowid = fd.fk_facture";
@@ -148,7 +148,7 @@ if ($result)
    	    // les variables
    	    $cptcli = (! empty($conf->global->ACCOUNTING_ACCOUNT_CUSTOMER)?$conf->global->ACCOUNTING_ACCOUNT_CUSTOMER:$langs->trans("CodeNotDef"));
    	    $compta_soc = (! empty($obj->code_compta)?$obj->code_compta:$cptcli);
-		$compta_prod = $obj->accountancy_code_sell;
+		$compta_prod = $obj->accounting_code_sell;
 		if (empty($compta_prod))
 		{
 			if($obj->product_type == 0) $compta_prod = (! empty($conf->global->ACCOUNTING_PRODUCT_SOLD_ACCOUNT)?$conf->global->ACCOUNTING_PRODUCT_SOLD_ACCOUNT:$langs->trans("CodeNotDef"));

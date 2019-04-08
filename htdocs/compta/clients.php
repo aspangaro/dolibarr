@@ -147,7 +147,7 @@ if ($resql)
 	print_liste_field_titre("Company", $_SERVER["PHP_SELF"], "s.nom", "", "", 'valign="center"', $sortfield, $sortorder);
 	print_liste_field_titre("Town", $_SERVER["PHP_SELF"], "s.town", "", "", 'valign="center"', $sortfield, $sortorder);
 	print_liste_field_titre("CustomerCode", $_SERVER["PHP_SELF"], "s.code_client", "", "", '', $sortfield, $sortorder, 'left ');
-	print_liste_field_titre("AccountancyCode", $_SERVER["PHP_SELF"], "s.code_compta", "", "", '', $sortfield, $sortorder, 'left ');
+	print_liste_field_titre("AccountingCode", $_SERVER["PHP_SELF"], "s.code_compta", "", "", '', $sortfield, $sortorder, 'left ');
 	print_liste_field_titre("DateCreation", $_SERVER["PHP_SELF"], "datec", $addu, "", '', $sortfield, $sortorder, 'right ');
 	print "</tr>\n";
 

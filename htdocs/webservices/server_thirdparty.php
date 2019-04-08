@@ -93,8 +93,8 @@ $thirdparty_fields= array(
         'supplier' => array('name'=>'supplier','type'=>'xsd:string'),
         'customer_code' => array('name'=>'customer_code','type'=>'xsd:string'),
         'supplier_code' => array('name'=>'supplier_code','type'=>'xsd:string'),
-        'customer_code_accountancy' => array('name'=>'customer_code_accountancy','type'=>'xsd:string'),
-        'supplier_code_accountancy' => array('name'=>'supplier_code_accountancy','type'=>'xsd:string'),
+        'customer_code_accounting' => array('name'=>'customer_code_accounting','type'=>'xsd:string'),
+        'supplier_code_accounting' => array('name'=>'supplier_code_accounting','type'=>'xsd:string'),
         'date_creation' => array('name'=>'date_creation','type'=>'xsd:dateTime'),
         'date_modification' => array('name'=>'date_modification','type'=>'xsd:dateTime'),
         'note_private' => array('name'=>'note_private','type'=>'xsd:string'),
@@ -323,8 +323,8 @@ function getThirdParty($authentication, $id = '', $ref = '', $ref_ext = '')
 			            'supplier' => $thirdparty->fournisseur,
 				        'customer_code' => $thirdparty->code_client,
 			            'supplier_code' => $thirdparty->code_fournisseur,
-				        'customer_code_accountancy' => $thirdparty->code_compta,
-			            'supplier_code_accountancy' => $thirdparty->code_compta_fournisseur,
+				        'customer_code_accounting' => $thirdparty->code_compta,
+			            'supplier_code_accounting' => $thirdparty->code_compta_fournisseur,
 			            'fk_user_author' => $thirdparty->fk_user_author,
 			    		'date_creation' => dol_print_date($thirdparty->date_creation, 'dayhourrfc'),
 			    		'date_modification' => dol_print_date($thirdparty->date_modification, 'dayhourrfc'),
@@ -434,8 +434,8 @@ function createThirdParty($authentication, $thirdparty)
         $newobject->fournisseur=$thirdparty['supplier'];
         $newobject->code_client=$thirdparty['customer_code'];
         $newobject->code_fournisseur=$thirdparty['supplier_code'];
-        $newobject->code_compta=$thirdparty['customer_code_accountancy'];
-        $newobject->code_compta_fournisseur=$thirdparty['supplier_code_accountancy'];
+        $newobject->code_compta=$thirdparty['customer_code_accounting'];
+        $newobject->code_compta_fournisseur=$thirdparty['supplier_code_accounting'];
         $newobject->date_creation=$now;
         $newobject->note_private=$thirdparty['note_private'];
         $newobject->note_public=$thirdparty['note_public'];
@@ -566,8 +566,8 @@ function updateThirdParty($authentication, $thirdparty)
 			$object->fournisseur=$thirdparty['supplier'];
 			$object->code_client=$thirdparty['customer_code'];
 			$object->code_fournisseur=$thirdparty['supplier_code'];
-			$object->code_compta=$thirdparty['customer_code_accountancy'];
-			$object->code_compta_fournisseur=$thirdparty['supplier_code_accountancy'];
+			$object->code_compta=$thirdparty['customer_code_accounting'];
+			$object->code_compta_fournisseur=$thirdparty['supplier_code_accounting'];
 			$object->date_creation=$now;
 			$object->note_private=$thirdparty['note_private'];
 			$object->note_public=$thirdparty['note_public'];

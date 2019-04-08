@@ -26,7 +26,7 @@
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/salaries/class/paymentsalary.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
-if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT . '/accountancy/class/accountingjournal.class.php';
+if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT . '/accounting/class/accountingjournal.class.php';
 
 // Load translation files required by the page
 $langs->loadLangs(array("compta","salaries","bills","hrm"));
@@ -100,7 +100,7 @@ $accountstatic = new Account($db);
 
 $sql = "SELECT u.rowid as uid, u.lastname, u.firstname, u.login, u.email, u.admin, u.salary as current_salary, u.fk_soc as fk_soc, u.statut as status,";
 $sql.= " s.rowid, s.fk_user, s.amount, s.salary, s.label, s.datep as datep, s.datev as datev, s.fk_typepayment as type, s.num_payment, s.fk_bank,";
-$sql.= " ba.rowid as bid, ba.ref as bref, ba.number as bnumber, ba.account_number, ba.fk_accountancy_journal, ba.label as blabel,";
+$sql.= " ba.rowid as bid, ba.ref as bref, ba.number as bnumber, ba.account_number, ba.fk_accounting_journal, ba.label as blabel,";
 $sql.= " pst.code as payment_code";
 $sql.= " FROM ".MAIN_DB_PREFIX."payment_salary as s";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_paiement as pst ON s.fk_typepayment = pst.id";
@@ -164,7 +164,7 @@ if ($result)
     print '<input type="hidden" name="sortorder" value="'.$sortorder.'">';
     print '<input type="hidden" name="page" value="'.$page.'">';
 
-    print_barre_liste($langs->trans("SalariesPayments"), $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, '', $num, $totalnboflines, 'title_accountancy.png', 0, $newcardbutton, '', $limit);
+    print_barre_liste($langs->trans("SalariesPayments"), $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, '', $num, $totalnboflines, 'title_accounting.png', 0, $newcardbutton, '', $limit);
 
     print '<div class="div-table-responsive">';
     print '<table class="tagtable liste'.($moreforfilter?" listwithfilterbefore":"").'">'."\n";
@@ -258,9 +258,9 @@ if ($result)
 					$accountstatic->account_number=$obj->account_number;
 
 					$accountingjournal = new AccountingJournal($db);
-					$accountingjournal->fetch($obj->fk_accountancy_journal);
+					$accountingjournal->fetch($obj->fk_accounting_journal);
 
-					$accountstatic->accountancy_journal = $accountingjournal->getNomUrl(0, 1, 1, '', 1);
+					$accountstatic->accounting_journal = $accountingjournal->getNomUrl(0, 1, 1, '', 1);
 				}
 	            $accountstatic->label=$obj->blabel;
 	        	print $accountstatic->getNomUrl(1);

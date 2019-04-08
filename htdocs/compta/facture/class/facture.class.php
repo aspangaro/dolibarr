@@ -46,7 +46,7 @@ require_once DOL_DOCUMENT_ROOT.'/margin/lib/margins.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/multicurrency/class/multicurrency.class.php';
 
 if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT.'/core/class/html.formaccounting.class.php';
-if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT.'/accountancy/class/accountingaccount.class.php';
+if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT.'/accounting/class/accountingaccount.class.php';
 
 /**
  *	Class to manage invoices
@@ -1545,7 +1545,7 @@ class Facture extends CommonInvoice
 				$line->fk_prev_id       = $objp->fk_prev_id;
 				$line->fk_unit	        = $objp->fk_unit;
 
-				// Accountancy
+				// Accounting
 				$line->fk_accounting_account	= $objp->fk_code_ventilation;
 
 				// Multicurrency
@@ -2648,7 +2648,7 @@ class Facture extends CommonInvoice
 	 * 		@param    	double		$remise_percent  	Percent of discount on line
 	 * 		@param    	int			$date_start      	Date start of service
 	 * 		@param    	int			$date_end        	Date end of service
-	 * 		@param    	int			$ventil          	Code of dispatching into accountancy
+	 * 		@param    	int			$ventil          	Code of dispatching into accounting
 	 * 		@param    	int			$info_bits			Bits de type de lignes
 	 *		@param    	int			$fk_remise_except	Id discount used
 	 *		@param		string		$price_base_type	'HT' or 'TTC'

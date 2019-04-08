@@ -195,7 +195,7 @@ class MenuManager
 		            $submenu->add("/admin/const.php?mainmenu=home", $langs->trans("OtherSetup"), 1);
 
 		            //if ($tmpmainmenu.'-'.$tmpleftmenu == 'home-all') { var_dump($submenu); exit; }
-		            //if ($tmpmainmenu=='accountancy') { var_dump($submenu->liste); exit; }
+		            //if ($tmpmainmenu=='accounting') { var_dump($submenu->liste); exit; }
 		            $nexturl=dol_buildpath($submenu->liste[0]['url'], 1);
 
 		            $canonrelurl=preg_replace('/\?.*$/', '', $relurl);

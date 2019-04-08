@@ -167,7 +167,7 @@ class Account extends CommonObject
 	public $status = array();
 
 	/**
-	 * Accountancy code
+	 * Accounting code
 	 * @var string
 	 */
 	public $account_number;
@@ -175,7 +175,7 @@ class Account extends CommonObject
 	/**
      * @var int ID
      */
-	public $fk_accountancy_journal;
+	public $fk_accounting_journal;
 
 	/**
 	 * Currency code
@@ -413,11 +413,11 @@ class Account extends CommonObject
 	 *  @param	User		$user			User that create
 	 *  @param	string		$emetteur		Name of cheque writer
 	 *  @param	string		$banque			Bank of cheque writer
-	 *  @param	string		$accountancycode	When we record a free bank entry, we must provide accounting account if accountancy module is on.
+	 *  @param	string		$accountingcode	When we record a free bank entry, we must provide accounting account if accounting module is on.
 	 *  @param	int			$datev			Date value
 	 *  @return	int							Rowid of added entry, <0 if KO
 	 */
-    public function addline($date, $oper, $label, $amount, $num_chq, $categorie, User $user, $emetteur = '', $banque = '', $accountancycode = '', $datev = null)
+    public function addline($date, $oper, $label, $amount, $num_chq, $categorie, User $user, $emetteur = '', $banque = '', $accountingcode = '', $datev = null)
 	{
 		// Deprecation warning
 		if (is_numeric($oper)) {
@@ -478,7 +478,7 @@ class Account extends CommonObject
 		$accline->fk_user_author = $user->id;
 		$accline->fk_account = $this->rowid;
 		$accline->fk_type = $oper;
-		$accline->numero_compte = $accountancycode;
+		$accline->numero_compte = $accountingcode;
 
 		if ($num_chq) {
 			$accline->num_chq = $num_chq;
@@ -570,7 +570,7 @@ class Account extends CommonObject
 		$sql.= ", label";
 		$sql.= ", entity";
 		$sql.= ", account_number";
-		$sql.= ", fk_accountancy_journal";
+		$sql.= ", fk_accounting_journal";
 		$sql.= ", bank";
 		$sql.= ", code_banque";
 		$sql.= ", code_guichet";
@@ -594,7 +594,7 @@ class Account extends CommonObject
 		$sql.= ", '".$this->db->escape($this->label)."'";
 		$sql.= ", ".$conf->entity;
 		$sql.= ", '".$this->db->escape($this->account_number)."'";
-		$sql.= ", ".($this->fk_accountancy_journal > 0 ? $this->db->escape($this->fk_accountancy_journal) : "null");
+		$sql.= ", ".($this->fk_accounting_journal > 0 ? $this->db->escape($this->fk_accounting_journal) : "null");
 		$sql.= ", '".$this->db->escape($this->bank)."'";
 		$sql.= ", '".$this->db->escape($this->code_banque)."'";
 		$sql.= ", '".$this->db->escape($this->code_guichet)."'";
@@ -727,7 +727,7 @@ class Account extends CommonObject
 		$sql.= ",rappro = ".$this->rappro;
 		$sql.= ",url = ".($this->url?"'".$this->db->escape($this->url)."'":"null");
 		$sql.= ",account_number = '".$this->db->escape($this->account_number)."'";
-		$sql.= ",fk_accountancy_journal = ".($this->fk_accountancy_journal > 0 ? $this->db->escape($this->fk_accountancy_journal) : "null");
+		$sql.= ",fk_accounting_journal = ".($this->fk_accounting_journal > 0 ? $this->db->escape($this->fk_accounting_journal) : "null");
 		$sql.= ",bank  = '".$this->db->escape($this->bank)."'";
 		$sql.= ",code_banque='".$this->db->escape($this->code_banque)."'";
 		$sql.= ",code_guichet='".$this->db->escape($this->code_guichet)."'";
@@ -873,16 +873,16 @@ class Account extends CommonObject
 		$sql = "SELECT ba.rowid, ba.ref, ba.label, ba.bank, ba.number, ba.courant, ba.clos, ba.rappro, ba.url,";
 		$sql.= " ba.code_banque, ba.code_guichet, ba.cle_rib, ba.bic, ba.iban_prefix as iban,";
 		$sql.= " ba.domiciliation, ba.proprio, ba.owner_address, ba.state_id, ba.fk_pays as country_id,";
-		$sql.= " ba.account_number, ba.fk_accountancy_journal, ba.currency_code,";
+		$sql.= " ba.account_number, ba.fk_accounting_journal, ba.currency_code,";
 		$sql.= " ba.min_allowed, ba.min_desired, ba.comment,";
 		$sql.= " ba.datec as date_creation, ba.tms as date_update,";
 		$sql.= ' c.code as country_code, c.label as country,';
 		$sql.= ' d.code_departement as state_code, d.nom as state';
-        $sql.= ' , aj.code as accountancy_journal';
+        $sql.= ' , aj.code as accounting_journal';
 		$sql.= " FROM ".MAIN_DB_PREFIX."bank_account as ba";
 		$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as c ON ba.fk_pays = c.rowid';
 		$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_departements as d ON ba.state_id = d.rowid';
-        $sql.= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'accounting_journal as aj ON aj.rowid=ba.fk_accountancy_journal';
+        $sql.= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'accounting_journal as aj ON aj.rowid=ba.fk_accounting_journal';
 		$sql.= " WHERE ba.entity IN (".getEntity($this->element).")";
 		if ($id)  $sql.= " AND ba.rowid  = ".$id;
 		if ($ref) $sql.= " AND ba.ref = '".$this->db->escape($ref)."'";
@@ -925,8 +925,8 @@ class Account extends CommonObject
 				$this->country       = $obj->country;
 
 				$this->account_number = $obj->account_number;
-				$this->fk_accountancy_journal = $obj->fk_accountancy_journal;
-				$this->accountancy_journal = $obj->accountancy_journal;
+				$this->fk_accounting_journal = $obj->fk_accounting_journal;
+				$this->accounting_journal = $obj->accounting_journal;
 
 				$this->currency_code  = $obj->currency_code;
 				$this->account_currency_code  = $obj->currency_code;
@@ -1347,9 +1347,9 @@ class Account extends CommonObject
 		if (! empty($conf->accounting->enabled))
 		{
 			include_once DOL_DOCUMENT_ROOT.'/core/lib/accounting.lib.php';
-			$langs->load("accountancy");
+			$langs->load("accounting");
 			$label .= '<br><b>' . $langs->trans('AccountAccounting') . ':</b> ' . length_accountg($this->account_number);
-			$label .= '<br><b>' . $langs->trans('AccountancyJournal') . ':</b> ' . $this->accountancy_journal;
+			$label .= '<br><b>' . $langs->trans('AccountingJournal') . ':</b> ' . $this->accounting_journal;
 		}
 		$linkclose = '" title="'.dol_escape_htmltag($label, 1).'" class="classfortooltip">';
 

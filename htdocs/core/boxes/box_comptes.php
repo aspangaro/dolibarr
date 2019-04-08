@@ -89,10 +89,10 @@ class box_comptes extends ModeleBoxes
 			$sql.= ", b.domiciliation, b.proprio, b.owner_address";
 			$sql.= ", b.account_number, b.currency_code";
 			$sql.= ", b.min_allowed, b.min_desired, comment";
-            $sql.= ', b.fk_accountancy_journal';
-            $sql.= ', aj.code as accountancy_journal';
+            $sql.= ', b.fk_accounting_journal';
+            $sql.= ', aj.code as accounting_journal';
             $sql.= " FROM ".MAIN_DB_PREFIX."bank_account as b";
-            $sql.= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'accounting_journal as aj ON aj.rowid=b.fk_accountancy_journal';
+            $sql.= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'accounting_journal as aj ON aj.rowid=b.fk_accounting_journal';
             $sql.= " WHERE b.entity = ".$conf->entity;
 			$sql.= " AND clos = 0";
 			//$sql.= " AND courant = 1";
@@ -117,7 +117,7 @@ class box_comptes extends ModeleBoxes
                     $account_static->number = $objp->number;
                     $account_static->account_number = $objp->account_number;
                     $account_static->currency_code = $objp->currency_code;
-                    $account_static->accountancy_journal = $objp->accountancy_journal;
+                    $account_static->accounting_journal = $objp->accounting_journal;
                     $solde=$account_static->solde(0);
 
                     $solde_total[$objp->currency_code] += $solde;

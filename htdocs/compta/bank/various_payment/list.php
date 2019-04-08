@@ -27,11 +27,11 @@ require '../../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/paymentvarious.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formaccounting.class.php';
-require_once DOL_DOCUMENT_ROOT.'/accountancy/class/accountingaccount.class.php';
-require_once DOL_DOCUMENT_ROOT.'/accountancy/class/accountingjournal.class.php';
+require_once DOL_DOCUMENT_ROOT.'/accounting/class/accountingaccount.class.php';
+require_once DOL_DOCUMENT_ROOT.'/accounting/class/accountingjournal.class.php';
 
 // Load translation files required by the page
-$langs->loadLangs(array("compta","banks","bills","accountancy"));
+$langs->loadLangs(array("compta","banks","bills","accounting"));
 
 // Security check
 $socid = GETPOST("socid", "int");
@@ -48,7 +48,7 @@ $search_amount_deb = GETPOST('search_amount_deb', 'alpha');
 $search_amount_cred = GETPOST('search_amount_cred', 'alpha');
 $search_account = GETPOST('search_account', 'int');
 $search_date = dol_mktime(0, 0, 0, GETPOST('date_docmonth', 'int'), GETPOST('date_docday', 'int'), GETPOST('date_docyear', 'int'));
-$search_accountancy_code = GETPOST("search_accountancy_code");
+$search_accounting_code = GETPOST("search_accounting_code");
 
 $sortfield = GETPOST("sortfield", 'alpha');
 $sortorder = GETPOST("sortorder", 'alpha');
@@ -86,7 +86,7 @@ if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x'
 	$search_account='';
 	$typeid="";
 	$search_date = '';
-	$search_accountancy_code = '';
+	$search_accounting_code = '';
 }
 
 /*
@@ -100,8 +100,8 @@ $formaccounting = new FormAccounting($db);
 $variousstatic = new PaymentVarious($db);
 $accountstatic = new Account($db);
 
-$sql = "SELECT v.rowid, v.sens, v.amount, v.label, v.datep as datep, v.datev as datev, v.fk_typepayment as type, v.num_payment, v.fk_bank, v.accountancy_code,";
-$sql.= " ba.rowid as bid, ba.ref as bref, ba.number as bnumber, ba.account_number as bank_account_number, ba.fk_accountancy_journal as accountancy_journal, ba.label as blabel,";
+$sql = "SELECT v.rowid, v.sens, v.amount, v.label, v.datep as datep, v.datev as datev, v.fk_typepayment as type, v.num_payment, v.fk_bank, v.accounting_code,";
+$sql.= " ba.rowid as bid, ba.ref as bref, ba.number as bnumber, ba.account_number as bank_account_number, ba.fk_accounting_journal as accounting_journal, ba.label as blabel,";
 $sql.= " pst.code as payment_code";
 $sql.= " FROM ".MAIN_DB_PREFIX."payment_various as v";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_paiement as pst ON v.fk_typepayment = pst.id";
@@ -116,7 +116,7 @@ if ($search_amount_deb)				$sql.=natural_search("v.amount", $search_amount_deb, 
 if ($search_amount_cred)			$sql.=natural_search("v.amount", $search_amount_cred, 1);
 if ($search_account > 0)			$sql.=" AND b.fk_account=".$search_account;
 if ($search_date)					$sql.=" AND v.datep=".$search_date;
-if ($search_accountancy_code > 0)	$sql.=" AND v.accountancy_code=".$search_accountancy_code;
+if ($search_accounting_code > 0)	$sql.=" AND v.accounting_code=".$search_accounting_code;
 if ($typeid > 0) $sql .= " AND v.fk_typepayment=".$typeid;
 if ($filtre) {
 	$filtre=str_replace(":", "=", $filtre);
@@ -150,7 +150,7 @@ if ($result)
 	if ($search_amount_cred)    $param.='&search_amount_cred='.urlencode($search_amount_cred);
 	if ($search_account > 0)			$param.='&search_amount='.urlencode($search_account);
 	//if ($search_date)					$param.='&search_date='.$search_date;
-	if ($search_accountancy_code > 0)	$param.='&search_accountancy_code='.urlencode($search_accountancy_code);
+	if ($search_accounting_code > 0)	$param.='&search_accounting_code='.urlencode($search_accounting_code);
 
 	if ($optioncss != '') $param.='&amp;optioncss='.urlencode($optioncss);
 
@@ -172,7 +172,7 @@ if ($result)
 	print '<input type="hidden" name="sortorder" value="'.$sortorder.'">';
 	print '<input type="hidden" name="page" value="'.$page.'">';
 
-	print_barre_liste($langs->trans("VariousPayments"), $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, '', $num, $totalnboflines, 'title_accountancy.png', 0, $newcardbutton, '', $limit);
+	print_barre_liste($langs->trans("VariousPayments"), $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, '', $num, $totalnboflines, 'title_accounting.png', 0, $newcardbutton, '', $limit);
 
 	print '<div class="div-table-responsive">';
 	print '<table class="tagtable liste'.($moreforfilter?" listwithfilterbefore":"").'">'."\n";
@@ -212,7 +212,7 @@ if ($result)
 	{
 		print '<td class="liste_titre">';
 		print '<div class="nowrap">';
-		print $formaccounting->select_account($search_accountancy_code, 'search_accountancy_code', 1, array (), 1, 1, 'maxwidth200');
+		print $formaccounting->select_account($search_accounting_code, 'search_accounting_code', 1, array (), 1, 1, 'maxwidth200');
 		print '</div>';
 		print '</td>';
 	}
@@ -237,7 +237,7 @@ if ($result)
 	print_liste_field_titre("DatePayment", $_SERVER["PHP_SELF"], "v.datep", "", $param, '', $sortfield, $sortorder, 'center ');
 	print_liste_field_titre("PaymentMode", $_SERVER["PHP_SELF"], "type", "", $param, '', $sortfield, $sortorder, 'left ');
 	if (! empty($conf->banque->enabled))     print_liste_field_titre("BankAccount", $_SERVER["PHP_SELF"], "ba.label", "", $param, "", $sortfield, $sortorder);
-	if (! empty($conf->accounting->enabled)) print_liste_field_titre("AccountAccounting", $_SERVER["PHP_SELF"], "v.accountancy_code", "", $param, '', $sortfield, $sortorder, 'left ');
+	if (! empty($conf->accounting->enabled)) print_liste_field_titre("AccountAccounting", $_SERVER["PHP_SELF"], "v.accounting_code", "", $param, '', $sortfield, $sortorder, 'left ');
 	print_liste_field_titre("Debit", $_SERVER["PHP_SELF"], "v.amount", "", $param, '', $sortfield, $sortorder, 'right ');
 	print_liste_field_titre("Credit", $_SERVER["PHP_SELF"], "v.amount", "", $param, '', $sortfield, $sortorder, 'right ');
 	print_liste_field_titre('', $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'maxwidthsearch ');
@@ -280,8 +280,8 @@ if ($result)
 					$accountstatic->account_number=$obj->bank_account_number;
 
 					$accountingjournal = new AccountingJournal($db);
-					$accountingjournal->fetch($obj->accountancy_journal);
-					$accountstatic->accountancy_journal = $accountingjournal->getNomUrl(0, 1, 1, '', 1);
+					$accountingjournal->fetch($obj->accounting_journal);
+					$accountstatic->accounting_journal = $accountingjournal->getNomUrl(0, 1, 1, '', 1);
 				}
 
 				$accountstatic->label=$obj->blabel;
@@ -294,7 +294,7 @@ if ($result)
 		// Accounting account
 		if (! empty($conf->accounting->enabled)) {
 			$accountingaccount = new AccountingAccount($db);
-			$accountingaccount->fetch('', $obj->accountancy_code, 1);
+			$accountingaccount->fetch('', $obj->accounting_code, 1);
 
 			print '<td>'.$accountingaccount->getNomUrl(0, 1, 1, '', 1).'</td>';
 		}

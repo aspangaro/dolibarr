@@ -2175,9 +2175,9 @@ class Societe extends CommonObject
 		if (! empty($this->code_fournisseur) && $this->fournisseur)
 			$label.= '<br><b>' . $langs->trans('SupplierCode') . ':</b> '. $this->code_fournisseur;
 		if (! empty($conf->accounting->enabled) && ($this->client == 1 || $this->client == 3))
-			$label.= '<br><b>' . $langs->trans('CustomerAccountancyCode') . ':</b> '. ($this->code_compta ? $this->code_compta : $this->code_compta_client);
+			$label.= '<br><b>' . $langs->trans('CustomerAccountingCode') . ':</b> '. ($this->code_compta ? $this->code_compta : $this->code_compta_client);
 		if (! empty($conf->accounting->enabled) && $this->fournisseur)
-			$label.= '<br><b>' . $langs->trans('SupplierAccountancyCode') . ':</b> '. $this->code_compta_fournisseur;
+			$label.= '<br><b>' . $langs->trans('SupplierAccountingCode') . ':</b> '. $this->code_compta_fournisseur;
 
 		$label.= '</div>';
 
@@ -2836,7 +2836,7 @@ class Societe extends CommonObject
 			}
 			else
 			{
-				$this->error = 'ErrorAccountancyCodeNotDefined';
+				$this->error = 'ErrorAccountingCodeNotDefined';
 				return -1;
 			}
 		}

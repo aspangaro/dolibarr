@@ -195,7 +195,7 @@ class MenuManager
 	        		print_left_eldy_menu($this->db, $this->menu_array, $this->menu_array_after, $this->tabMenu, $submenu, 1, $tmpmainmenu, $tmpleftmenu);       // Fill $submenu (example with tmpmainmenu='home' tmpleftmenu='all', return left menu tree of Home)
 	        		// Note: $submenu contains menu entry with substitution not yet done
         		    //if ($tmpmainmenu.'-'.$tmpleftmenu == 'home-all') { var_dump($submenu); exit; }
-                    //if ($tmpmainmenu=='accountancy') { var_dump($submenu->liste); exit; }
+                    //if ($tmpmainmenu=='accounting') { var_dump($submenu->liste); exit; }
 	        		$nexturl=dol_buildpath($submenu->liste[0]['url'], 1);
 
         			$canonrelurl=preg_replace('/\?.*$/', '', $relurl);

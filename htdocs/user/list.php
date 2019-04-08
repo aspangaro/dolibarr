@@ -79,7 +79,7 @@ $fieldstosearchall = array(
 	'u.login'=>"Login",
 	'u.lastname'=>"Lastname",
 	'u.firstname'=>"Firstname",
-	'u.accountancy_code'=>"AccountancyCode",
+	'u.accounting_code'=>"AccountingCode",
 	'u.email'=>"EMail",
 	'u.note'=>"Note"
 );
@@ -91,7 +91,7 @@ $arrayfields=array(
 	'u.firstname'=>array('label'=>$langs->trans("Firstname"), 'checked'=>1),
 	'u.gender'=>array('label'=>$langs->trans("Gender"), 'checked'=>0),
 	'u.employee'=>array('label'=>$langs->trans("Employee"), 'checked'=>($mode=='employee'?1:0)),
-	'u.accountancy_code'=>array('label'=>$langs->trans("AccountancyCode"), 'checked'=>0),
+	'u.accounting_code'=>array('label'=>$langs->trans("AccountingCode"), 'checked'=>0),
 	'u.email'=>array('label'=>$langs->trans("EMail"), 'checked'=>1),
 	'u.fk_soc'=>array('label'=>$langs->trans("Company"), 'checked'=>1),
 	'u.entity'=>array('label'=>$langs->trans("Entity"), 'checked'=>1, 'enabled'=>(! empty($conf->multicompany->enabled) && empty($conf->global->MULTICOMPANY_TRANSVERSE_MODE))),
@@ -119,7 +119,7 @@ $search_lastname=GETPOST('search_lastname', 'alpha');
 $search_firstname=GETPOST('search_firstname', 'alpha');
 $search_gender=GETPOST('search_gender', 'alpha');
 $search_employee=GETPOST('search_employee', 'alpha');
-$search_accountancy_code=GETPOST('search_accountancy_code', 'alpha');
+$search_accounting_code=GETPOST('search_accounting_code', 'alpha');
 $search_email=GETPOST('search_email', 'alpha');
 $search_statut=GETPOST('search_statut', 'intcomma');
 $search_thirdparty=GETPOST('search_thirdparty', 'alpha');
@@ -160,7 +160,7 @@ if (empty($reshook))
 		$search_firstname="";
 		$search_gender="";
 		$search_employee="";
-		$search_accountancy_code="";
+		$search_accounting_code="";
 		$search_email="";
 		$search_statut="";
 		$search_thirdparty="";
@@ -185,7 +185,7 @@ $user2=new User($db);
 
 $buttonviewhierarchy='<form action="'.DOL_URL_ROOT.'/user/hierarchy.php'.(($search_statut != '' && $search_statut >= 0) ? '?search_statut='.$search_statut : '').'" method="POST"><input type="submit" class="button" style="width:120px" name="viewcal" value="'.dol_escape_htmltag($langs->trans("HierarchicView")).'"></form>';
 
-$sql = "SELECT DISTINCT u.rowid, u.lastname, u.firstname, u.admin, u.fk_soc, u.login, u.email, u.accountancy_code, u.gender, u.employee, u.photo,";
+$sql = "SELECT DISTINCT u.rowid, u.lastname, u.firstname, u.admin, u.fk_soc, u.login, u.email, u.accounting_code, u.gender, u.employee, u.photo,";
 $sql.= " u.datelastlogin, u.datepreviouslogin,";
 $sql.= " u.ldap_sid, u.statut, u.entity,";
 $sql.= " u.tms as date_update, u.datec as date_creation,";
@@ -221,7 +221,7 @@ if ($search_gender != '' && $search_gender != '-1')     $sql.= " AND u.gender = 
 if (is_numeric($search_employee) && $search_employee >= 0)    {
 	$sql .= ' AND u.employee = '.(int) $search_employee;
 }
-if ($search_accountancy_code != '')  $sql.= natural_search("u.accountancy_code", $search_accountancy_code);
+if ($search_accounting_code != '')  $sql.= natural_search("u.accounting_code", $search_accounting_code);
 if ($search_email != '')             $sql.= natural_search("u.email", $search_email);
 if ($search_statut != '' && $search_statut >= 0) $sql.= " AND u.statut IN (".$db->escape($search_statut).")";
 if ($sall)                           $sql.= natural_search(array_keys($fieldstosearchall), $sall);
@@ -275,7 +275,7 @@ if ($search_lastname != '') $param.="&amp;search_lastname=".urlencode($search_la
 if ($search_firstname != '') $param.="&amp;search_firstname=".urlencode($search_firstname);
 if ($search_gender != '') $param.="&amp;search_gender=".urlencode($search_gender);
 if ($search_employee != '') $param.="&amp;search_employee=".urlencode($search_employee);
-if ($search_accountancy_code != '') $param.="&amp;search_accountancy_code=".urlencode($search_accountancy_code);
+if ($search_accounting_code != '') $param.="&amp;search_accounting_code=".urlencode($search_accounting_code);
 if ($search_email != '') $param.="&amp;search_email=".urlencode($search_email);
 if ($search_supervisor > 0) $param.="&amp;search_supervisor=".urlencode($search_supervisor);
 if ($search_statut != '') $param.="&amp;search_statut=".urlencode($search_statut);
@@ -383,9 +383,9 @@ if (! empty($arrayfields['u.employee']['checked']))
 	print $form->selectyesno('search_employee', $search_employee, 1, false, 1);
 	print '</td>';
 }
-if (! empty($arrayfields['u.accountancy_code']['checked']))
+if (! empty($arrayfields['u.accounting_code']['checked']))
 {
-	print '<td class="liste_titre"><input type="text" name="search_accountancy_code" size="4" value="'.$search_accountancy_code.'"></td>';
+	print '<td class="liste_titre"><input type="text" name="search_accounting_code" size="4" value="'.$search_accounting_code.'"></td>';
 }
 if (! empty($arrayfields['u.email']['checked']))
 {
@@ -454,7 +454,7 @@ if (! empty($arrayfields['u.lastname']['checked']))       print_liste_field_titr
 if (! empty($arrayfields['u.firstname']['checked']))      print_liste_field_titre("FirstName", $_SERVER['PHP_SELF'], "u.firstname", $param, "", "", $sortfield, $sortorder);
 if (! empty($arrayfields['u.gender']['checked']))         print_liste_field_titre("Gender", $_SERVER['PHP_SELF'], "u.gender", $param, "", "", $sortfield, $sortorder);
 if (! empty($arrayfields['u.employee']['checked']))       print_liste_field_titre("Employee", $_SERVER['PHP_SELF'], "u.employee", $param, "", "", $sortfield, $sortorder);
-if (! empty($arrayfields['u.accountancy_code']['checked'])) print_liste_field_titre("AccountancyCode", $_SERVER['PHP_SELF'], "u.accountancy_code", $param, "", "", $sortfield, $sortorder);
+if (! empty($arrayfields['u.accounting_code']['checked'])) print_liste_field_titre("AccountingCode", $_SERVER['PHP_SELF'], "u.accounting_code", $param, "", "", $sortfield, $sortorder);
 if (! empty($arrayfields['u.email']['checked']))          print_liste_field_titre("EMail", $_SERVER['PHP_SELF'], "u.email", $param, "", "", $sortfield, $sortorder);
 if (! empty($arrayfields['u.fk_soc']['checked']))         print_liste_field_titre("Company", $_SERVER['PHP_SELF'], "u.fk_soc", $param, "", "", $sortfield, $sortorder);
 if (! empty($arrayfields['u.entity']['checked']))         print_liste_field_titre("Entity", $_SERVER['PHP_SELF'], "u.entity", $param, "", "", $sortfield, $sortorder);
@@ -533,9 +533,9 @@ while ($i < min($num, $limit))
 	  print '<td>'.yn($obj->employee).'</td>';
 		if (! $i) $totalarray['nbfield']++;
 	}
-	if (! empty($arrayfields['u.accountancy_code']['checked']))
+	if (! empty($arrayfields['u.accounting_code']['checked']))
 	{
-	  print '<td>'.$obj->accountancy_code.'</td>';
+	  print '<td>'.$obj->accounting_code.'</td>';
 		if (! $i) $totalarray['nbfield']++;
 	}
 	if (! empty($arrayfields['u.email']['checked']))

@@ -286,7 +286,7 @@ class modFournisseur extends DolibarrModules
 			'f.total_ht'=>"TotalHT",'f.total_ttc'=>"TotalTTC",'f.total_tva'=>"TotalVAT",'f.paye'=>"InvoicePaid",'f.fk_statut'=>'InvoiceStatus','f.note_public'=>"InvoiceNote",
 			'fd.rowid'=>'LineId','fd.description'=>"LineDescription",'fd.tva_tx'=>"LineVATRate",'fd.qty'=>"LineQty",'fd.remise_percent'=>"Discount",'fd.total_ht'=>"LineTotalHT",
 			'fd.total_ttc'=>"LineTotalTTC",'fd.tva'=>"LineTotalVAT",'fd.product_type'=>'TypeOfLineServiceOrProduct','fd.fk_product'=>'ProductId',
-			'p.ref'=>'ProductRef','p.label'=>'ProductLabel','p.accountancy_code_buy'=>'ProductAccountancyBuyCode','project.rowid'=>'ProjectId',
+			'p.ref'=>'ProductRef','p.label'=>'ProductLabel','p.accounting_code_buy'=>'ProductAccountingBuyCode','project.rowid'=>'ProjectId',
 			'project.ref'=>'ProjectRef','project.title'=>'ProjectLabel'
 		);
 		//$this->export_TypeFields_array[$r]=array(
@@ -308,7 +308,7 @@ class modFournisseur extends DolibarrModules
 			'f.datec'=>"invoice",'f.datef'=>"invoice",'f.date_lim_reglement'=>'invoice','f.total_ht'=>"invoice",'f.total_ttc'=>"invoice",'f.total_tva'=>"invoice",'f.paye'=>"invoice",'f.fk_statut'=>'invoice',
 			'f.note_public'=>"invoice",'fd.rowid'=>'invoice_line','fd.description'=>"invoice_line",'fd.tva_tx'=>"invoice_line",'fd.qty'=>"invoice_line",'fd.remise_percent'=>"invoice_line",
 			'fd.total_ht'=>"invoice_line",'fd.total_ttc'=>"invoice_line",'fd.tva'=>"invoice_line",'fd.product_type'=>'invoice_line','fd.fk_product'=>'product',
-			'p.ref'=>'product','p.label'=>'product','p.accountancy_code_buy'=>'product','project.rowid'=>'project','project.ref'=>'project','project.title'=>'project'
+			'p.ref'=>'product','p.label'=>'product','p.accounting_code_buy'=>'product','project.rowid'=>'project','project.ref'=>'project','project.title'=>'project'
 		);
 		$this->export_dependencies_array[$r]=array('invoice_line'=>'fd.rowid','product'=>'fd.rowid'); // To add unique key if we ask a field of a child to avoid the DISTINCT to discard them
 		// Add extra fields object

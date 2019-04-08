@@ -28,8 +28,8 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/paymentvarious.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formaccounting.class.php';
-require_once DOL_DOCUMENT_ROOT.'/accountancy/class/accountingaccount.class.php';
-require_once DOL_DOCUMENT_ROOT.'/accountancy/class/accountingjournal.class.php';
+require_once DOL_DOCUMENT_ROOT.'/accounting/class/accountingaccount.class.php';
+require_once DOL_DOCUMENT_ROOT.'/accounting/class/accountingjournal.class.php';
 if (! empty($conf->projet->enabled))
 {
 	require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
@@ -37,7 +37,7 @@ if (! empty($conf->projet->enabled))
 }
 
 // Load translation files required by the page
-$langs->loadLangs(array("compta", "banks", "bills", "users", "accountancy"));
+$langs->loadLangs(array("compta", "banks", "bills", "users", "accounting"));
 
 // Get parameters
 $id			= GETPOST('id', 'int');
@@ -50,7 +50,7 @@ $label=GETPOST("label", "alpha");
 $sens=GETPOST("sens", "int");
 $amount=GETPOST("amount", "alpha");
 $paymenttype=GETPOST("paymenttype", "int");
-$accountancy_code=GETPOST("accountancy_code", "alpha");
+$accounting_code=GETPOST("accounting_code", "alpha");
 $subledger_account=GETPOST("subledger_account", "alpha");
 $projectid = (GETPOST('projectid', 'int') ? GETPOST('projectid', 'int') : GETPOST('fk_project', 'int'));
 
@@ -114,7 +114,7 @@ if (empty($reshook))
 		$object->num_payment=GETPOST("num_payment", 'alpha');
 		$object->fk_user_author=$user->id;
 
-		$object->accountancy_code=GETPOST("accountancy_code") > 0 ? GETPOST("accountancy_code", "alpha") : "";
+		$object->accounting_code=GETPOST("accounting_code") > 0 ? GETPOST("accounting_code", "alpha") : "";
         $object->subledger_account=GETPOST("subledger_account") > 0 ? GETPOST("subledger_account", "alpha") : "";
 
 		$object->sens=GETPOST('sens');
@@ -144,7 +144,7 @@ if (empty($reshook))
 			setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("BankAccount")), null, 'errors');
 			$error++;
 		}
-		if (! empty($conf->accounting->enabled) && ! $object->accountancy_code)
+		if (! empty($conf->accounting->enabled) && ! $object->accounting_code)
 		{
 			$langs->load('errors');
 			setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("AccountAccounting")), null, 'errors');
@@ -252,7 +252,7 @@ if ($action == 'create')
 	print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
 	print '<input type="hidden" name="action" value="add">';
 
-	print load_fiche_titre($langs->trans("NewVariousPayment"), '', 'title_accountancy.png');
+	print load_fiche_titre($langs->trans("NewVariousPayment"), '', 'title_accounting.png');
 
 	dol_fiche_head('', '');
 
@@ -314,18 +314,18 @@ if ($action == 'create')
 		print '<td><input name="num_payment" id="num_payment" type="text" value="'.GETPOST("num_payment").'"></td></tr>'."\n";
 	}
 
-	// Accountancy account
+	// Accounting account
 	if (! empty($conf->accounting->enabled))
 	{
 		print '<tr><td class="fieldrequired">'.$langs->trans("AccountAccounting").'</td>';
         print '<td>';
-		print $formaccounting->select_account($accountancy_code, 'accountancy_code', 1, null, 1, 1, '');
+		print $formaccounting->select_account($accounting_code, 'accounting_code', 1, null, 1, 1, '');
         print '</td></tr>';
 	}
 	else // For external software
 	{
 		print '<tr><td>'.$langs->trans("AccountAccounting").'</td>';
-		print '<td class="maxwidthonsmartphone"><input class="minwidth100" name="accountancy_code" value="'.$accountancy_code.'">';
+		print '<td class="maxwidthonsmartphone"><input class="minwidth100" name="accounting_code" value="'.$accounting_code.'">';
 		print '</td></tr>';
 	}
 
@@ -334,7 +334,7 @@ if ($action == 'create')
     {
         print '<tr><td>'.$langs->trans("SubledgerAccount").'</td>';
         print '<td>';
-        if (! empty($conf->global->ACCOUNTANCY_COMBO_FOR_AUX))
+        if (! empty($conf->global->ACCOUNTING_COMBO_FOR_AUX))
         {
             print $formaccounting->select_auxaccount($subledger_account, 'subledger_account', 1, '');
         }
@@ -458,18 +458,18 @@ if ($id)
 
 	print '<tr><td>'.$langs->trans("Amount").'</td><td>'.price($object->amount, 0, $outputlangs, 1, -1, -1, $conf->currency).'</td></tr>';
 
-	// Accountancy code
+	// Accounting code
 	print '<tr><td class="nowrap">';
 	print $langs->trans("AccountAccounting");
 	print '</td><td>';
 	if (! empty($conf->accounting->enabled))
 	{
 		$accountingaccount = new AccountingAccount($db);
-		$accountingaccount->fetch('', $object->accountancy_code, 1);
+		$accountingaccount->fetch('', $object->accounting_code, 1);
 
 		print $accountingaccount->getNomUrl(0, 1, 1, '', 1);
 	} else {
-		print $object->accountancy_code;
+		print $object->accounting_code;
 	}
 	print '</td></tr>';
 

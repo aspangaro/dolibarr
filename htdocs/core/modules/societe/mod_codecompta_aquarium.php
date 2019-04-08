@@ -21,15 +21,15 @@
 /**
  *	\file       htdocs/core/modules/societe/mod_codecompta_aquarium.php
  *	\ingroup    societe
- *	\brief      File of class to manage accountancy code of thirdparties with Panicum rules
+ *	\brief      File of class to manage accounting code of thirdparties with Panicum rules
  */
 require_once DOL_DOCUMENT_ROOT.'/core/modules/societe/modules_societe.class.php';
 
 
 /**
- *	Class to manage accountancy code of thirdparties with Aquarium rules
+ *	Class to manage accounting code of thirdparties with Aquarium rules
  */
-class mod_codecompta_aquarium extends ModeleAccountancyCode
+class mod_codecompta_aquarium extends ModeleAccountingCode
 {
 	/**
 	 * @var string Nom du modele
@@ -49,9 +49,9 @@ class mod_codecompta_aquarium extends ModeleAccountancyCode
      */
 	public $version = 'dolibarr';        // 'development', 'experimental', 'dolibarr'
 
-	public	$prefixcustomeraccountancycode;
+	public	$prefixcustomeraccountingcode;
 
-	public	$prefixsupplieraccountancycode;
+	public	$prefixsupplieraccountingcode;
 
 
 	/**
@@ -62,8 +62,8 @@ class mod_codecompta_aquarium extends ModeleAccountancyCode
 	    global $conf;
 		if (! isset($conf->global->COMPANY_AQUARIUM_MASK_CUSTOMER) || trim($conf->global->COMPANY_AQUARIUM_MASK_CUSTOMER) == '') $conf->global->COMPANY_AQUARIUM_MASK_CUSTOMER='411';
         if (! isset($conf->global->COMPANY_AQUARIUM_MASK_SUPPLIER) || trim($conf->global->COMPANY_AQUARIUM_MASK_SUPPLIER) == '') $conf->global->COMPANY_AQUARIUM_MASK_SUPPLIER='401';
-		$this->prefixcustomeraccountancycode=$conf->global->COMPANY_AQUARIUM_MASK_CUSTOMER;
-	    $this->prefixsupplieraccountancycode=$conf->global->COMPANY_AQUARIUM_MASK_SUPPLIER;
+		$this->prefixcustomeraccountingcode=$conf->global->COMPANY_AQUARIUM_MASK_CUSTOMER;
+	    $this->prefixsupplieraccountingcode=$conf->global->COMPANY_AQUARIUM_MASK_SUPPLIER;
 	}
 
 
@@ -115,16 +115,16 @@ class mod_codecompta_aquarium extends ModeleAccountancyCode
 	public function getExample($langs, $objsoc = 0, $type = -1)
 	{
 		$s='';
-		$s.=$this->prefixcustomeraccountancycode.'CUSTCODE';
+		$s.=$this->prefixcustomeraccountingcode.'CUSTCODE';
 	    $s.="<br>\n";
-	    $s.=$this->prefixsupplieraccountancycode.'SUPPCODE';
+	    $s.=$this->prefixsupplieraccountingcode.'SUPPCODE';
 	    return $s;
 	}
 
 
     // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
 	/**
-	 *  Set accountancy account code for a third party into this->code
+	 *  Set accounting account code for a third party into this->code
 	 *
 	 *  @param	DoliDB		$db             Database handler
 	 *  @param  Societe		$societe        Third party object
@@ -145,12 +145,12 @@ class mod_codecompta_aquarium extends ModeleAccountancyCode
 		if ($type == 'customer')
 		{
 			$codetouse=(! empty($societe->code_client)?$societe->code_client:'CUSTCODE');
-			$prefix = $this->prefixcustomeraccountancycode;
+			$prefix = $this->prefixcustomeraccountingcode;
 		}
 		elseif ($type == 'supplier')
 		{
 			$codetouse=(! empty($societe->code_fournisseur)?$societe->code_fournisseur:'SUPPCODE');
-			$prefix = $this->prefixsupplieraccountancycode;
+			$prefix = $this->prefixsupplieraccountingcode;
 		}
 		else
 		{

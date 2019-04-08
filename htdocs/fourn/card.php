@@ -80,10 +80,10 @@ if (empty($reshook))
 		$action = "";
 	}
 
-	if ($action == 'setsupplieraccountancycode')
+	if ($action == 'setsupplieraccountingcode')
 	{
 		$result=$object->fetch($id);
-   		$object->code_compta_fournisseur=$_POST["supplieraccountancycode"];
+   		$object->code_compta_fournisseur=$_POST["supplieraccountingcode"];
 	    $result=$object->update($object->id, $user, 1, 0, 1);
 	    if ($result < 0)
 	    {
@@ -190,9 +190,9 @@ if ($object->id > 0)
 		$langs->load('compta');
         print '<tr>';
         print '<td>';
-        print $form->editfieldkey("SupplierAccountancyCode", 'supplieraccountancycode', $object->code_compta_fournisseur, $object, $user->rights->societe->creer);
+        print $form->editfieldkey("SupplierAccountingCode", 'supplieraccountingcode', $object->code_compta_fournisseur, $object, $user->rights->societe->creer);
         print '</td><td>';
-        print $form->editfieldval("SupplierAccountancyCode", 'supplieraccountancycode', $object->code_compta_fournisseur, $object, $user->rights->societe->creer);
+        print $form->editfieldval("SupplierAccountingCode", 'supplieraccountingcode', $object->code_compta_fournisseur, $object, $user->rights->societe->creer);
         print '</td>';
         print '</tr>';
 	}

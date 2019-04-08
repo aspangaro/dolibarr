@@ -28,7 +28,7 @@ require_once DOL_DOCUMENT_ROOT.'/asset/class/asset_type.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT.'/core/lib/accounting.lib.php';
 if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT.'/core/class/html.formaccounting.class.php';
-if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT.'/accountancy/class/accountingaccount.class.php';
+if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT.'/accounting/class/accountingaccount.class.php';
 
 // Load translation files required by the page
 $langs->load("assets");
@@ -52,9 +52,9 @@ if (! $sortorder) {  $sortorder="DESC"; }
 if (! $sortfield) {  $sortfield="a.label"; }
 
 $label=GETPOST("label", "alpha");
-$accountancy_code_asset=GETPOST('accountancy_code_asset', 'string');
-$accountancy_code_depreciation_asset=GETPOST('accountancy_code_depreciation_asset', 'string');
-$accountancy_code_depreciation_expense=GETPOST('accountancy_code_depreciation_expense', 'string');
+$accounting_code_asset=GETPOST('accounting_code_asset', 'string');
+$accounting_code_depreciation_asset=GETPOST('accounting_code_depreciation_asset', 'string');
+$accounting_code_depreciation_expense=GETPOST('accounting_code_depreciation_expense', 'string');
 $comment=GETPOST('comment', 'string');
 
 // Security check
@@ -96,9 +96,9 @@ if ($cancel) {
 if ($action == 'add' && $user->rights->asset->write)
 {
 	$object->label									= trim($label);
-	$object->accountancy_code_asset					= trim($accountancy_code_asset);
-	$object->accountancy_code_depreciation_asset	= trim($accountancy_code_depreciation_asset);
-	$object->accountancy_code_depreciation_expense	= trim($accountancy_code_depreciation_expense);
+	$object->accounting_code_asset					= trim($accounting_code_asset);
+	$object->accounting_code_depreciation_asset	    = trim($accounting_code_depreciation_asset);
+	$object->accounting_code_depreciation_expense	= trim($accounting_code_depreciation_expense);
 	$object->note									= trim($comment);
 
 	// Fill array 'array_options' with data from add form
@@ -149,9 +149,9 @@ if ($action == 'update' && $user->rights->asset->write)
 	$object->oldcopy = clone $object;
 
 	$object->label									= trim($label);
-	$object->accountancy_code_asset					= trim($accountancy_code_asset);
-	$object->accountancy_code_depreciation_asset	= trim($accountancy_code_depreciation_asset);
-	$object->accountancy_code_depreciation_expense	= trim($accountancy_code_depreciation_expense);
+	$object->accounting_code_asset					= trim($accounting_code_asset);
+	$object->accounting_code_depreciation_asset	    = trim($accounting_code_depreciation_asset);
+	$object->accounting_code_depreciation_expense	= trim($accounting_code_depreciation_expense);
 	$object->note									= trim($comment);
 
 	// Fill array 'array_options' with data from add form
@@ -206,7 +206,7 @@ if (! $rowid && $action != 'create' && $action != 'edit')
 {
 	//dol_fiche_head('');
 
-	$sql = "SELECT d.rowid, d.label as label, d.accountancy_code_asset, d.accountancy_code_depreciation_asset, d.accountancy_code_depreciation_expense, d.note";
+	$sql = "SELECT d.rowid, d.label as label, d.accounting_code_asset, d.accounting_code_depreciation_asset, d.accounting_code_depreciation_expense, d.note";
 	$sql.= " FROM ".MAIN_DB_PREFIX."asset_type as d";
 	$sql.= " WHERE d.entity IN (".getEntity('asset_type').")";
 
@@ -239,9 +239,9 @@ if (! $rowid && $action != 'create' && $action != 'edit')
 		print '<tr class="liste_titre">';
 		print '<th>'.$langs->trans("Ref").'</th>';
 		print '<th>'.$langs->trans("Label").'</th>';
-		print '<th align="center">'.$langs->trans("AccountancyCodeAsset").'</th>';
-		print '<th align="center">'.$langs->trans("AccountancyCodeDepreciationAsset").'</th>';
-		print '<th align="center">'.$langs->trans("AccountancyCodeDepreciationExpense").'</th>';
+		print '<th align="center">'.$langs->trans("AccountingCodeAsset").'</th>';
+		print '<th align="center">'.$langs->trans("AccountingCodeDepreciationAsset").'</th>';
+		print '<th align="center">'.$langs->trans("AccountingCodeDepreciationExpense").'</th>';
 		print '<th>&nbsp;</th>';
 		print "</tr>\n";
 
@@ -266,11 +266,11 @@ if (! $rowid && $action != 'create' && $action != 'edit')
 			if (! empty($conf->accounting->enabled))
 			{
 				$accountingaccount = new AccountingAccount($db);
-				$accountingaccount->fetch('', $objp->accountancy_code_asset, 1);
+				$accountingaccount->fetch('', $objp->accounting_code_asset, 1);
 
 				print $accountingaccount->getNomUrl(0, 0, 0, '', 0);
 			} else {
-				print $objp->accountancy_code_asset;
+				print $objp->accounting_code_asset;
 			}
 			print '</td>';
 
@@ -278,11 +278,11 @@ if (! $rowid && $action != 'create' && $action != 'edit')
 			if (! empty($conf->accounting->enabled))
 			{
 				$accountingaccount2 = new AccountingAccount($db);
-				$accountingaccount2->fetch('', $objp->accountancy_code_depreciation_asset, 1);
+				$accountingaccount2->fetch('', $objp->accounting_code_depreciation_asset, 1);
 
 				print $accountingaccount2->getNomUrl(0, 0, 0, '', 0);
 			} else {
-				print $objp->accountancy_code_depreciation_asset;
+				print $objp->accounting_code_depreciation_asset;
 			}
 			print '</td>';
 
@@ -290,11 +290,11 @@ if (! $rowid && $action != 'create' && $action != 'edit')
 			if (! empty($conf->accounting->enabled))
 			{
 				$accountingaccount3 = new AccountingAccount($db);
-				$accountingaccount3->fetch('', $objp->accountancy_code_depreciation_expense, 1);
+				$accountingaccount3->fetch('', $objp->accounting_code_depreciation_expense, 1);
 
 				print $accountingaccount3->getNomUrl(0, 0, 0, '', 0);
 			} else {
-				print $objp->accountancy_code_depreciation_expense;
+				print $objp->accounting_code_depreciation_expense;
 			}
 			print '</td>';
 
@@ -342,39 +342,39 @@ if ($action == 'create')
 
 	if (! empty($conf->accounting->enabled))
 	{
-		// Accountancy_code_asset
-		print '<tr><td class="titlefield">'.$langs->trans("AccountancyCodeAsset").'</td>';
+		// Accounting_code_asset
+		print '<tr><td class="titlefield">'.$langs->trans("AccountingCodeAsset").'</td>';
 		print '<td>';
-		print $formaccounting->select_account($object->accountancy_code_asset, 'accountancy_code_asset', 1, '', 1, 1);
+		print $formaccounting->select_account($object->accounting_code_asset, 'accounting_code_asset', 1, '', 1, 1);
 		print '</td></tr>';
 
-		// Accountancy_code_depreciation_expense
-		print '<tr><td class="titlefield">'.$langs->trans("AccountancyCodeDepreciationAsset").'</td>';
+		// Accounting_code_depreciation_expense
+		print '<tr><td class="titlefield">'.$langs->trans("AccountingCodeDepreciationAsset").'</td>';
 		print '<td>';
-		print $formaccounting->select_account($object->accountancy_code_depreciation_asset, 'accountancy_code_depreciation_asset', 1, '', 1, 1);
+		print $formaccounting->select_account($object->accounting_code_depreciation_asset, 'accounting_code_depreciation_asset', 1, '', 1, 1);
 		print '</td></tr>';
 
-		// Accountancy_code_depreciation_expense
-		print '<tr><td class="titlefield">'.$langs->trans("AccountancyCodeDepreciationExpense").'</td>';
+		// Accounting_code_depreciation_expense
+		print '<tr><td class="titlefield">'.$langs->trans("AccountingCodeDepreciationExpense").'</td>';
 		print '<td>';
-		print $formaccounting->select_account($object->accountancy_code_depreciation_expense, 'accountancy_code_depreciation_expense', 1, '', 1, 1);
+		print $formaccounting->select_account($object->accounting_code_depreciation_expense, 'accounting_code_depreciation_expense', 1, '', 1, 1);
 		print '</td></tr>';
 	}
 	else // For external software
 	{
-		// Accountancy_code_asset
-		print '<tr><td class="titlefield">'.$langs->trans("AccountancyCodeAsset").'</td>';
-		print '<td><input name="accountancy_code_asset" class="maxwidth200" value="'.$object->accountancy_code_asset.'">';
+		// Accounting_code_asset
+		print '<tr><td class="titlefield">'.$langs->trans("AccountingCodeAsset").'</td>';
+		print '<td><input name="accounting_code_asset" class="maxwidth200" value="'.$object->accounting_code_asset.'">';
 		print '</td></tr>';
 
-		// Accountancy_code_depreciation_asset
-		print '<tr><td class="titlefield">'.$langs->trans("AccountancyCodeDepreciationAsset").'</td>';
-		print '<td><input name="accountancy_code_depreciation_asset" class="maxwidth200" value="'.$object->accountancy_code_depreciation_asset.'">';
+		// Accounting_code_depreciation_asset
+		print '<tr><td class="titlefield">'.$langs->trans("AccountingCodeDepreciationAsset").'</td>';
+		print '<td><input name="accounting_code_depreciation_asset" class="maxwidth200" value="'.$object->accounting_code_depreciation_asset.'">';
 		print '</td></tr>';
 
-		// Accountancy_code_depreciation_expense
-		print '<tr><td class="titlefield">'.$langs->trans("AccountancyCodeDepreciationExpense").'</td>';
-		print '<td><input name="accountancy_code_depreciation_expense" class="maxwidth200" value="'.$object->accountancy_code_depreciation_expense.'">';
+		// Accounting_code_depreciation_expense
+		print '<tr><td class="titlefield">'.$langs->trans("AccountingCodeDepreciationExpense").'</td>';
+		print '<td><input name="accounting_code_depreciation_expense" class="maxwidth200" value="'.$object->accounting_code_depreciation_expense.'">';
 		print '</td></tr>';
 	}
 
@@ -445,48 +445,48 @@ if ($rowid > 0)
 
 		print '<tr>';
 		print '<td class="nowrap">';
-		print $langs->trans("AccountancyCodeAsset");
+		print $langs->trans("AccountingCodeAsset");
 		print '</td><td>';
 		if (! empty($conf->accounting->enabled))
 		{
 			$accountingaccount = new AccountingAccount($db);
-			$accountingaccount->fetch('', $object->accountancy_code_asset, 1);
+			$accountingaccount->fetch('', $object->accounting_code_asset, 1);
 
 			print $accountingaccount->getNomUrl(0, 1, 1, '', 1);
 		} else {
-			print $object->accountancy_code_asset;
+			print $object->accounting_code_asset;
 		}
 		print '</td>';
 		print '</tr>';
 
 		print '<tr>';
 		print '<td class="nowrap">';
-		print $langs->trans("AccountancyCodeDepreciationAsset");
+		print $langs->trans("AccountingCodeDepreciationAsset");
 		print '</td><td>';
 		if (! empty($conf->accounting->enabled))
 		{
 			$accountingaccount2 = new AccountingAccount($db);
-			$accountingaccount2->fetch('', $object->accountancy_code_depreciation_asset, 1);
+			$accountingaccount2->fetch('', $object->accounting_code_depreciation_asset, 1);
 
 			print $accountingaccount2->getNomUrl(0, 1, 1, '', 1);
 		} else {
-			print $object->accountancy_code_depreciation_asset;
+			print $object->accounting_code_depreciation_asset;
 		}
 		print '</td>';
 		print '</tr>';
 
 		print '<tr>';
 		print '<td class="nowrap">';
-		print $langs->trans("AccountancyCodeDepreciationExpense");
+		print $langs->trans("AccountingCodeDepreciationExpense");
 		print '</td><td>';
 		if (! empty($conf->accounting->enabled))
 		{
 			$accountingaccount3 = new AccountingAccount($db);
-			$accountingaccount3->fetch('', $object->accountancy_code_depreciation_expense, 1);
+			$accountingaccount3->fetch('', $object->accounting_code_depreciation_expense, 1);
 
 			print $accountingaccount3->getNomUrl(0, 1, 1, '', 1);
 		} else {
-			print $object->accountancy_code_depreciation_expense;
+			print $object->accounting_code_depreciation_expense;
 		}
 		print '</td>';
 		print '</tr>';
@@ -553,39 +553,39 @@ if ($rowid > 0)
 
 		if (! empty($conf->accounting->enabled))
 		{
-			// Accountancy_code_asset
-			print '<tr><td class="titlefield">'.$langs->trans("AccountancyCodeAsset").'</td>';
+			// Accounting_code_asset
+			print '<tr><td class="titlefield">'.$langs->trans("AccountingCodeAsset").'</td>';
 			print '<td>';
-			print $formaccounting->select_account($object->accountancy_code_asset, 'accountancy_code_asset', 1, '', 1, 1);
+			print $formaccounting->select_account($object->accounting_code_asset, 'accounting_code_asset', 1, '', 1, 1);
 			print '</td></tr>';
 
-			// Accountancy_code_depreciation_expense
-			print '<tr><td class="titlefield">'.$langs->trans("AccountancyCodeDepreciationAsset").'</td>';
+			// Accounting_code_depreciation_expense
+			print '<tr><td class="titlefield">'.$langs->trans("AccountingCodeDepreciationAsset").'</td>';
 			print '<td>';
-			print $formaccounting->select_account($object->accountancy_code_depreciation_asset, 'accountancy_code_depreciation_asset', 1, '', 1, 1);
+			print $formaccounting->select_account($object->accounting_code_depreciation_asset, 'accounting_code_depreciation_asset', 1, '', 1, 1);
 			print '</td></tr>';
 
-			// Accountancy_code_depreciation_expense
-			print '<tr><td class="titlefield">'.$langs->trans("AccountancyCodeDepreciationExpense").'</td>';
+			// Accounting_code_depreciation_expense
+			print '<tr><td class="titlefield">'.$langs->trans("AccountingCodeDepreciationExpense").'</td>';
 			print '<td>';
-			print $formaccounting->select_account($object->accountancy_code_depreciation_expense, 'accountancy_code_depreciation_expense', 1, '', 1, 1);
+			print $formaccounting->select_account($object->accounting_code_depreciation_expense, 'accounting_code_depreciation_expense', 1, '', 1, 1);
 			print '</td></tr>';
 		}
 		else // For external software
 		{
-			// Accountancy_code_asset
-			print '<tr><td class="titlefield">'.$langs->trans("AccountancyCodeAsset").'</td>';
-			print '<td><input name="accountancy_code_asset" class="maxwidth200" value="'.$object->accountancy_code_asset.'">';
+			// Accounting_code_asset
+			print '<tr><td class="titlefield">'.$langs->trans("AccountingCodeAsset").'</td>';
+			print '<td><input name="accounting_code_asset" class="maxwidth200" value="'.$object->accounting_code_asset.'">';
 			print '</td></tr>';
 
-			// Accountancy_code_depreciation_asset
-			print '<tr><td class="titlefield">'.$langs->trans("AccountancyCodeDepreciationAsset").'</td>';
-			print '<td><input name="accountancy_code_depreciation_asset" class="maxwidth200" value="'.$object->accountancy_code_depreciation_asset.'">';
+			// Accounting_code_depreciation_asset
+			print '<tr><td class="titlefield">'.$langs->trans("AccountingCodeDepreciationAsset").'</td>';
+			print '<td><input name="accounting_code_depreciation_asset" class="maxwidth200" value="'.$object->accounting_code_depreciation_asset.'">';
 			print '</td></tr>';
 
-			// Accountancy_code_depreciation_expense
-			print '<tr><td class="titlefield">'.$langs->trans("AccountancyCodeDepreciationExpense").'</td>';
-			print '<td><input name="accountancy_code_depreciation_expense" class="maxwidth200" value="'.$object->accountancy_code_depreciation_expense.'">';
+			// Accounting_code_depreciation_expense
+			print '<tr><td class="titlefield">'.$langs->trans("AccountingCodeDepreciationExpense").'</td>';
+			print '<td><input name="accounting_code_depreciation_expense" class="maxwidth200" value="'.$object->accounting_code_depreciation_expense.'">';
 			print '</td></tr>';
 		}
 

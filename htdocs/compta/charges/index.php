@@ -95,11 +95,11 @@ print '<input type="hidden" name="mode" value="'.$mode.'">';
 if ($mode != 'sconly')
 {
     $center=($year?'<a href="index.php?year='.($year-1).$param.'">'.img_previous($langs->trans("Previous"), 'class="valignbottom"')."</a> ".$langs->trans("Year").' '.$year.' <a href="index.php?year='.($year+1).$param.'">'.img_next($langs->trans("Next"), 'class="valignbottom"')."</a>":"");
-    print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $center, $num, $totalnboflines, 'title_accountancy', 0, '', '', $limit, 1);
+    print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $center, $num, $totalnboflines, 'title_accounting', 0, '', '', $limit, 1);
 }
 else
 {
-    print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $center, $num, $totalnboflines, 'title_accountancy', 0, '', '', $limit);
+    print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $center, $num, $totalnboflines, 'title_accounting', 0, '', '', $limit);
 }
 
 if ($year) $param.='&year='.$year;
@@ -135,7 +135,7 @@ if (! empty($conf->tax->enabled) && $user->rights->tax->charges->lire)
 	$sql.= " cs.rowid, cs.libelle, cs.fk_type as type, cs.periode, cs.date_ech, cs.amount as total,";
 	$sql.= " pc.rowid as pid, pc.datep, pc.amount as totalpaye, pc.num_paiement as num_payment, pc.fk_bank,";
 	$sql.= " pct.code as payment_code,";
-	$sql.= " ba.rowid as bid, ba.ref as bref, ba.number as bnumber, ba.account_number, ba.fk_accountancy_journal, ba.label as blabel";
+	$sql.= " ba.rowid as bid, ba.ref as bref, ba.number as bnumber, ba.account_number, ba.fk_accounting_journal, ba.label as blabel";
 	$sql.= " FROM ".MAIN_DB_PREFIX."c_chargesociales as c,";
 	$sql.= " ".MAIN_DB_PREFIX."chargesociales as cs";
 	$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiementcharge as pc ON pc.fk_charge = cs.rowid";
@@ -206,8 +206,8 @@ if (! empty($conf->tax->enabled) && $user->rights->tax->charges->lire)
 		            $accountstatic->id=$obj->bid;
 		            $accountstatic->ref=$obj->bref;
 		            $accountstatic->number=$obj->bnumber;
-		            $accountstatic->accountancy_number=$obj->account_number;
-		            $accountstatic->accountancy_journal=$obj->accountancy_journal;
+		            $accountstatic->accounting_number=$obj->account_number;
+		            $accountstatic->accounting_journal=$obj->accounting_journal;
 		            $accountstatic->label=$obj->blabel;
 		            print $accountstatic->getNomUrl(1);
 		        }
@@ -254,7 +254,7 @@ if (! empty($conf->tax->enabled) && $user->rights->tax->charges->lire)
 
 		$sql = "SELECT pv.rowid, pv.amount, pv.label, pv.datev as dm, pv.fk_bank,";
 		$sql.= " pct.code as payment_code,";
-		$sql.= " ba.rowid as bid, ba.ref as bref, ba.number as bnumber, ba.account_number, ba.fk_accountancy_journal, ba.label as blabel";
+		$sql.= " ba.rowid as bid, ba.ref as bref, ba.number as bnumber, ba.account_number, ba.fk_accounting_journal, ba.label as blabel";
 		$sql.= " FROM ".MAIN_DB_PREFIX."tva as pv";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank as b ON pv.fk_bank = b.rowid";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account as ba ON b.fk_account = ba.rowid";
@@ -323,8 +323,8 @@ if (! empty($conf->tax->enabled) && $user->rights->tax->charges->lire)
 			            $accountstatic->id=$obj->bid;
 			            $accountstatic->ref=$obj->bref;
 			            $accountstatic->number=$obj->bnumber;
-			            $accountstatic->accountancy_number=$obj->account_number;
-			            $accountstatic->accountancy_journal=$obj->accountancy_journal;
+			            $accountstatic->accounting_number=$obj->account_number;
+			            $accountstatic->accounting_journal=$obj->accounting_journal;
 			            $accountstatic->label=$obj->blabel;
 			            print $accountstatic->getNomUrl(1);
 			        }
@@ -467,7 +467,7 @@ if (! empty($conf->salaries->enabled) && ! empty($user->rights->salaries->read))
 
         $sql = "SELECT s.rowid, s.amount, s.label, s.datep as datep, s.datev as datev, s.datesp, s.dateep, s.salary, s.fk_bank, u.salary as current_salary,";
 		$sql.= " pct.code as payment_code,";
-		$sql.= " ba.rowid as bid, ba.ref as bref, ba.number as bnumber, ba.account_number, ba.fk_accountancy_journal, ba.label as blabel";
+		$sql.= " ba.rowid as bid, ba.ref as bref, ba.number as bnumber, ba.account_number, ba.fk_accounting_journal, ba.label as blabel";
         $sql.= " FROM ".MAIN_DB_PREFIX."payment_salary as s";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank as b ON s.fk_bank = b.rowid";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account as ba ON b.fk_account = ba.rowid";
@@ -535,8 +535,8 @@ if (! empty($conf->salaries->enabled) && ! empty($user->rights->salaries->read))
 			            $accountstatic->id=$obj->bid;
 			            $accountstatic->ref=$obj->bref;
 			            $accountstatic->number=$obj->bnumber;
-			            $accountstatic->accountancy_number=$obj->account_number;
-			            $accountstatic->accountancy_journal=$obj->accountancy_journal;
+			            $accountstatic->accounting_number=$obj->account_number;
+			            $accountstatic->accounting_journal=$obj->accounting_journal;
 			            $accountstatic->label=$obj->blabel;
 			            print $accountstatic->getNomUrl(1);
 			        }

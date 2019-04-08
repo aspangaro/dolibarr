@@ -156,7 +156,7 @@ done >>%{name}.lang
 %_datadir/dolibarr/build/tgz/*
 
 %dir %_datadir/dolibarr/htdocs
-%_datadir/dolibarr/htdocs/accountancy
+%_datadir/dolibarr/htdocs/accounting
 %_datadir/dolibarr/htdocs/adherents
 %_datadir/dolibarr/htdocs/admin
 %_datadir/dolibarr/htdocs/api

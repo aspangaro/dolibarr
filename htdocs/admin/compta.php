@@ -23,14 +23,14 @@
 /**
  *	\file       htdocs/admin/compta.php
  *	\ingroup    compta
- *	\brief      Page to setup accountancy module
+ *	\brief      Page to setup accounting module
  */
 
 require '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 
 // Load translation files required by the page
-$langs->loadLangs(array('admin', 'compta', 'accountancy'));
+$langs->loadLangs(array('admin', 'compta', 'accounting'));
 
 if (!$user->admin)
 accessforbidden();

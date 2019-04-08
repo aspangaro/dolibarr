@@ -20,15 +20,15 @@
 /**
  *      \file       htdocs/core/modules/societe/mod_codecompta_panicum.php
  *      \ingroup    societe
- *      \brief      File of class to manage accountancy code of thirdparties with Panicum rules
+ *      \brief      File of class to manage accounting code of thirdparties with Panicum rules
  */
 require_once DOL_DOCUMENT_ROOT.'/core/modules/societe/modules_societe.class.php';
 
 
 /**
- *		Class to manage accountancy code of thirdparties with Panicum rules
+ *		Class to manage accounting code of thirdparties with Panicum rules
  */
-class mod_codecompta_panicum extends ModeleAccountancyCode
+class mod_codecompta_panicum extends ModeleAccountingCode
 {
 	/**
 	 * @var string Nom du modele
@@ -83,7 +83,7 @@ class mod_codecompta_panicum extends ModeleAccountancyCode
 
     // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
 	/**
-	 *  Set accountancy account code for a third party into this->code
+	 *  Set accounting account code for a third party into this->code
 	 *
 	 *  @param	DoliDB	$db              Database handler
 	 *  @param  Societe	$societe         Third party object

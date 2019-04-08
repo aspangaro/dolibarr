@@ -44,7 +44,7 @@ class Cpaiement
 	public $libelle;
 	public $type;
 	public $active;
-	public $accountancy_code;
+	public $accounting_code;
 	public $module;
 
 
@@ -86,8 +86,8 @@ class Cpaiement
 		if (isset($this->active)) {
 			 $this->active = trim($this->active);
 		}
-		if (isset($this->accountancy_code)) {
-			 $this->accountancy_code = trim($this->accountancy_code);
+		if (isset($this->accounting_code)) {
+			 $this->accounting_code = trim($this->accounting_code);
 		}
 		if (isset($this->module)) {
 			 $this->module = trim($this->module);
@@ -106,7 +106,7 @@ class Cpaiement
 		$sql.= 'libelle,';
 		$sql.= 'type,';
 		$sql.= 'active,';
-		$sql.= 'accountancy_code,';
+		$sql.= 'accounting_code,';
 		$sql.= 'module';
 
 
@@ -117,7 +117,7 @@ class Cpaiement
 		$sql .= ' '.(! isset($this->libelle)?'NULL':"'".$this->db->escape($this->libelle)."'").',';
 		$sql .= ' '.(! isset($this->type)?'NULL':$this->type).',';
 		$sql .= ' '.(! isset($this->active)?'NULL':$this->active).',';
-		$sql .= ' '.(! isset($this->accountancy_code)?'NULL':"'".$this->db->escape($this->accountancy_code)."'").',';
+		$sql .= ' '.(! isset($this->accounting_code)?'NULL':"'".$this->db->escape($this->accounting_code)."'").',';
 		$sql .= ' '.(! isset($this->module)?'NULL':"'".$this->db->escape($this->module)."'");
 
 
@@ -176,7 +176,7 @@ class Cpaiement
 		$sql .= " t.libelle,";
 		$sql .= " t.type,";
 		$sql .= " t.active,";
-		$sql .= " t.accountancy_code,";
+		$sql .= " t.accounting_code,";
 		$sql .= " t.module";
 		$sql .= ' FROM ' . MAIN_DB_PREFIX . $this->table_element . ' as t';
 		if (null !== $ref) {
@@ -198,7 +198,7 @@ class Cpaiement
 				$this->libelle = $obj->libelle;
 				$this->type = $obj->type;
 				$this->active = $obj->active;
-				$this->accountancy_code = $obj->accountancy_code;
+				$this->accounting_code = $obj->accounting_code;
 				$this->module = $obj->module;
 			}
 			$this->db->free($resql);
@@ -244,8 +244,8 @@ class Cpaiement
 		if (isset($this->active)) {
 			 $this->active = trim($this->active);
 		}
-		if (isset($this->accountancy_code)) {
-			 $this->accountancy_code = trim($this->accountancy_code);
+		if (isset($this->accounting_code)) {
+			 $this->accounting_code = trim($this->accounting_code);
 		}
 		if (isset($this->module)) {
 			 $this->module = trim($this->module);
@@ -263,7 +263,7 @@ class Cpaiement
 		$sql .= ' libelle = '.(isset($this->libelle)?"'".$this->db->escape($this->libelle)."'":"null").',';
 		$sql .= ' type = '.(isset($this->type)?$this->type:"null").',';
 		$sql .= ' active = '.(isset($this->active)?$this->active:"null").',';
-		$sql .= ' accountancy_code = '.(isset($this->accountancy_code)?"'".$this->db->escape($this->accountancy_code)."'":"null").',';
+		$sql .= ' accounting_code = '.(isset($this->accounting_code)?"'".$this->db->escape($this->accounting_code)."'":"null").',';
 		$sql .= ' module = '.(isset($this->module)?"'".$this->db->escape($this->module)."'":"null");
 		$sql .= ' WHERE id=' . $this->id;
 
@@ -363,7 +363,7 @@ class Cpaiement
 		$this->libelle = '';
 		$this->type = '';
 		$this->active = '';
-		$this->accountancy_code = '';
+		$this->accounting_code = '';
 		$this->module = '';
 	}
 }

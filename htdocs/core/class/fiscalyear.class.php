@@ -382,7 +382,7 @@ class Fiscalyear extends CommonObject
 	 *	@param	int		$dateend	Date end to scan
 	 *	@return	string				Number of entries
 	 */
-	public function getAccountancyEntriesByFiscalYear($datestart, $dateend)
+	public function getAccountingEntriesByFiscalYear($datestart, $dateend)
 	{
 		global $conf;
 
@@ -408,7 +408,7 @@ class Fiscalyear extends CommonObject
 	 *  @param	int		$dateend	Date end to scan
 	 *  @return	string				Number of movements
 	 */
-	public function getAccountancyMovementsByFiscalYear($datestart, $dateend)
+	public function getAccountingMovementsByFiscalYear($datestart, $dateend)
 	{
 		global $conf;
 

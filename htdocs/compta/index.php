@@ -24,7 +24,7 @@
 /**
  *	\file       htdocs/compta/index.php
  *	\ingroup    compta
- *	\brief      Main page of accountancy area
+ *	\brief      Main page of accounting area
  */
 
 require '../main.inc.php';
@@ -83,9 +83,9 @@ $form = new Form($db);
 $formfile = new FormFile($db);
 $thirdpartystatic = new Societe($db);
 
-llxHeader("", $langs->trans("AccountancyTreasuryArea"));
+llxHeader("", $langs->trans("AccountingTreasuryArea"));
 
-print load_fiche_titre($langs->trans("AccountancyTreasuryArea"), '', 'title_accountancy.png');
+print load_fiche_titre($langs->trans("AccountingTreasuryArea"), '', 'title_accounting.png');
 
 
 print '<div class="fichecenter"><div class="fichethirdleft">';

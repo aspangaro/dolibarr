@@ -20,7 +20,7 @@
  */
 
 /**
- * \file 		htdocs/accountancy/admin/export-thirdpartyaccount.php
+ * \file 		htdocs/accounting/admin/export-thirdpartyaccount.php
  * \ingroup		Accounting Expert
  * \brief		Page to detect empty accounting account
  */
@@ -29,7 +29,7 @@ require_once $path."../../htdocs/master.inc.php";
 require_once DOL_DOCUMENT_ROOT.'/core/lib/report.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 
-$langs->loadLangs(array("companies", "compta", "main", "accountancy"));
+$langs->loadLangs(array("companies", "compta", "main", "accounting"));
 
 // Security check
 if (!$user->admin)
@@ -150,7 +150,7 @@ $sql .= ")";
 
 $sql .= "ORDER BY name ASC";
 
-dol_syslog('accountancy/admin/thirdpartyaccount.php:: $sql=' . $sql);
+dol_syslog('accounting/admin/thirdpartyaccount.php:: $sql=' . $sql);
 $resql = $db->query($sql);
 if ($resql) {
 	$num = $db->num_rows($resql);

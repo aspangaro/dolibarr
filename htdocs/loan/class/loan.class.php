@@ -109,7 +109,7 @@ class Loan extends CommonObject
 	public function fetch($id)
 	{
 		$sql = "SELECT l.rowid, l.label, l.capital, l.datestart, l.dateend, l.nbterm, l.rate, l.note_private, l.note_public, l.insurance_amount,";
-		$sql.= " l.paid, l.accountancy_account_capital, l.accountancy_account_insurance, l.accountancy_account_interest, l.fk_projet as fk_project";
+		$sql.= " l.paid, l.accounting_account_capital, l.accounting_account_insurance, l.accounting_account_interest, l.fk_projet as fk_project";
 		$sql.= " FROM ".MAIN_DB_PREFIX."loan as l";
 		$sql.= " WHERE l.rowid = ".$id;
 
@@ -134,9 +134,9 @@ class Loan extends CommonObject
 				$this->insurance_amount     = $obj->insurance_amount;
 				$this->paid					= $obj->paid;
 
-				$this->account_capital		= $obj->accountancy_account_capital;
-				$this->account_insurance	= $obj->accountancy_account_insurance;
-				$this->account_interest		= $obj->accountancy_account_interest;
+				$this->account_capital		= $obj->accounting_account_capital;
+				$this->account_insurance	= $obj->accounting_account_insurance;
+				$this->account_interest		= $obj->accounting_account_interest;
 				$this->fk_project			= $obj->fk_project;
 
 				$this->db->free($resql);
@@ -192,24 +192,24 @@ class Loan extends CommonObject
 		}
 		if (($conf->accounting->enabled) && empty($this->account_capital))
 		{
-			$this->error=$langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("LoanAccountancyCapitalCode"));
+			$this->error=$langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("LoanAccountingCapitalCode"));
 			return -2;
 		}
 		if (($conf->accounting->enabled) && empty($this->account_insurance))
 		{
-			$this->error=$langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("LoanAccountancyInsuranceCode"));
+			$this->error=$langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("LoanAccountingInsuranceCode"));
 			return -2;
 		}
 		if (($conf->accounting->enabled) && empty($this->account_interest))
 		{
-			$this->error=$langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("LoanAccountancyInterestCode"));
+			$this->error=$langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("LoanAccountingInterestCode"));
 			return -2;
 		}
 
 		$this->db->begin();
 
 		$sql = "INSERT INTO ".MAIN_DB_PREFIX."loan (label, fk_bank, capital, datestart, dateend, nbterm, rate, note_private, note_public,";
-		$sql.= " accountancy_account_capital, accountancy_account_insurance, accountancy_account_interest, entity,";
+		$sql.= " accounting_account_capital, accounting_account_insurance, accounting_account_interest, entity,";
 		$sql.= " datec, fk_projet, fk_user_author, insurance_amount)";
 		$sql.= " VALUES ('".$this->db->escape($this->label)."',";
 		$sql.= " '".$this->db->escape($this->fk_bank)."',";
@@ -341,9 +341,9 @@ class Loan extends CommonObject
 		$sql.= " datestart='".$this->db->idate($this->datestart)."',";
 		$sql.= " dateend='".$this->db->idate($this->dateend)."',";
 		$sql.= " nbterm=".$this->nbterm.",";
-		$sql.= " accountancy_account_capital = '".$this->db->escape($this->account_capital)."',";
-		$sql.= " accountancy_account_insurance = '".$this->db->escape($this->account_insurance)."',";
-		$sql.= " accountancy_account_interest = '".$this->db->escape($this->account_interest)."',";
+		$sql.= " accounting_account_capital = '".$this->db->escape($this->account_capital)."',";
+		$sql.= " accounting_account_insurance = '".$this->db->escape($this->account_insurance)."',";
+		$sql.= " accounting_account_interest = '".$this->db->escape($this->account_interest)."',";
 		$sql.= " fk_projet=".(empty($this->fk_project)?'NULL':$this->fk_project).",";
 		$sql.= " fk_user_modif = ".$user->id.",";
 		$sql.= " insurance_amount = '".price2num($this->db->escape($this->insurance_amount))."'";

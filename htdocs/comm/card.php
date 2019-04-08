@@ -101,11 +101,11 @@ if (empty($reshook))
 		$action="";
 	}
 
-	// set accountancy code
-	if ($action == 'setcustomeraccountancycode')
+	// set accounting code
+	if ($action == 'setcustomeraccountingcode')
 	{
 		$result=$object->fetch($id);
-		$object->code_compta=$_POST["customeraccountancycode"];
+		$object->code_compta=$_POST["customeraccountingcode"];
 		$result=$object->update($object->id, $user, 1, 1, 0);
 		if ($result < 0) setEventMessages($object->error, $object->errors, 'errors');
 	}
@@ -272,9 +272,9 @@ if ($object->id > 0)
 
 		print '<tr>';
 		print '<td>';
-		print $form->editfieldkey("CustomerAccountancyCode", 'customeraccountancycode', $object->code_compta, $object, $user->rights->societe->creer);
+		print $form->editfieldkey("CustomerAccountingCode", 'customeraccountingcode', $object->code_compta, $object, $user->rights->societe->creer);
 		print '</td><td>';
-		print $form->editfieldval("CustomerAccountancyCode", 'customeraccountancycode', $object->code_compta, $object, $user->rights->societe->creer);
+		print $form->editfieldval("CustomerAccountingCode", 'customeraccountingcode', $object->code_compta, $object, $user->rights->societe->creer);
 		print '</td>';
 		print '</tr>';
 	}

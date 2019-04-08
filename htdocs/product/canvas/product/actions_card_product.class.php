@@ -135,13 +135,13 @@ class ActionsCardProduct
     		$this->tpl['showhead']=dol_get_fiche_head($head, 'card', $titre, 0, $picto);
             $this->tpl['showend']=dol_get_fiche_end();
 
-            // Accountancy buy code
-			$this->tpl['accountancyBuyCodeKey'] = $form->editfieldkey("ProductAccountancyBuyCode", 'productaccountancycodesell', $this->accountancy_code_sell, $this, $user->rights->produit->creer);
-			$this->tpl['accountancyBuyCodeVal'] = $form->editfieldval("ProductAccountancyBuyCode", 'productaccountancycodesell', $this->accountancy_code_sell, $this, $user->rights->produit->creer);
+            // Accounting buy code
+			$this->tpl['accountingBuyCodeKey'] = $form->editfieldkey("ProductAccountingBuyCode", 'productaccountingcodesell', $this->accounting_code_sell, $this, $user->rights->produit->creer);
+			$this->tpl['accountingBuyCodeVal'] = $form->editfieldval("ProductAccountingBuyCode", 'productaccountingcodesell', $this->accounting_code_sell, $this, $user->rights->produit->creer);
 
-			// Accountancy sell code
-			$this->tpl['accountancySellCodeKey'] = $form->editfieldkey("ProductAccountancySellCode", 'productaccountancycodebuy', $this->accountancy_code_buy, $this, $user->rights->produit->creer);
-			$this->tpl['accountancySellCodeVal'] = $form->editfieldval("ProductAccountancySellCode", 'productaccountancycodebuy', $this->accountancy_code_buy, $this, $user->rights->produit->creer);
+			// Accounting sell code
+			$this->tpl['accountingSellCodeKey'] = $form->editfieldkey("ProductAccountingSellCode", 'productaccountingcodebuy', $this->accounting_code_buy, $this, $user->rights->produit->creer);
+			$this->tpl['accountingSellCodeVal'] = $form->editfieldval("ProductAccountingSellCode", 'productaccountingcodebuy', $this->accounting_code_buy, $this, $user->rights->produit->creer);
 		}
 
 		$this->tpl['finished'] = $this->object->finished;

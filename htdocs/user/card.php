@@ -220,7 +220,7 @@ if (empty($reshook)) {
 			$object->email = preg_replace('/\s+/', '', GETPOST("email", 'alpha'));
 			$object->job = GETPOST("job", 'alpha');
 			$object->signature = GETPOST("signature", 'none');
-			$object->accountancy_code = GETPOST("accountancy_code", 'alphanohtml');
+			$object->accounting_code = GETPOST("accounting_code", 'alphanohtml');
 			$object->note = GETPOST("note", 'none');
 			$object->ldap_sid = GETPOST("ldap_sid", 'alphanohtml');
 			$object->fk_user = GETPOST("fk_user", 'int') > 0 ? GETPOST("fk_user", 'int') : 0;
@@ -372,7 +372,7 @@ if (empty($reshook)) {
 				$object->email = preg_replace('/\s+/', '', GETPOST("email", 'alpha'));
 				$object->job = GETPOST("job", 'alpha');
 				$object->signature = GETPOST("signature", 'none');
-				$object->accountancy_code = GETPOST("accountancy_code", 'alpha');
+				$object->accounting_code = GETPOST("accounting_code", 'alpha');
 				$object->openid = GETPOST("openid", 'alpha');
 				$object->fk_user = GETPOST("fk_user", 'int') > 0 ? GETPOST("fk_user", 'int') : 0;
 				$object->employee = GETPOST('employee', 'int');
@@ -1110,12 +1110,12 @@ if ($action == 'create' || $action == 'adduserldap')
 	}
 	print '</td></tr>';
 
-	// Accountancy code
+	// Accounting code
 	if ($conf->accounting->enabled)
 	{
-		print '<tr><td>'.$langs->trans("AccountancyCode").'</td>';
+		print '<tr><td>'.$langs->trans("AccountingCode").'</td>';
 		print '<td>';
-		print '<input size="30" type="text" name="accountancy_code" value="'.GETPOST('accountancy_code').'">';
+		print '<input size="30" type="text" name="accounting_code" value="'.GETPOST('accounting_code').'">';
 		print '</td></tr>';
 	}
 
@@ -1630,11 +1630,11 @@ else
 			print '</td>';
 			print "</tr>\n";
 
-			// Accountancy code
+			// Accounting code
 			if ($conf->accounting->enabled)
 			{
-				print '<tr><td>'.$langs->trans("AccountancyCode").'</td>';
-				print '<td>'.$object->accountancy_code.'</td></tr>';
+				print '<tr><td>'.$langs->trans("AccountingCode").'</td>';
+				print '<td>'.$object->accounting_code.'</td></tr>';
 			}
 
 			print '</table>';
@@ -2407,20 +2407,20 @@ else
 
 			print '</table><hr><table class="border centpercent">';
 
-			// Accountancy code
+			// Accounting code
 			if ($conf->accounting->enabled)
 			{
 				print "<tr>";
-				print '<td>'.$langs->trans("AccountancyCode").'</td>';
+				print '<td>'.$langs->trans("AccountingCode").'</td>';
 				print '<td>';
 				if ($caneditfield)
 				{
-					print '<input size="30" type="text" class="flat" name="accountancy_code" value="'.$object->accountancy_code.'">';
+					print '<input size="30" type="text" class="flat" name="accounting_code" value="'.$object->accounting_code.'">';
 				}
 				else
 				{
-					print '<input type="hidden" name="accountancy_code" value="'.$object->accountancy_code.'">';
-					print $object->accountancy_code;
+					print '<input type="hidden" name="accounting_code" value="'.$object->accounting_code.'">';
+					print $object->accounting_code;
 				}
 				print '</td>';
 				print "</tr>";

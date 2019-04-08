@@ -550,7 +550,7 @@ class pdf_standard extends ModeleExpenseReport
         global $conf;
         $pdf->SetFont('', '', $default_font_size - 1);
 
-        // Accountancy piece
+        // Accounting piece
         $pdf->SetXY($this->posxpiece, $curY);
         $pdf->writeHTMLCell($this->posxcomment-$this->posxpiece-0.8, 4, $this->posxpiece-1, $curY, $linenumber + 1, 0, 1);
 
@@ -867,7 +867,7 @@ class pdf_standard extends ModeleExpenseReport
 
 		$pdf->SetFont('', '', 8);
 
-		// Accountancy piece
+		// Accounting piece
 		if (empty($hidetop)) {
 			$pdf->SetXY($this->posxpiece-1, $tab_top+1);
 			$pdf->MultiCell($this->posxcomment-$this->posxpiece-1, 1, '', '', 'R');
@@ -987,7 +987,7 @@ class pdf_standard extends ModeleExpenseReport
 		// Payments already done (from payment on this expensereport)
 		$sql = "SELECT p.rowid, p.num_payment, p.datep as dp, p.amount, p.fk_bank,";
 		$sql.= "c.code as p_code, c.libelle as payment_type,";
-		$sql.= "ba.rowid as baid, ba.ref as baref, ba.label, ba.number as banumber, ba.account_number, ba.fk_accountancy_journal";
+		$sql.= "ba.rowid as baid, ba.ref as baref, ba.label, ba.number as banumber, ba.account_number, ba.fk_accounting_journal";
 		$sql.= " FROM ".MAIN_DB_PREFIX."expensereport as e, ".MAIN_DB_PREFIX."payment_expensereport as p";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_paiement as c ON p.fk_typepayment = c.id";
 		$sql.= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'bank as b ON p.fk_bank = b.rowid';

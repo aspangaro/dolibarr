@@ -50,8 +50,8 @@ create table llx_bank_account
   clos						smallint DEFAULT 0 NOT NULL,
   rappro					smallint DEFAULT 1,
   url						varchar(128),
-  account_number			varchar(32),				-- bank accountancy number
-  fk_accountancy_journal	integer,					-- bank accountancy journal
+  account_number			varchar(32),				-- bank accounting number
+  fk_accounting_journal	integer,					-- bank accounting journal
   currency_code				varchar(3) NOT NULL,
   min_allowed				integer DEFAULT 0,
   min_desired				integer DEFAULT 0,

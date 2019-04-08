@@ -162,8 +162,8 @@ class modFicheinter extends DolibarrModules
         $this->export_permission[$r]=array(array("ficheinter","export"));
         $this->export_fields_array[$r]=array(
 			's.rowid'=>"IdCompany",'s.nom'=>'CompanyName','s.address'=>'Address','s.zip'=>'Zip','s.town'=>'Town','s.fk_pays'=>'Country','s.phone'=>'Phone',
-			's.siren'=>'ProfId1','s.siret'=>'ProfId2','s.ape'=>'ProfId3','s.idprof4'=>'ProfId4','s.code_compta'=>'CustomerAccountancyCode',
-			's.code_compta_fournisseur'=>'SupplierAccountancyCode','f.rowid'=>"InterId",'f.ref'=>"InterRef",'f.datec'=>"InterDateCreation",
+			's.siren'=>'ProfId1','s.siret'=>'ProfId2','s.ape'=>'ProfId3','s.idprof4'=>'ProfId4','s.code_compta'=>'CustomerAccountingCode',
+			's.code_compta_fournisseur'=>'SupplierAccountingCode','f.rowid'=>"InterId",'f.ref'=>"InterRef",'f.datec'=>"InterDateCreation",
 			'f.duree'=>"InterDuration",'f.fk_statut'=>'InterStatus','f.description'=>"InterNote", 'pj.ref'=>'ProjectRef', 'fd.rowid'=>'InterLineId',
 			'fd.date'=>"InterLineDate",'fd.duree'=>"InterLineDuration",'fd.description'=>"InterLineDesc"
 		);

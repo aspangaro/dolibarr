@@ -36,7 +36,7 @@ require_once DOL_DOCUMENT_ROOT.'/expensereport/class/expensereport.class.php';
 require_once DOL_DOCUMENT_ROOT.'/expensereport/class/paymentexpensereport.class.php';
 
 // Load translation files required by the page
-$langs->loadLangs(array("other","compta","banks","bills","companies","product","trips","admin","accountancy"));
+$langs->loadLangs(array("other","compta","banks","bills","companies","product","trips","admin","accounting"));
 
 $modecompta = GETPOST('modecompta', 'alpha');
 
@@ -407,7 +407,7 @@ if ($resql2) {
 print "</table>\n";
 } else {
 	// $modecompta != 'CREANCES-DETTES'
-	// "Calculation of part of each product for accountancy in this mode is not possible. When a partial payment (for example 5 euros) is done on an
+	// "Calculation of part of each product for accounting in this mode is not possible. When a partial payment (for example 5 euros) is done on an
 	// invoice with 2 product (product A for 10 euros and product B for 20 euros), what is part of paiment for product A and part of paiment for product B ?
 	// Because there is no way to know this, this report is not relevant.
 	print '<br>'.$langs->trans("TurnoverPerSaleTaxRateInCommitmentAccountingNotRelevant") . '<br>';

@@ -1504,13 +1504,13 @@ function dol_banner_tab($object, $paramid, $morehtml = '', $shownav = 1, $fieldi
 		$morehtmlstatus.=$tmptxt;
 	}
 
-	// Add if object was dispatched "into accountancy"
+	// Add if object was dispatched "into accounting"
 	if (! empty($conf->accounting->enabled) && in_array($object->element, array('bank', 'facture', 'invoice', 'invoice_supplier', 'expensereport')))
 	{
 		if (method_exists($object, 'getVentilExportCompta'))
 		{
 			$accounted = $object->getVentilExportCompta();
-			$langs->load("accountancy");
+			$langs->load("accounting");
 			$morehtmlstatus.='</div><div class="statusref statusrefbis">'.($accounted > 0 ? $langs->trans("Accounted") : '<span class="opacitymedium">'.$langs->trans("NotYetAccounted").'</span>');
 		}
 	}
@@ -4755,7 +4755,7 @@ function getTaxesFromId($vatrate, $buyer = null, $seller = null, $firstparamisid
 	dol_syslog("getTaxesFromId vat id or rate = ".$vatrate);
 
 	// Search local taxes
-	$sql = "SELECT t.rowid, t.code, t.taux as rate, t.recuperableonly as npr, t.accountancy_code_sell, t.accountancy_code_buy";
+	$sql = "SELECT t.rowid, t.code, t.taux as rate, t.recuperableonly as npr, t.accounting_code_sell, t.accounting_code_buy";
 	$sql.= " FROM ".MAIN_DB_PREFIX."c_tva as t";
 	if ($firstparamisid) $sql.= " WHERE t.rowid = ".(int) $vatrate;
 	else
@@ -4780,7 +4780,7 @@ function getTaxesFromId($vatrate, $buyer = null, $seller = null, $firstparamisid
 	if ($resql)
 	{
 		$obj = $db->fetch_object($resql);
-		if ($obj) return array('rowid'=>$obj->rowid, 'code'=>$obj->code, 'rate'=>$obj->rate, 'npr'=>$obj->npr, 'accountancy_code_sell'=>$obj->accountancy_code_sell, 'accountancy_code_buy'=>$obj->accountancy_code_buy);
+		if ($obj) return array('rowid'=>$obj->rowid, 'code'=>$obj->code, 'rate'=>$obj->rate, 'npr'=>$obj->npr, 'accounting_code_sell'=>$obj->accounting_code_sell, 'accounting_code_buy'=>$obj->accounting_code_buy);
 		else return array();
 	}
 	else dol_print_error($db);
@@ -4801,7 +4801,7 @@ function getTaxesFromId($vatrate, $buyer = null, $seller = null, $firstparamisid
  *  @param	Societe	    $buyer         		Company object
  *  @param	Societe	    $seller        		Company object
  *  @param  int         $firstparamisid     1 if first param is ID into table instead of Rate+code (use this if you can)
- *  @return	array    	    				array(localtax_type1(1-6/0 if not found), rate localtax1, localtax_type2, rate localtax2, accountancycodecust, accountancycodesupp)
+ *  @return	array    	    				array(localtax_type1(1-6/0 if not found), rate localtax1, localtax_type2, rate localtax2, accountingcodecust, accountingcodesupp)
  *  @see getTaxesFromId()
  */
 function getLocalTaxesFromRate($vatrate, $local, $buyer, $seller, $firstparamisid = 0)
@@ -4811,7 +4811,7 @@ function getLocalTaxesFromRate($vatrate, $local, $buyer, $seller, $firstparamisi
 	dol_syslog("getLocalTaxesFromRate vatrate=".$vatrate." local=".$local);
 
 	// Search local taxes
-	$sql  = "SELECT t.localtax1, t.localtax1_type, t.localtax2, t.localtax2_type, t.accountancy_code_sell, t.accountancy_code_buy";
+	$sql  = "SELECT t.localtax1, t.localtax1_type, t.localtax2, t.localtax2_type, t.accounting_code_sell, t.accounting_code_buy";
 	$sql .= " FROM ".MAIN_DB_PREFIX."c_tva as t";
 	if ($firstparamisid) $sql.= " WHERE t.rowid = ".(int) $vatrate;
 	else
@@ -4837,15 +4837,15 @@ function getLocalTaxesFromRate($vatrate, $local, $buyer, $seller, $firstparamisi
 		$obj = $db->fetch_object($resql);
 		if ($local == 1)
 		{
-			return array($obj->localtax1_type, get_localtax($vatrate, $local, $buyer, $seller), $obj->accountancy_code_sell, $obj->accountancy_code_buy);
+			return array($obj->localtax1_type, get_localtax($vatrate, $local, $buyer, $seller), $obj->accounting_code_sell, $obj->accounting_code_buy);
 		}
 		elseif ($local == 2)
 		{
-			return array($obj->localtax2_type, get_localtax($vatrate, $local, $buyer, $seller),$obj->accountancy_code_sell, $obj->accountancy_code_buy);
+			return array($obj->localtax2_type, get_localtax($vatrate, $local, $buyer, $seller),$obj->accounting_code_sell, $obj->accounting_code_buy);
 		}
 		else
 		{
-			return array($obj->localtax1_type, get_localtax($vatrate, 1, $buyer, $seller), $obj->localtax2_type, get_localtax($vatrate, 2, $buyer, $seller), $obj->accountancy_code_sell,$obj->accountancy_code_buy);
+			return array($obj->localtax1_type, get_localtax($vatrate, 1, $buyer, $seller), $obj->localtax2_type, get_localtax($vatrate, 2, $buyer, $seller), $obj->accounting_code_sell,$obj->accounting_code_buy);
 		}
 	}
 

@@ -19,8 +19,8 @@ create table llx_asset_type
   entity                                integer DEFAULT 1 NOT NULL,	-- multi company id
   tms                                   timestamp,
   label                                 varchar(50) NOT NULL,
-  accountancy_code_asset                varchar(32),
-  accountancy_code_depreciation_asset   varchar(32),
-  accountancy_code_depreciation_expense varchar(32),
+  accounting_code_asset                varchar(32),
+  accounting_code_depreciation_asset   varchar(32),
+  accounting_code_depreciation_expense varchar(32),
   note                                  text
 )ENGINE=innodb;

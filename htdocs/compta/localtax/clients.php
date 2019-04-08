@@ -228,7 +228,7 @@ if($calc ==0 || $calc == 2)
 	{
 		$langs->load("errors");
 		if ($coll_list == -1)
-			print '<tr><td colspan="5">'.$langs->trans("ErrorNoAccountancyModuleLoaded").'</td></tr>';
+			print '<tr><td colspan="5">'.$langs->trans("ErrorNoAccountingModuleLoaded").'</td></tr>';
 		elseif ($coll_list == -2)
 			print '<tr><td colspan="5">'.$langs->trans("FeatureNotYetAvailable").'</td></tr>';
 		else
@@ -304,7 +304,7 @@ if($calc ==0 || $calc == 1){
 	{
 		$langs->load("errors");
 		if ($coll_list == -1)
-			print '<tr><td colspan="5">'.$langs->trans("ErrorNoAccountancyModuleLoaded").'</td></tr>';
+			print '<tr><td colspan="5">'.$langs->trans("ErrorNoAccountingModuleLoaded").'</td></tr>';
 		elseif ($coll_list == -2)
 			print '<tr><td colspan="5">'.$langs->trans("FeatureNotYetAvailable").'</td></tr>';
 		else

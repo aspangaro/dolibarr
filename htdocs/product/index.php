@@ -385,8 +385,8 @@ else
 }
 
 
-// TODO Move this into a page that should be available into menu "accountancy - report - turnover - per quarter"
-// Also method used for counting must provide the 2 possible methods like done by all other reports into menu "accountancy - report - turnover":
+// TODO Move this into a page that should be available into menu "accounting - report - turnover - per quarter"
+// Also method used for counting must provide the 2 possible methods like done by all other reports into menu "accounting - report - turnover":
 // "commitment engagment" method and "cash accounting" method
 if (! empty($conf->global->MAIN_SHOW_PRODUCT_ACTIVITY_TRIM))
 {

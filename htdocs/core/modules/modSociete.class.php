@@ -262,7 +262,7 @@ class modSociete extends DolibarrModules
 		$this->export_permission[$r]=array(array("societe","export"));
 		$this->export_fields_array[$r]=array(
 			's.rowid'=>"Id",'s.nom'=>"Name",'s.name_alias'=>"AliasNameShort",'s.status'=>"Status",'s.client'=>"Customer",'s.fournisseur'=>"Supplier",'s.datec'=>"DateCreation",'s.tms'=>"DateLastModification",
-			's.code_client'=>"CustomerCode",'s.code_fournisseur'=>"SupplierCode",'s.code_compta'=>"AccountancyCode",'s.code_compta_fournisseur'=>"SupplierAccountancyCode",
+			's.code_client'=>"CustomerCode",'s.code_fournisseur'=>"SupplierCode",'s.code_compta'=>"AccountingCode",'s.code_compta_fournisseur'=>"SupplierAccountingCode",
 			's.address'=>"Address",'s.zip'=>"Zip",'s.town'=>"Town",'d.nom'=>'State','c.label'=>"Country",'c.code'=>"CountryCode",'s.phone'=>"Phone",'s.fax'=>"Fax",
 			's.url'=>"Url",'s.email'=>"Email",'s.default_lang'=>"DefaultLang",'s.siren'=>"ProfId1",'s.siret'=>"ProfId2",'s.ape'=>"ProfId3",'s.idprof4'=>"ProfId4",
 			's.idprof5'=>"ProfId5",'s.idprof6'=>"ProfId6",'s.tva_intra'=>"VATIntraShort",'s.capital'=>"Capital",'s.note_private'=>"NotePrivate",'s.note_public'=>"NotePublic",
@@ -405,8 +405,8 @@ class modSociete extends DolibarrModules
             's.status' => "Status",
             's.code_client' => "CustomerCode",
             's.code_fournisseur' => "SupplierCode",
-            's.code_compta' => "CustomerAccountancyCode",
-            's.code_compta_fournisseur' => "SupplierAccountancyCode",
+            's.code_compta' => "CustomerAccountingCode",
+            's.code_compta_fournisseur' => "SupplierAccountingCode",
             's.address' => "Address",
             's.zip' => "Zip",
             's.town' => "Town",
@@ -465,8 +465,8 @@ class modSociete extends DolibarrModules
         $this->import_convertvalue_array[$r] = array(//field order as per structure of table llx_societe
             's.code_client' => array('rule' => 'getcustomercodeifauto'),
             's.code_fournisseur' => array('rule' => 'getsuppliercodeifauto'),
-            's.code_compta' => array('rule' => 'getcustomeraccountancycodeifauto'),
-            's.code_compta_fournisseur' => array('rule' => 'getsupplieraccountancycodeifauto'),
+            's.code_compta' => array('rule' => 'getcustomeraccountingcodeifauto'),
+            's.code_compta_fournisseur' => array('rule' => 'getsupplieraccountingcodeifauto'),
             's.fk_departement' => array(
                 'rule' => 'fetchidfromcodeid',
                 'classfile' => '/core/class/cstate.class.php',
@@ -558,8 +558,8 @@ class modSociete extends DolibarrModules
             's.nom' => 'Name',
             's.code_client' => 'CustomerCode',
             's.code_fournisseur' => 'SupplierCode',
-            's.code_compta' => 'CustomerAccountancyCode',
-            's.code_compta_fournisseur' => 'SupplierAccountancyCode'
+            's.code_compta' => 'CustomerAccountingCode',
+            's.code_compta_fournisseur' => 'SupplierAccountingCode'
         );
 
         // Import list of contacts/additional addresses and attributes

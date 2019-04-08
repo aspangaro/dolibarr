@@ -23,7 +23,7 @@
 
 /**
  *      \file       htdocs/compta/resultat/index.php
- * 	 	\ingroup	compta, accountancy
+ * 	 	\ingroup	compta, accounting
  *      \brief      Page reporting result
  */
 
@@ -155,7 +155,7 @@ elseif ($modecompta=="BOOKKEEPING")
 	$period=$form->selectDate($date_start, 'date_start', 0, 0, 0, '', 1, 0).' - '.$form->selectDate($date_end, 'date_end', 0, 0, 0, '', 1, 0);
 	$periodlink=($year_start?"<a href='".$_SERVER["PHP_SELF"]."?year=".($year_start+$nbofyear-2)."&modecompta=".$modecompta."'>".img_previous()."</a> <a href='".$_SERVER["PHP_SELF"]."?year=".($year_start+$nbofyear)."&modecompta=".$modecompta."'>".img_next()."</a>":"");
 	$description=$langs->trans("RulesAmountOnInOutBookkeepingRecord");
-	$description.=' ('.$langs->trans("SeePageForSetup", DOL_URL_ROOT.'/accountancy/admin/account.php?mainmenu=accountancy&leftmenu=accountancy_admin', $langs->transnoentitiesnoconv("Accountancy").' / '.$langs->transnoentitiesnoconv("Setup").' / '.$langs->trans("Chartofaccounts")).')';
+	$description.=' ('.$langs->trans("SeePageForSetup", DOL_URL_ROOT.'/accounting/admin/account.php?mainmenu=accounting&leftmenu=accounting_admin', $langs->transnoentitiesnoconv("Accounting").' / '.$langs->transnoentitiesnoconv("Setup").' / '.$langs->trans("Chartofaccounts")).')';
 	$builddate=dol_now();
 	//$exportlink=$langs->trans("NotYetAvailable");
 }

@@ -213,7 +213,7 @@ if (! is_array($x_coll) || ! is_array($x_paye))
 {
 	$langs->load("errors");
 	if ($x_coll == -1)
-		print '<tr><td colspan="'.$columns.'">'.$langs->trans("ErrorNoAccountancyModuleLoaded").'</td></tr>';
+		print '<tr><td colspan="'.$columns.'">'.$langs->trans("ErrorNoAccountingModuleLoaded").'</td></tr>';
 	elseif ($x_coll == -2)
 		print '<tr><td colspan="'.$columns.'">'.$langs->trans("FeatureNotYetAvailable").'</td></tr>';
 	else

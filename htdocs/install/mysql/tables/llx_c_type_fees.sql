@@ -25,7 +25,7 @@ create table llx_c_type_fees
   code      		varchar(12)  NOT NULL,
   label				varchar(30),
   type				integer DEFAULT 0,		-- 0=type product, 1=type service
-  accountancy_code	varchar(32) NULL,
+  accounting_code	varchar(32) NULL,
   active    		tinyint DEFAULT 1   NOT NULL,
   module    		varchar(32) NULL,
   position          integer NOT NULL DEFAULT 0

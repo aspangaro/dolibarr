@@ -51,7 +51,7 @@ require_once DOL_DOCUMENT_ROOT.'/loan/class/loan.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/paiementfourn.class.php';
 
 // Load translation files required by the page
-$langs->loadLangs(array("banks","bills","categories","companies","margins","salaries","loan","donations","trips","members","compta","accountancy"));
+$langs->loadLangs(array("banks","bills","categories","companies","margins","salaries","loan","donations","trips","members","compta","accounting"));
 
 $id = GETPOST('id', 'int');
 $ref = GETPOST('ref', 'alpha');
@@ -80,7 +80,7 @@ $debit=GETPOST("debit", 'alpha');
 $credit=GETPOST("credit", 'alpha');
 $search_type=GETPOST("search_type", 'alpha');
 $search_account=GETPOST("search_account", 'int')?GETPOST("search_account", 'int'):GETPOST("account", 'int');
-$search_accountancy_code=GETPOST('search_accountancy_code', 'alpha')?GETPOST('search_accountancy_code', 'alpha'):GETPOST('accountancy_code', 'alpha');
+$search_accounting_code=GETPOST('search_accounting_code', 'alpha')?GETPOST('search_accounting_code', 'alpha'):GETPOST('accounting_code', 'alpha');
 $search_bid=GETPOST("search_bid", "int")?GETPOST("search_bid", "int"):GETPOST("bid", "int");
 $search_ref=GETPOST('search_ref', 'alpha');
 $search_dt_start = dol_mktime(0, 0, 0, GETPOST('search_start_dtmonth', 'int'), GETPOST('search_start_dtday', 'int'), GETPOST('search_start_dtyear', 'int'));
@@ -318,7 +318,7 @@ if (GETPOST('save') && ! $cancel && $user->rights->banque->modifier)
     	$error++;
     	setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("BankAccount")), null, 'errors');
     }
-    /*if (! empty($conf->accounting->enabled) && (empty($search_accountancy_code) || $search_accountancy_code == '-1'))
+    /*if (! empty($conf->accounting->enabled) && (empty($search_accounting_code) || $search_accounting_code == '-1'))
     {
     	setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("AccountAccounting")), null, 'errors');
     	$error++;
@@ -328,7 +328,7 @@ if (GETPOST('save') && ! $cancel && $user->rights->banque->modifier)
     {
     	$objecttmp = new Account($db);
     	$objecttmp->fetch($bankaccountid);
-        $insertid = $objecttmp->addline($dateop, $operation, $label, $amount, $num_chq, ($cat1 > 0 ? $cat1 : 0), $user, '', '', $search_accountancy_code);
+        $insertid = $objecttmp->addline($dateop, $operation, $label, $amount, $num_chq, ($cat1 > 0 ? $cat1 : 0), $user, '', '', $search_accounting_code);
         if ($insertid > 0)
         {
             setEventMessages($langs->trans("RecordSaved"), null, 'mesgs');
@@ -712,7 +712,7 @@ if ($resql)
 		/*if (! empty($conf->accounting->enabled))
 		{
 			print '<td align="center">';
-			print $formaccounting->select_account($search_accountancy_code, 'search_accountancy_code', 1, null, 1, 1, '');
+			print $formaccounting->select_account($search_accounting_code, 'search_accounting_code', 1, null, 1, 1, '');
 			print '</td>';
 		}*/
 		print '<td align="center">';

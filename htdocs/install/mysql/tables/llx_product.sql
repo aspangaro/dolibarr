@@ -64,10 +64,10 @@ create table llx_product
   url                           varchar(255),
   barcode                       varchar(180) DEFAULT NULL,          -- barcode
   fk_barcode_type               integer      DEFAULT NULL,          -- barcode type
-  accountancy_code_sell         varchar(32),                        -- Selling accountancy code
-  accountancy_code_sell_intra   varchar(32),                        -- Selling accountancy code for vat intracommunity
-  accountancy_code_sell_export  varchar(32),                        -- Selling accountancy code for vat export
-  accountancy_code_buy          varchar(32),                        -- Buying accountancy code
+  accounting_code_sell         varchar(32),                        -- Selling accounting code
+  accounting_code_sell_intra   varchar(32),                        -- Selling accounting code for vat intracommunity
+  accounting_code_sell_export  varchar(32),                        -- Selling accounting code for vat export
+  accounting_code_buy          varchar(32),                        -- Buying accounting code
   partnumber                    varchar(32),                        -- Part/Serial number. TODO To use it into screen if not a duplicate of barcode.
   weight                        float        DEFAULT NULL,
   weight_units                  tinyint      DEFAULT NULL,

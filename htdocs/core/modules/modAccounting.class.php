@@ -22,7 +22,7 @@
 
 /**
  * \file		htdocs/core/modules/modAccounting.class.php
- * \ingroup		Advanced accountancy
+ * \ingroup		Accounting
  * \brief		Module to activate Accounting Expert module
  */
 include_once DOL_DOCUMENT_ROOT .'/core/modules/DolibarrModules.class.php';
@@ -68,7 +68,7 @@ class modAccounting extends DolibarrModules
 		$this->conflictwith = array("modComptabilite"); // List of modules are in conflict with this module
 		$this->phpmin = array(5, 4); // Minimum version of PHP required by module
 		$this->need_dolibarr_version = array(3, 9); // Minimum version of Dolibarr required by module
-		$this->langfiles = array("accountancy","compta");
+		$this->langfiles = array("accounting","compta");
 
 		// Constants
 		// List of particular constants to add when module is enabled (key, 'chaine', value, desc, visible, 'current' or 'allentities', deleteonunactive)
@@ -83,7 +83,7 @@ class modAccounting extends DolibarrModules
 				"With this constants on, third party code is always required whatever is numbering module behaviour", 0, 'current', 1
 		);
 		$this->const[2] = array(
-				"MAIN_BANK_ACCOUNTANCY_CODE_ALWAYS_REQUIRED",
+				"MAIN_BANK_ACCOUNTING_CODE_ALWAYS_REQUIRED",
 				"chaine",
 				"1",
 				"With this constants on, bank account number is always required", 0, 'current', 1
@@ -171,7 +171,7 @@ class modAccounting extends DolibarrModules
 		$r = 0;
 
 		$this->rights[$r][0] = 50440;
-		$this->rights[$r][1] = 'Manage chart of accounts, setup of accountancy';
+		$this->rights[$r][1] = 'Manage chart of accounts, setup of accounting';
 		$this->rights[$r][2] = 'r';
 		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'chartofaccount';
@@ -302,7 +302,7 @@ class modAccounting extends DolibarrModules
 		$this->import_fields_array[$r]=array('aa.fk_pcg_version'=>"Chartofaccounts*",'aa.account_number'=>"AccountAccounting*",'aa.label'=>"Label*",'aa.account_parent'=>"Accountparent","aa.fk_accounting_category"=>"AccountingCategory","aa.pcg_type"=>"Pcgtype*",'aa.pcg_subtype'=>'Pcgsubtype*','aa.active'=>'Status*','aa.datec'=>"DateCreation");
 		$this->import_regex_array[$r]=array('aa.fk_pcg_version'=>'pcg_version@'.MAIN_DB_PREFIX.'accounting_system','aa.account_number'=>'^\d{1,32}$','aa.label'=>'^.{1,255}$','aa.account_parent'=>'^\d{0,32}$','aa.fk_accounting_category'=>'rowid@'.MAIN_DB_PREFIX.'c_accounting_category','aa.pcg_type'=>'^.{1,20}$','aa.pcg_subtype'=>'^.{1,20}$','aa.active'=>'^0|1$','aa.datec'=>'^\d{4}-\d{2}-\d{2}$');
 		$this->import_convertvalue_array[$r]=array(
-			'aa.fk_accounting_category'=>array('rule'=>'fetchidfromcodeorlabel','classfile'=>'/accountancy/class/accountancycategory.class.php','class'=>'AccountancyCategory','method'=>'fetch','dict'=>'DictionaryAccountancyCategory'),
+			'aa.fk_accounting_category'=>array('rule'=>'fetchidfromcodeorlabel','classfile'=>'/accounting/class/accountingcategory.class.php','class'=>'AccountingCategory','method'=>'fetch','dict'=>'DictionaryAccountingCategory'),
 			'aa.account_parent'=>array('rule'=>'zeroifnull'),
 		);
 		$this->import_examplevalues_array[$r]=array('aa.fk_pcg_version'=>"PCG99-ABREGE",'aa.account_number'=>"707",'aa.label'=>"Product sales",'aa.account_parent'=>"1407","aa.fk_accounting_category"=>"","aa.pcg_type"=>"PROD",'aa.pcg_subtype'=>'PRODUCT','aa.active'=>'1','aa.datec'=>"2017-04-28");

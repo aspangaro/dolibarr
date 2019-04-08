@@ -44,7 +44,7 @@ require_once DOL_DOCUMENT_ROOT . '/expensereport/class/paymentexpensereport.clas
 require_once DOL_DOCUMENT_ROOT . '/core/class/doleditor.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/extrafields.class.php';
 if (! empty($conf->accounting->enabled)) {
-	require_once DOL_DOCUMENT_ROOT . '/accountancy/class/accountingjournal.class.php';
+	require_once DOL_DOCUMENT_ROOT . '/accounting/class/accountingjournal.class.php';
 }
 
 // Load translation files required by the page
@@ -1911,7 +1911,7 @@ else
 				// Payments already done (from payment on this expensereport)
 				$sql = "SELECT p.rowid, p.num_payment, p.datep as dp, p.amount, p.fk_bank,";
 				$sql.= "c.code as p_code, c.libelle as payment_type,";
-				$sql.= "ba.rowid as baid, ba.ref as baref, ba.label, ba.number as banumber, ba.account_number, ba.fk_accountancy_journal";
+				$sql.= "ba.rowid as baid, ba.ref as baref, ba.label, ba.number as banumber, ba.account_number, ba.fk_accounting_journal";
 				$sql.= " FROM ".MAIN_DB_PREFIX."expensereport as e, ".MAIN_DB_PREFIX."payment_expensereport as p";
 				$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_paiement as c ON p.fk_typepayment = c.id";
 				$sql.= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'bank as b ON p.fk_bank = b.rowid';
@@ -1954,8 +1954,8 @@ else
 								$bankaccountstatic->account_number = $objp->account_number;
 
 								$accountingjournal = new AccountingJournal($db);
-								$accountingjournal->fetch($objp->fk_accountancy_journal);
-								$bankaccountstatic->accountancy_journal = $accountingjournal->getNomUrl(0, 1, 1, '', 1);
+								$accountingjournal->fetch($objp->fk_accounting_journal);
+								$bankaccountstatic->accounting_journal = $accountingjournal->getNomUrl(0, 1, 1, '', 1);
 							}
 
 							print '<td class="right">';

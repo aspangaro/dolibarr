@@ -34,7 +34,7 @@ require_once DOL_DOCUMENT_ROOT.'/compta/paiement/class/paiement.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
-require_once DOL_DOCUMENT_ROOT.'/accountancy/class/accountingjournal.class.php';
+require_once DOL_DOCUMENT_ROOT.'/accounting/class/accountingjournal.class.php';
 
 // Load translation files required by the page
 $langs->loadLangs(array('bills', 'banks', 'compta', 'companies'));
@@ -137,7 +137,7 @@ else
     $sql = "SELECT DISTINCT p.rowid, p.ref, p.datep as dp, p.amount,"; // DISTINCT is to avoid duplicate when there is a link to sales representatives
     $sql.= " p.statut, p.num_paiement,";
     $sql.= " c.code as paiement_code,";
-    $sql.= " ba.rowid as bid, ba.ref as bref, ba.label as blabel, ba.number, ba.account_number as account_number, ba.fk_accountancy_journal as accountancy_journal,";
+    $sql.= " ba.rowid as bid, ba.ref as bref, ba.label as blabel, ba.number, ba.account_number as account_number, ba.fk_accounting_journal as accounting_journal,";
     $sql.= " s.rowid as socid, s.nom as name, s.email";
 	// Add fields for extrafields
 	foreach ($extrafields->attribute_list as $key => $val) $sql.=",ef.".$key.' as options_'.$key;
@@ -222,7 +222,7 @@ if ($resql)
     print '<input type="hidden" name="page" value="'.$page.'">';
     print '<input type="hidden" name="viewstatut" value="'.$viewstatut.'">';
 
-    print_barre_liste($langs->trans("ReceivedCustomersPayments"), $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, '', $num, $nbtotalofrecords, 'title_accountancy.png', 0, '', '', $limit);
+    print_barre_liste($langs->trans("ReceivedCustomersPayments"), $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, '', $num, $nbtotalofrecords, 'title_accounting.png', 0, '', '', $limit);
 
     print '<div class="div-table-responsive">';
     print '<table class="tagtable liste'.($moreforfilter?" listwithfilterbefore":"").'">'."\n";
@@ -343,8 +343,8 @@ if ($resql)
 	            $accountstatic->account_number=$objp->account_number;
 
 				$accountingjournal = new AccountingJournal($db);
-				$accountingjournal->fetch($objp->accountancy_journal);
-				$accountstatic->accountancy_journal = $accountingjournal->code;
+				$accountingjournal->fetch($objp->accounting_journal);
+				$accountstatic->accounting_journal = $accountingjournal->code;
 
 	            print $accountstatic->getNomUrl(1);
 	        }

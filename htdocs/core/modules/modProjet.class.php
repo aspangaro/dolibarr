@@ -226,7 +226,7 @@ class modProjet extends DolibarrModules
 		's.phone'=>'company','s.email'=>'company','s.siren'=>'company','s.siret'=>'company','s.ape'=>'company','s.idprof4'=>'company','s.code_compta'=>'company','s.code_compta_fournisseur'=>'company');
 
 		$this->export_fields_array[$r]=array('s.rowid'=>"IdCompany",'s.nom'=>'CompanyName','s.address'=>'Address','s.zip'=>'Zip','s.town'=>'Town','s.fk_pays'=>'Country',
-		's.phone'=>'Phone','s.email'=>'Email','s.siren'=>'ProfId1','s.siret'=>'ProfId2','s.ape'=>'ProfId3','s.idprof4'=>'ProfId4','s.code_compta'=>'CustomerAccountancyCode','s.code_compta_fournisseur'=>'SupplierAccountancyCode',
+		's.phone'=>'Phone','s.email'=>'Email','s.siren'=>'ProfId1','s.siret'=>'ProfId2','s.ape'=>'ProfId3','s.idprof4'=>'ProfId4','s.code_compta'=>'CustomerAccountingCode','s.code_compta_fournisseur'=>'SupplierAccountingCode',
 		'p.rowid'=>"ProjectId",'p.ref'=>"RefProject",'p.title'=>'ProjectLabel', 'p.datec'=>"DateCreation",'p.dateo'=>"DateStart",'p.datee'=>"DateEnd",'p.fk_statut'=>'ProjectStatus','cls.code'=>'OpportunityStatus','p.opp_percent'=>'OpportunityProbability','p.opp_amount'=>'OpportunityAmount','p.description'=>"Description");
 	    // Add multicompany field
         if (! empty($conf->global->MULTICOMPANY_ENTITY_IN_EXPORT_IF_SHARED))

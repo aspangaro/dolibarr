@@ -1542,7 +1542,7 @@ a.tmenuimage:hover{
             background-image: url(<?php echo dol_buildpath($path.'/theme/'.$theme.'/img/menus/money_over.png', 1) ?>);
         }
 
-        div.mainmenu.accountancy {
+        div.mainmenu.accounting {
             background-image: url(<?php echo dol_buildpath($path.'/theme/'.$theme.'/img/menus/money_over.png', 1) ?>);
         }
 
@@ -1621,7 +1621,7 @@ a.tmenuimage:hover{
     $moduletomainmenu=array(
         'user'=>'','syslog'=>'','societe'=>'companies','projet'=>'project','propale'=>'commercial','commande'=>'commercial',
         'produit'=>'products','service'=>'products','stock'=>'products',
-        'don'=>'accountancy','tax'=>'accountancy','banque'=>'accountancy','facture'=>'accountancy','compta'=>'accountancy','accounting'=>'accountancy','adherent'=>'members','import'=>'tools','export'=>'tools','mailing'=>'tools',
+        'don'=>'accounting','tax'=>'accounting','banque'=>'accounting','facture'=>'accounting','compta'=>'accounting','accounting'=>'accounting','adherent'=>'members','import'=>'tools','export'=>'tools','mailing'=>'tools',
         'contrat'=>'commercial','ficheinter'=>'commercial','ticket'=>'ticket','deplacement'=>'commercial',
         'fournisseur'=>'companies',
         'barcode'=>'','fckeditor'=>'','categorie'=>'',
@@ -1635,7 +1635,7 @@ a.tmenuimage:hover{
 
     $generic=1;
     // Put here list of menu entries when the div.mainmenu.menuentry was previously defined
-    $divalreadydefined=array('home','companies','products','mrp','commercial','externalsite','accountancy','project','tools','members','agenda','ftp','holiday','hrm','bookmark','cashdesk','takepos','ecm','geoipmaxmind','gravatar','clicktodial','paypal','stripe','webservices','website');
+    $divalreadydefined=array('home','companies','products','mrp','commercial','externalsite','accounting','project','tools','members','agenda','ftp','holiday','hrm','bookmark','cashdesk','takepos','ecm','geoipmaxmind','gravatar','clicktodial','paypal','stripe','webservices','website');
     // Put here list of menu entries we are sure we don't want
     $divnotrequired=array('multicurrency','salaries','ticket','margin','opensurvey','paybox','expensereport','incoterm','prelevement','propal','workflow','notification','supplier_proposal','cron','product','productbatch','expedition');
     foreach($mainmenuusedarray as $val)

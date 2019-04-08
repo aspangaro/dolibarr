@@ -261,10 +261,10 @@ abstract class ModeleThirdPartyCode
 
 
 /**
- *		\class		ModeleAccountancyCode
- *		\brief  	Parent class for third parties accountancy code generators
+ *		\class		ModeleAccountingCode
+ *		\brief  	Parent class for third parties accounting code generators
  */
-abstract class ModeleAccountancyCode
+abstract class ModeleAccountingCode
 {
     /**
 	 * @var string Error code (or message)
@@ -364,7 +364,7 @@ abstract class ModeleAccountancyCode
 
     // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
     /**
-     *  Set accountancy account code for a third party into this->code
+     *  Set accounting account code for a third party into this->code
      *
      *  @param	DoliDB	$db             Database handler
      *  @param  Societe	$societe        Third party object

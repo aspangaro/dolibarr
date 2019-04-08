@@ -29,7 +29,7 @@ create table llx_payment_various
   sens                  smallint DEFAULT 0 NOT NULL,-- Sens of the operation: 0 for debit operation, 1 for credit operation
   amount                double(24,8) DEFAULT 0 NOT NULL,
   fk_typepayment        integer NOT NULL,
-  accountancy_code      varchar(32),
+  accounting_code      varchar(32),
   subledger_account     varchar(32),
   fk_projet             integer DEFAULT NULL,
   entity                integer DEFAULT 1 NOT NULL,	-- multi company id

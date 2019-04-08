@@ -21,7 +21,7 @@
 
 /**
  *	\file       htdocs/core/class/html.formaccounting.class.php
- *  \ingroup    Advanced accountancy
+ *  \ingroup    Accounting
  *	\brief      File of class with all html predefined components
  */
 require_once DOL_DOCUMENT_ROOT .'/core/class/html.form.class.php';
@@ -102,7 +102,7 @@ class FormAccounting extends Form
 			}
 
     		$selected = 0;
-			$langs->load('accountancy');
+			$langs->load('accounting');
 			while ($obj = $this->db->fetch_object($resql))
 			{
 				$label = $obj->code . ' - ' . $langs->trans($obj->label);
@@ -234,7 +234,7 @@ class FormAccounting extends Form
 		$options = array();
 
 		$sql = 'SELECT DISTINCT import_key from ' . MAIN_DB_PREFIX . 'accounting_bookkeeping';
-	    $sql .= " WHERE entity IN (".getEntity('accountancy').")";
+	    $sql .= " WHERE entity IN (".getEntity('accounting').")";
 		$sql .= ' ORDER BY import_key DESC';
 
 		dol_syslog(get_class($this) . "::select_bookkeeping_importkey", LOG_DEBUG);
@@ -404,16 +404,16 @@ class FormAccounting extends Form
 		$this->db->free($resql);
 
         // Auxiliary user account
-        $sql = "SELECT DISTINCT accountancy_code, lastname, firstname ";
+        $sql = "SELECT DISTINCT accounting_code, lastname, firstname ";
         $sql .= " FROM ".MAIN_DB_PREFIX."user";
         $sql .= " WHERE entity IN (" . getEntity('user') . ")";
-        $sql .= " ORDER BY accountancy_code";
+        $sql .= " ORDER BY accounting_code";
         dol_syslog(get_class($this)."::select_auxaccount", LOG_DEBUG);
         $resql = $this->db->query($sql);
         if ($resql) {
             while ($obj = $this->db->fetch_object($resql)) {
-                if (!empty($obj->accountancy_code)) {
-                    $aux_account[$obj->accountancy_code] = $obj->accountancy_code.' ('.dolGetFirstLastname($obj->firstname, $obj->lastname).')';
+                if (!empty($obj->accounting_code)) {
+                    $aux_account[$obj->accounting_code] = $obj->accounting_code.' ('.dolGetFirstLastname($obj->firstname, $obj->lastname).')';
                 }
             }
         } else {
@@ -439,7 +439,7 @@ class FormAccounting extends Form
 	 * @param string $output_format (html/opton (for option html only)/array (to return options arrays
 	 * @return string/array
 	 */
-	public function selectyear_accountancy_bookkepping($selected = '', $htmlname = 'yearid', $useempty = 0, $output_format = 'html')
+	public function selectyear_accounting_bookkepping($selected = '', $htmlname = 'yearid', $useempty = 0, $output_format = 'html')
 	{
         // phpcs:enable
 	    global $conf;
@@ -448,7 +448,7 @@ class FormAccounting extends Form
 
 		$sql = "SELECT DISTINCT date_format(doc_date,'%Y') as dtyear";
 		$sql .= " FROM ".MAIN_DB_PREFIX."accounting_bookkeeping";
-	    $sql .= " WHERE entity IN (" . getEntity('accountancy') . ")";
+	    $sql .= " WHERE entity IN (" . getEntity('accounting') . ")";
 		$sql .= " ORDER BY date_format(doc_date,'%Y')";
 		dol_syslog(get_class($this)."::".__METHOD__, LOG_DEBUG);
 		$resql = $this->db->query($sql);

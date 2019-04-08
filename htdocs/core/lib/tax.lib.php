@@ -86,7 +86,7 @@ function tax_prepare_head(ChargeSociales $object)
  *  @param  string	$direction   	'sell' or 'buy'
  *  @param  int		$m				Month
  *  @param  int		$q           	Quarter
- *  @return array|int               Array with details of VATs (per third parties), -1 if no accountancy module, -2 if not yet developped, -3 if error
+ *  @return array|int               Array with details of VATs (per third parties), -1 if no accounting module, -2 if not yet developped, -3 if error
  */
 function tax_by_thirdparty($type, $db, $y, $date_start, $date_end, $modetax, $direction, $m = 0, $q = 0)
 {
@@ -367,8 +367,8 @@ function tax_by_thirdparty($type, $db, $y, $date_start, $date_end, $modetax, $di
 
     if (! $sql)
     {
-    	dol_syslog("Tax.lib.php::tax_by_rate no accountancy module enabled".$sql, LOG_ERR);
-    	return -1;  // -1 = Not accountancy module enabled
+    	dol_syslog("Tax.lib.php::tax_by_rate no accounting module enabled".$sql, LOG_ERR);
+    	return -1;  // -1 = Not accounting module enabled
     }
     if ($sql == 'TODO') return -2; // -2 = Feature not yet available
     if ($sql != 'TODO')
@@ -470,8 +470,8 @@ function tax_by_thirdparty($type, $db, $y, $date_start, $date_end, $modetax, $di
 
     	if (! $sql)
     	{
-    		dol_syslog("Tax.lib.php::tax_by_rate no accountancy module enabled".$sql, LOG_ERR);
-    		return -1;  // -1 = Not accountancy module enabled
+    		dol_syslog("Tax.lib.php::tax_by_rate no accounting module enabled".$sql, LOG_ERR);
+    		return -1;  // -1 = Not accounting module enabled
     	}
     	if ($sql == 'TODO') return -2; // -2 = Feature not yet available
     	if ($sql != 'TODO')
@@ -554,7 +554,7 @@ function tax_by_thirdparty($type, $db, $y, $date_start, $date_end, $modetax, $di
  *  @param  int		$modetax     	Not used
  *  @param  int		$direction   	'sell' (customer invoice) or 'buy' (supplier invoices)
  *  @param  int		$m           	Month
- *  @return array|int               Array with details of VATs (per rate), -1 if no accountancy module, -2 if not yet developped, -3 if error
+ *  @return array|int               Array with details of VATs (per rate), -1 if no accounting module, -2 if not yet developped, -3 if error
  */
 function tax_by_rate($type, $db, $y, $q, $date_start, $date_end, $modetax, $direction, $m = 0)
 {
@@ -836,8 +836,8 @@ function tax_by_rate($type, $db, $y, $q, $date_start, $date_end, $modetax, $dire
 
     if (! $sql)
     {
-        dol_syslog("Tax.lib.php::tax_by_rate no accountancy module enabled".$sql, LOG_ERR);
-        return -1;  // -1 = Not accountancy module enabled
+        dol_syslog("Tax.lib.php::tax_by_rate no accounting module enabled".$sql, LOG_ERR);
+        return -1;  // -1 = Not accounting module enabled
     }
     if ($sql == 'TODO') return -2; // -2 = Feature not yet available
     if ($sql != 'TODO')
@@ -939,8 +939,8 @@ function tax_by_rate($type, $db, $y, $q, $date_start, $date_end, $modetax, $dire
 
 		if (! $sql)
 		{
-			dol_syslog("Tax.lib.php::tax_by_rate no accountancy module enabled".$sql, LOG_ERR);
-			return -1;  // -1 = Not accountancy module enabled
+			dol_syslog("Tax.lib.php::tax_by_rate no accounting module enabled".$sql, LOG_ERR);
+			return -1;  // -1 = Not accounting module enabled
 		}
 		if ($sql == 'TODO') return -2; // -2 = Feature not yet available
 		if ($sql != 'TODO')

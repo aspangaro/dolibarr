@@ -43,9 +43,9 @@ create table llx_loan
   
   paid							smallint default 0 NOT NULL,
 
-  accountancy_account_capital	varchar(32),
-  accountancy_account_insurance	varchar(32),
-  accountancy_account_interest	varchar(32),
+  accounting_account_capital	varchar(32),
+  accounting_account_insurance	varchar(32),
+  accounting_account_interest	varchar(32),
   
   fk_projet						integer DEFAULT NULL,
   

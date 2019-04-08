@@ -151,7 +151,7 @@ class modBanque extends DolibarrModules
 			'b.rowid'=>'IdTransaction','ba.ref'=>'AccountRef','ba.label'=>'AccountLabel','b.datev'=>'DateValue','b.dateo'=>'DateOperation','b.label'=>'Label',
 			'b.num_chq'=>'ChequeOrTransferNumber','b.fk_bordereau'=>'ChequeBordereau','-b.amount'=>'Debit','b.amount'=>'Credit',
 			'b.num_releve'=>'AccountStatement','b.datec'=>"DateCreation","bu.url_id"=>"IdThirdParty","s.nom"=>"ThirdParty",
-			"s.code_compta"=>"CustomerAccountancyCode","s.code_compta_fournisseur"=>"SupplierAccountancyCode"
+			"s.code_compta"=>"CustomerAccountingCode","s.code_compta_fournisseur"=>"SupplierAccountingCode"
 		);
 		$this->export_TypeFields_array[$r]=array('ba.ref'=>'Text','ba.label'=>'Text','b.datev'=>'Date','b.dateo'=>'Date','b.label'=>'Text','b.num_chq'=>'Text','b.fk_bordereau'=>'Text','-b.amount'=>'Numeric','b.amount'=>'Numeric','b.num_releve'=>'Text','b.datec'=>"Date","bu.url_id"=>"Text","s.nom"=>"Text","s.code_compta"=>"Text","s.code_compta_fournisseur"=>"Text");
 		$this->export_entities_array[$r]=array(
@@ -178,7 +178,7 @@ class modBanque extends DolibarrModules
 		$this->export_label[$r]='Bordereaux remise Chq/Fact';
 		$this->export_permission[$r]=array(array("banque","export"));
 		$this->export_fields_array[$r]=array("bch.rowid"=>"DepositId","bch.ref"=>"Numero","bch.ref_ext"=>"RefExt",'ba.ref'=>'AccountRef','ba.label'=>'AccountLabel','b.datev'=>'DateValue','b.num_chq'=>'ChequeOrTransferNumber','b.amount'=>'Credit','b.num_releve'=>'AccountStatement','b.datec'=>"DateCreation",
-			"bch.date_bordereau"=>"Date","bch.amount"=>"Total","bch.nbcheque"=>"NbCheque","bu.url_id"=>"IdThirdParty","s.nom"=>"ThirdParty","s.code_compta"=>"CustomerAccountancyCode","f.ref"=>"InvoiceRef"
+			"bch.date_bordereau"=>"Date","bch.amount"=>"Total","bch.nbcheque"=>"NbCheque","bu.url_id"=>"IdThirdParty","s.nom"=>"ThirdParty","s.code_compta"=>"CustomerAccountingCode","f.ref"=>"InvoiceRef"
 			);
 		$this->export_TypeFields_array[$r]=array('ba.ref'=>'Text','ba.label'=>'Text','b.datev'=>'Date','b.num_chq'=>'Text','b.amount'=>'Numeric','b.num_releve'=>'Text','b.datec'=>"Date",
 			"bch.date_bordereau"=>"Date","bch.rowid"=>"Numeric","bch.ref"=>"Numeric","bch.ref_ext"=>"Text","bch.amount"=>"Numeric","bch.nbcheque"=>"Numeric","bu.url_id"=>"Text","s.nom"=>"Text","s.code_compta"=>"Text","f.ref"=>"Text"

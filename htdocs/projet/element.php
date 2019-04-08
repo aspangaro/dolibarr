@@ -559,7 +559,7 @@ $langs->loadLangs(array("suppliers", "bills", "orders", "proposals", "margins"))
 
 if (!empty($conf->stock->enabled)) $langs->load('stocks');
 
-print load_fiche_titre($langs->trans("Profit"), '', 'title_accountancy');
+print load_fiche_titre($langs->trans("Profit"), '', 'title_accounting');
 
 print '<table class="noborder" width="100%">';
 print '<tr class="liste_titre">';

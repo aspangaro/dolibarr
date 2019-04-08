@@ -236,23 +236,23 @@ class modAsset extends DolibarrModules
 			'a.phone'=>"PhonePro",'a.phone_perso'=>"PhonePerso",'a.phone_mobile'=>"PhoneMobile",'a.email'=>"Email",'a.birth'=>"Birthday",'a.statut'=>"Status",
 			'a.photo'=>"Photo",'a.note_public'=>"NotePublic",'a.note_private'=>"NotePrivate",'a.datec'=>'DateCreation','a.datevalid'=>'DateValidation',
 			'a.tms'=>'DateLastModification','a.datefin'=>'DateEndSubscription','ta.rowid'=>'AssetTypeId','ta.label'=>'AssetTypeLabel',
-			'ta.accountancy_code_asset'=>'AccountancyCodeAsset','ta.accountancy_code_depreciation_asset'=>'AccountancyCodeDepreciationAsset',
-			'ta.accountancy_code_depreciation_expense'=>'AccountancyCodeDepreciationExpense'
+			'ta.accounting_code_asset'=>'AccountingCodeAsset','ta.accounting_code_depreciation_asset'=>'AccountingCodeDepreciationAsset',
+			'ta.accounting_code_depreciation_expense'=>'AccountingCodeDepreciationExpense'
 		);
 		$this->export_TypeFields_array[$r]=array(
 			'a.civility'=>"Text",'a.lastname'=>"Text",'a.firstname'=>"Text",'a.login'=>"Text",'a.morphy'=>'Text','a.societe'=>'Text','a.address'=>"Text",
 			'a.zip'=>"Text",'a.town'=>"Text",'d.nom'=>"Text",'co.code'=>'Text','co.label'=>"Text",'a.phone'=>"Text",'a.phone_perso'=>"Text",'a.phone_mobile'=>"Text",
 			'a.email'=>"Text",'a.birth'=>"Date",'a.statut'=>"Status",'a.note_public'=>"Text",'a.note_private'=>"Text",'a.datec'=>'Date','a.datevalid'=>'Date',
-			'a.tms'=>'Date','a.datefin'=>'Date','ta.rowid'=>'List:asset_type:label','ta.label'=>'Text','ta.accountancy_code_asset'=>'Text','ta.accountancy_code_depreciation_asset'=>'Text',
-			'ta.accountancy_code_depreciation_expense'=>'Text'
+			'a.tms'=>'Date','a.datefin'=>'Date','ta.rowid'=>'List:asset_type:label','ta.label'=>'Text','ta.accounting_code_asset'=>'Text','ta.accounting_code_depreciation_asset'=>'Text',
+			'ta.accounting_code_depreciation_expense'=>'Text'
 		);
 		$this->export_entities_array[$r]=array(
 			'a.rowid'=>'member','a.civility'=>"member",'a.lastname'=>"member",'a.firstname'=>"member",'a.login'=>"member",'a.morphy'=>'member',
 			'a.societe'=>'member','a.address'=>"member",'a.zip'=>"member",'a.town'=>"member",'d.nom'=>"member",'co.code'=>"member",'co.label'=>"member",
 			'a.phone'=>"member",'a.phone_perso'=>"member",'a.phone_mobile'=>"member",'a.email'=>"member",'a.birth'=>"member",'a.statut'=>"member",
 			'a.photo'=>"member",'a.note_public'=>"member",'a.note_private'=>"member",'a.datec'=>'member','a.datevalid'=>'member','a.tms'=>'member',
-			'a.datefin'=>'member','ta.rowid'=>'asset_type','ta.label'=>'asset_type','ta.accountancy_code_asset'=>'asset_type','ta.accountancy_code_depreciation_asset'=>'asset_type',
-			'ta.accountancy_code_depreciation_expense'=>'asset_type'
+			'a.datefin'=>'member','ta.rowid'=>'asset_type','ta.label'=>'asset_type','ta.accounting_code_asset'=>'asset_type','ta.accounting_code_depreciation_asset'=>'asset_type',
+			'ta.accounting_code_depreciation_expense'=>'asset_type'
 		);
 		// Add extra fields
 		$keyforselect='asset'; $keyforelement='asset'; $keyforaliasextra='extra';

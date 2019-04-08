@@ -2,9 +2,9 @@
 host = https://www.transifex.com
 lang_map = uz: uz_UZ, sw: sw_SW, sr@latin: sr_RS
 
-[dolibarr.accountancy]
-file_filter = htdocs/langs/<lang>/accountancy.lang
-source_file = htdocs/langs/en_US/accountancy.lang
+[dolibarr.accounting]
+file_filter = htdocs/langs/<lang>/accounting.lang
+source_file = htdocs/langs/en_US/accounting.lang
 source_lang = en_US
 type = MOZILLAPROPERTIES
 

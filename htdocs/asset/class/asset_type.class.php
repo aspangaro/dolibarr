@@ -55,14 +55,14 @@ class AssetType extends CommonObject
 	 */
 	public $label;
 
-	/** @var string Accountancy code asset */
-	public $accountancy_code_asset;
+	/** @var string Accounting code asset */
+	public $accounting_code_asset;
 
-	/** @var string Accountancy code depreciation asset */
-	public $accountancy_code_depreciation_asset;
+	/** @var string Accounting code depreciation asset */
+	public $accounting_code_depreciation_asset;
 
-	/** @var string Accountancy code depreciation expense */
-	public $accountancy_code_depreciation_expense;
+	/** @var string Accounting code depreciation expense */
+	public $accounting_code_depreciation_expense;
 
 	/** @var string 	Public note */
 	public $note;
@@ -96,24 +96,24 @@ class AssetType extends CommonObject
 		$error=0;
 
 		$this->label=trim($this->label);
-		$this->accountancy_code_asset = trim($this->accountancy_code_asset);
-		$this->accountancy_code_depreciation_asset = trim($this->accountancy_code_depreciation_asset);
-		$this->accountancy_code_depreciation_expense = trim($this->accountancy_code_depreciation_expense);
+		$this->accounting_code_asset = trim($this->accounting_code_asset);
+		$this->accounting_code_depreciation_asset = trim($this->accounting_code_depreciation_asset);
+		$this->accounting_code_depreciation_expense = trim($this->accounting_code_depreciation_expense);
 
 		$this->db->begin();
 
 		$sql = "INSERT INTO ".MAIN_DB_PREFIX."asset_type (";
 		$sql.= "label";
-		$sql.= ", accountancy_code_asset";
-		$sql.= ", accountancy_code_depreciation_asset";
-		$sql.= ", accountancy_code_depreciation_expense";
+		$sql.= ", accounting_code_asset";
+		$sql.= ", accounting_code_depreciation_asset";
+		$sql.= ", accounting_code_depreciation_expense";
 		$sql.= ", note";
 		$sql.= ", entity";
 		$sql.= ") VALUES (";
 		$sql.= "'".$this->db->escape($this->label)."'";
-		$sql.= ", '".$this->db->escape($this->accountancy_code_asset)."'";
-		$sql.= ", '".$this->db->escape($this->accountancy_code_depreciation_asset)."'";
-		$sql.= ", '".$this->db->escape($this->accountancy_code_depreciation_expense)."'";
+		$sql.= ", '".$this->db->escape($this->accounting_code_asset)."'";
+		$sql.= ", '".$this->db->escape($this->accounting_code_depreciation_asset)."'";
+		$sql.= ", '".$this->db->escape($this->accounting_code_depreciation_expense)."'";
 		$sql.= ", '".$this->db->escape($this->note)."'";
 		$sql.= ", ".$conf->entity;
 		$sql.= ")";
@@ -179,9 +179,9 @@ class AssetType extends CommonObject
 		$sql = "UPDATE ".MAIN_DB_PREFIX."asset_type ";
 		$sql.= "SET ";
 		$sql.= "label = '".$this->db->escape($this->label) ."',";
-		$sql.= "accountancy_code_asset = '".$this->db->escape($this->accountancy_code_asset)."',";
-		$sql.= "accountancy_code_depreciation_asset = '".$this->db->escape($this->accountancy_code_depreciation_asset)."',";
-		$sql.= "accountancy_code_depreciation_expense = '".$this->db->escape($this->accountancy_code_depreciation_expense)."',";
+		$sql.= "accounting_code_asset = '".$this->db->escape($this->accounting_code_asset)."',";
+		$sql.= "accounting_code_depreciation_asset = '".$this->db->escape($this->accounting_code_depreciation_asset)."',";
+		$sql.= "accounting_code_depreciation_expense = '".$this->db->escape($this->accounting_code_depreciation_expense)."',";
 		$sql.= "note = '".$this->db->escape($this->note) ."'";
 		$sql.= " WHERE rowid =".$this->id;
 
@@ -269,7 +269,7 @@ class AssetType extends CommonObject
 	 */
 	public function fetch($rowid)
 	{
-		$sql = "SELECT d.rowid, d.label as label, d.accountancy_code_asset, d.accountancy_code_depreciation_asset, d.accountancy_code_depreciation_expense, d.note";
+		$sql = "SELECT d.rowid, d.label as label, d.accounting_code_asset, d.accounting_code_depreciation_asset, d.accounting_code_depreciation_expense, d.note";
 		$sql .= " FROM ".MAIN_DB_PREFIX."asset_type as d";
 		$sql .= " WHERE d.rowid = ".(int) $rowid;
 
@@ -285,9 +285,9 @@ class AssetType extends CommonObject
 				$this->id = $obj->rowid;
 				$this->ref = $obj->rowid;
 				$this->label = $obj->label;
-				$this->accountancy_code_asset = $obj->accountancy_code_asset;
-				$this->accountancy_code_depreciation_asset = $obj->accountancy_code_depreciation_asset;
-				$this->accountancy_code_depreciation_expense = $obj->accountancy_code_depreciation_expense;
+				$this->accounting_code_asset = $obj->accounting_code_asset;
+				$this->accounting_code_depreciation_asset = $obj->accounting_code_depreciation_asset;
+				$this->accounting_code_depreciation_expense = $obj->accounting_code_depreciation_expense;
 				$this->note = $obj->note;
 			}
 

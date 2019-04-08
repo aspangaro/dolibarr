@@ -528,7 +528,7 @@ class ImportCsv extends ModeleImports
                                     }
                                     if (empty($newval)) $arrayrecord[($key-1)]['type']=-1;	// If we get empty value, we will use "null"
                                 }
-                                elseif ($objimport->array_import_convertvalue[0][$val]['rule']=='getcustomeraccountancycodeifauto')
+                                elseif ($objimport->array_import_convertvalue[0][$val]['rule']=='getcustomeraccountingcodeifauto')
                                 {
                                     if (strtolower($newval) == 'auto')
                                     {
@@ -538,7 +538,7 @@ class ImportCsv extends ModeleImports
                                     }
                                     if (empty($newval)) $arrayrecord[($key-1)]['type']=-1;	// If we get empty value, we will use "null"
                                 }
-                                elseif ($objimport->array_import_convertvalue[0][$val]['rule']=='getsupplieraccountancycodeifauto')
+                                elseif ($objimport->array_import_convertvalue[0][$val]['rule']=='getsupplieraccountingcodeifauto')
                                 {
                                     if (strtolower($newval) == 'auto')
                                     {

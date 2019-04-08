@@ -31,7 +31,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 
 // Load translation files required by the page
-$langs->loadLangs(array("products","categories","errors",'accountancy'));
+$langs->loadLangs(array("products","categories","errors",'accounting'));
 
 // Security pack (data & check)
 $socid = GETPOST('socid', 'int');
@@ -456,7 +456,7 @@ print_liste_field_titre(
 	print '</form>';
 } else {
 	// $modecompta != 'CREANCES-DETTES'
-	// "Calculation of part of each product for accountancy in this mode is not possible. When a partial payment (for example 5 euros) is done on an
+	// "Calculation of part of each product for accounting in this mode is not possible. When a partial payment (for example 5 euros) is done on an
 	// invoice with 2 product (product A for 10 euros and product B for 20 euros), what is part of paiment for product A and part of paiment for product B ?
 	// Because there is no way to know this, this report is not relevant.
 	print '<br>'.$langs->trans("TurnoverPerProductInCommitmentAccountingNotRelevant") . '<br>';

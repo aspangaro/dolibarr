@@ -256,6 +256,7 @@ DateStart=Start date
 DateEnd=End date
 DateCreation=Creation date
 DateCreationShort=Creat. date
+DateExport=Export date
 DateModification=Modification date
 DateModificationShort=Modif. date
 DateLastModification=Latest modification date

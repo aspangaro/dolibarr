@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2014-2017  Olivier Geffroy     <jeff@jeffinfo.com>
- * Copyright (C) 2015-2017  Alexandre Spangaro  <aspangaro@open-dsi.fr>
+ * Copyright (C) 2015-2019  Alexandre Spangaro  <aspangaro@open-dsi.fr>
  * Copyright (C) 2015-2017  Florian Henry       <florian.henry@open-concept.pro>
  * Copyright (C) 2018       Frédéric France     <frederic.france@netlogic.fr>
  *
@@ -904,7 +904,8 @@ class BookKeeping extends CommonObject
 		$sql .= " t.journal_label,";
 		$sql .= " t.piece_num,";
 		$sql .= " t.date_creation,";
-		$sql .= " t.tms as date_modification";
+		$sql .= " t.tms as date_modification,";
+        $sql .= " t.date_exported";
 		$sql .= ' FROM ' . MAIN_DB_PREFIX . $this->table_element . ' as t';
 		// Manage filter
 		$sqlwhere = array ();
@@ -978,6 +979,7 @@ class BookKeeping extends CommonObject
 				$line->piece_num = $obj->piece_num;
 				$line->date_creation = $this->db->jdate($obj->date_creation);
 				$line->date_modification = $this->db->jdate($obj->date_modification);
+                $line->date_exported = $this->db->jdate($obj->date_exported);
 
 				$this->lines[] = $line;
 
@@ -1924,6 +1926,56 @@ class BookKeeping extends CommonObject
 			return -1;
 		}
 	}
+
+    /**
+     * Function to update exported lines
+     *
+     * @param array		$TData 		data
+     * @return void
+     */
+    public function exported(&$TData)
+    {
+
+        foreach ($objectLines as $line) {
+
+        }
+
+        // Update request
+        $sql = 'UPDATE ' . MAIN_DB_PREFIX . $this->table_element . ' SET';
+        $sql .= ' date_exported = "' . $this->db->idate($now).'",';
+        $sql .= ' exported = 1';
+        $sql .= ' WHERE rowid=' . $line->id;
+
+        $this->db->begin();
+
+        $resql = $this->db->query($sql);
+        if (! $resql) {
+            $error ++;
+            $this->errors[] = 'Error ' . $this->db->lasterror();
+            dol_syslog(__METHOD__ . ' ' . join(',', $this->errors), LOG_ERR);
+        }
+
+        // Uncomment this and change MYOBJECT to your own tag if you
+        // want this action calls a trigger.
+        //if (! $error && ! $notrigger) {
+
+        // // Call triggers
+        // $result=$this->call_trigger('MYOBJECT_MODIFY',$user);
+        // if ($result < 0) { $error++; //Do also what you must do to rollback action if trigger fail}
+        // // End call triggers
+        //}
+
+        // Commit or rollback
+        if ($error) {
+            $this->db->rollback();
+
+            return - 1 * $error;
+        } else {
+            $this->db->commit();
+
+            return 1;
+        }
+    }
 }
 
 /**

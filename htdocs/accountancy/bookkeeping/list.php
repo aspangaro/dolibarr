@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2013-2016  Olivier Geffroy         <jeff@jeffinfo.com>
  * Copyright (C) 2013-2016  Florian Henry           <florian.henry@open-concept.pro>
- * Copyright (C) 2013-2018  Alexandre Spangaro      <aspangaro@open-dsi.fr>
+ * Copyright (C) 2013-2019  Alexandre Spangaro      <aspangaro@open-dsi.fr>
  * Copyright (C) 2016-2017  Laurent Destailleur     <eldy@users.sourceforge.net>
  * Copyright (C) 2018       Frédéric France         <frederic.france@netlogic.fr>
  *
@@ -47,6 +47,8 @@ $search_date_creation_start = dol_mktime(0, 0, 0, GETPOST('date_creation_startmo
 $search_date_creation_end = dol_mktime(0, 0, 0, GETPOST('date_creation_endmonth', 'int'), GETPOST('date_creation_endday', 'int'), GETPOST('date_creation_endyear', 'int'));
 $search_date_modification_start = dol_mktime(0, 0, 0, GETPOST('date_modification_startmonth', 'int'), GETPOST('date_modification_startday', 'int'), GETPOST('date_modification_startyear', 'int'));
 $search_date_modification_end = dol_mktime(0, 0, 0, GETPOST('date_modification_endmonth', 'int'), GETPOST('date_modification_endday', 'int'), GETPOST('date_modification_endyear', 'int'));
+$search_date_exported_start = dol_mktime(0, 0, 0, GETPOST('date_exported_startmonth', 'int'), GETPOST('date_exported_startday', 'int'), GETPOST('date_exported_startyear', 'int'));
+$search_date_exported_end = dol_mktime(0, 0, 0, GETPOST('date_exported_endmonth', 'int'), GETPOST('date_exported_endday', 'int'), GETPOST('date_exported_endyear', 'int'));
 //var_dump($search_date_start);exit;
 if (GETPOST("button_delmvt_x") || GETPOST("button_delmvt.x") || GETPOST("button_delmvt")) {
 	$action = 'delbookkeepingyear';
@@ -143,6 +145,7 @@ $arrayfields=array(
 	't.code_journal'=>array('label'=>$langs->trans("Codejournal"), 'checked'=>1),
 	't.date_creation'=>array('label'=>$langs->trans("DateCreation"), 'checked'=>0),
 	't.tms'=>array('label'=>$langs->trans("DateModification"), 'checked'=>0),
+    't.date_exported'=>array('label'=>$langs->trans("DateExport"), 'checked'=>0)
 );
 
 if (empty($conf->global->ACCOUNTING_ENABLE_LETTERING)) unset($arrayfields['t.lettering_code']);
@@ -181,6 +184,8 @@ if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x'
 	$search_debit = '';
 	$search_credit = '';
 	$search_lettering_code = '';
+    $search_date_exported_start = '';
+    $search_date_exported_end = '';
 }
 
 // Must be after the remove filter action, before the export.
@@ -281,6 +286,16 @@ if (! empty($search_lettering_code)) {
 	$filter['t.lettering_code'] = $search_lettering_code;
 	$param .= '&search_lettering_code=' . urlencode($search_lettering_code);
 }
+if (! empty($search_date_exported_start)) {
+    $filter['t.tms>='] = $search_date_exported_start;
+    $tmp=dol_getdate($search_date_exported_start);
+    $param .= '&date_exported_startmonth=' . $tmp['mon'] . '&date_exported_startday=' . $tmp['mday'] . '&date_exported_startyear=' . $tmp['year'];
+}
+if (! empty($search_date_exported_end)) {
+    $filter['t.tms<='] = $search_date_exported_end;
+    $tmp=dol_getdate($search_date_exported_end);
+    $param .= '&date_exported_endmonth=' . $tmp['mon'] . '&date_exported_endday=' . $tmp['mday'] . '&date_exported_endyear=' . $tmp['year'];
+}
 
 
 if ($action == 'delbookkeeping') {
@@ -360,10 +375,19 @@ if ($action == 'export_file') {
 		$accountancyexport = new AccountancyExport($db);
 		$accountancyexport->export($object->lines);
 
-		if (!empty($accountancyexport->errors))
+    	if (!empty($accountancyexport->errors))
 		{
 			setEventMessages('', $accountancyexport->errors, 'errors');
 		}
+
+        // Update lines to specify that the export is carried out
+        $bookkeeping = new BookKeeping($db);
+        $bookkeeping->exported($object->lines);
+
+        if (!empty($bookkeeping->errors))
+        {
+            setEventMessages('', $bookkeeping->errors, 'errors');
+        }
 		exit;
 	}
 }
@@ -586,16 +610,30 @@ if (! empty($arrayfields['t.date_creation']['checked']))
 // Date modification
 if (! empty($arrayfields['t.tms']['checked']))
 {
-	print '<td class="liste_titre center">';
-	print '<div class="nowrap">';
-	print $langs->trans('From') . ' ';
-	print $form->selectDate($search_date_modification_start, 'date_modification_start', 0, 0, 1);
-	print '</div>';
-	print '<div class="nowrap">';
-	print $langs->trans('to') . ' ';
-	print $form->selectDate($search_date_modification_end, 'date_modification_end', 0, 0, 1);
-	print '</div>';
-	print '</td>';
+    print '<td class="liste_titre center">';
+    print '<div class="nowrap">';
+    print $langs->trans('From') . ' ';
+    print $form->selectDate($search_date_modification_start, 'date_modification_start', 0, 0, 1);
+    print '</div>';
+    print '<div class="nowrap">';
+    print $langs->trans('to') . ' ';
+    print $form->selectDate($search_date_modification_end, 'date_modification_end', 0, 0, 1);
+    print '</div>';
+    print '</td>';
+}
+// Date exported
+if (! empty($arrayfields['t.date_exported']['checked']))
+{
+    print '<td class="liste_titre center">';
+    print '<div class="nowrap">';
+    print $langs->trans('From') . ' ';
+    print $form->selectDate($search_date_exported_start, 'date_exported_start', 0, 0, 1);
+    print '</div>';
+    print '<div class="nowrap">';
+    print $langs->trans('to') . ' ';
+    print $form->selectDate($search_date_exported_end, 'date_exported_end', 0, 0, 1);
+    print '</div>';
+    print '</td>';
 }
 // Action column
 print '<td class="liste_titre center">';
@@ -617,6 +655,7 @@ if (! empty($arrayfields['t.lettering_code']['checked']))		print_liste_field_tit
 if (! empty($arrayfields['t.code_journal']['checked']))			print_liste_field_titre($arrayfields['t.code_journal']['label'], $_SERVER['PHP_SELF'], "t.code_journal", "", $param, '', $sortfield, $sortorder, 'center ');
 if (! empty($arrayfields['t.date_creation']['checked']))		print_liste_field_titre($arrayfields['t.date_creation']['label'], $_SERVER['PHP_SELF'], "t.date_creation", "", $param, '', $sortfield, $sortorder, 'center ');
 if (! empty($arrayfields['t.tms']['checked']))					print_liste_field_titre($arrayfields['t.tms']['label'], $_SERVER['PHP_SELF'], "t.tms", "", $param, '', $sortfield, $sortorder, 'center ');
+if (! empty($arrayfields['t.date_exported']['checked']))		print_liste_field_titre($arrayfields['t.date_exported']['label'], $_SERVER['PHP_SELF'], "t.date_exported", "", $param, '', $sortfield, $sortorder, 'center ');
 print_liste_field_titre($selectedfields, $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'center maxwidthsearch ');
 print "</tr>\n";
 
@@ -728,6 +767,13 @@ if ($num > 0)
 			print '<td class="center">' . dol_print_date($line->date_modification, 'dayhour') . '</td>';
 			if (! $i) $totalarray['nbfield']++;
 		}
+
+        // Exported operation date
+        if (! empty($arrayfields['t.date_exported']['checked']))
+        {
+            print '<td class="center">' . dol_print_date($line->date_exported, 'dayhour') . '</td>';
+            if (! $i) $totalarray['nbfield']++;
+        }
 
 		// Action column
 		print '<td class="nowraponall center">';

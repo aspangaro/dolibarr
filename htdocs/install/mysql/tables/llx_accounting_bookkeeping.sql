@@ -51,6 +51,8 @@ CREATE TABLE llx_accounting_bookkeeping
   piece_num             integer NOT NULL,			-- FEC:EcritureNum  | accounting source document
   validated             tinyint DEFAULT 0 NOT NULL,	-- 					| 0 line not validated / 1 line validated (No deleting / No modification) 
   date_validated        datetime,					-- FEC:ValidDate
+  exported				tinyint DEFAULT 0 NOT NULL,	-- 					| 0 line not exported / 1 line already export
+  date_exported			datetime,					--                  | date of the export   
   import_key            varchar(14),
   extraparams	        varchar(255)				-- for other parameters with json format
 ) ENGINE=innodb;

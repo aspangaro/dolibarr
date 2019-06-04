@@ -4,12 +4,12 @@
  * Copyright (C) 2011       Juanjo Menent           <jmenent@2byte.es>
  * Copyright (C) 2012       Regis Houssin           <regis.houssin@inodbox.com>
  * Copyright (C) 2013       Christophe Battarel     <christophe.battarel@altairis.fr>
- * Copyright (C) 2013-2018  Alexandre Spangaro      <aspangaro@open-dsi.fr>
+ * Copyright (C) 2013-2019  Alexandre Spangaro      <aspangaro@open-dsi.fr>
  * Copyright (C) 2013-2014  Florian Henry           <florian.henry@open-concept.pro>
  * Copyright (C) 2013-2014  Olivier Geffroy         <jeff@jeffinfo.com>
  * Copyright (C) 2017-2018  Frédéric France         <frederic.france@netlogic.fr>
- * Copyright (C) 2018		Ferran Marcet	    <fmarcet@2byte.es>
- * Copyright (C) 2018		Eric Seigne	    <eric.seigne@cap-rel.fr>
+ * Copyright (C) 2018		Ferran Marcet           <fmarcet@2byte.es>
+ * Copyright (C) 2018		Eric Seigne             <eric.seigne@cap-rel.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -379,8 +379,13 @@ if ($result) {
 					$tabpay[$obj->rowid]["paymentvariousid"] = $paymentvariousstatic->id;
 					$paymentvariousstatic->fetch($paymentvariousstatic->id);
 					$account_various = (! empty($paymentvariousstatic->accountancy_code) ? $paymentvariousstatic->accountancy_code : 'NotDefined');	// NotDefined is a reserved word
-					$tabtp[$obj->rowid][$account_various] += $obj->amount;
-				} elseif ($links[$key]['type'] == 'payment_loan') {
+					//$subledger_various = (! empty($paymentvariousstatic->subledger_account) ? $paymentvariousstatic->subledger_account : 'NotDefined');	// NotDefined is a reserved word
+					if (! empty($subledger_various)) {
+                        $tabtp[$obj->rowid][$subledger_various] += $obj->amount;
+                    } else {
+                        $tabtp[$obj->rowid][$account_various] += $obj->amount;
+                    }
+                } elseif ($links[$key]['type'] == 'payment_loan') {
 					$paymentloanstatic->id = $links[$key]['url_id'];
 					$paymentloanstatic->ref = $links[$key]['url_id'];
 					$paymentloanstatic->fk_loan = $links[$key]['url_id'];

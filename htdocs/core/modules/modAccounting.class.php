@@ -22,7 +22,7 @@
 
 /**
  * \file		htdocs/core/modules/modAccounting.class.php
- * \ingroup		Double entry accounting
+ * \ingroup		Accountancy (Double entries)
  * \brief		Module to activate the double entry accounting module
  */
 include_once DOL_DOCUMENT_ROOT .'/core/modules/DolibarrModules.class.php';

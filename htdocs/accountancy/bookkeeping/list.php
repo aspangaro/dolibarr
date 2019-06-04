@@ -21,7 +21,7 @@
 
 /**
  * \file		htdocs/accountancy/bookkeeping/list.php
- * \ingroup		Advanced accountancy
+ * \ingroup		Accountancy (Double entries)
  * \brief 		List operation of book keeping
  */
 require '../../main.inc.php';

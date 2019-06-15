@@ -221,11 +221,11 @@ class modAccounting extends DolibarrModules
 		$r++;
 
 		$this->rights[$r][0] = 50430;
-		$this->rights[$r][1] = 'Define and close a fiscal year';
+		$this->rights[$r][1] = 'Define a fiscal year';
 		$this->rights[$r][2] = 'r';
 		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'fiscalyear';
-		$this->rights[$r][5] = '';
+		$this->rights[$r][5] = 'read';
 		$r++;
 
 

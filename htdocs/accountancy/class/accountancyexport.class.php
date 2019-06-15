@@ -106,8 +106,8 @@ class AccountancyExport
 			self::$EXPORT_TYPE_COGILOG => $langs->trans('Modelcsv_cogilog'),
 			self::$EXPORT_TYPE_AGIRIS => $langs->trans('Modelcsv_agiris'),
             self::$EXPORT_TYPE_OPENCONCERTO => $langs->trans('Modelcsv_openconcerto'),
+            self::$EXPORT_TYPE_SAGE50_SWISS => $langs->trans('Modelcsv_Sage50_Swiss'),
 			self::$EXPORT_TYPE_FEC => $langs->trans('Modelcsv_FEC'),
-			self::$EXPORT_TYPE_SAGE50_SWISS => $langs->trans('Modelcsv_Sage50_Swiss'),
 		);
 	}
 
@@ -131,8 +131,8 @@ class AccountancyExport
 			self::$EXPORT_TYPE_COGILOG => 'cogilog',
 			self::$EXPORT_TYPE_AGIRIS => 'agiris',
 			self::$EXPORT_TYPE_OPENCONCERTO => 'openconcerto',
+            self::$EXPORT_TYPE_SAGE50_SWISS => 'sage50ch',
 			self::$EXPORT_TYPE_FEC => 'fec',
-                        self::$EXPORT_TYPE_SAGE50_SWISS => 'sage50ch',
 		);
 
 		return $formatcode[$type];
@@ -265,11 +265,11 @@ class AccountancyExport
             case self::$EXPORT_TYPE_OPENCONCERTO :
                 $this->exportOpenConcerto($TData);
                 break;
+            case self::$EXPORT_TYPE_SAGE50_SWISS :
+                $this->exportSAGE50SWISS($TData);
+                break;
 			case self::$EXPORT_TYPE_FEC :
 				$this->exportFEC($TData);
-				break;
-			case self::$EXPORT_TYPE_SAGE50_SWISS :
-				$this->exportSAGE50SWISS($TData);
 				break;
 			default:
 				$this->errors[] = $langs->trans('accountancy_error_modelnotfound');

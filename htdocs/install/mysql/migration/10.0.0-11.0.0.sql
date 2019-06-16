@@ -29,4 +29,4 @@
 
 
 -- For 11.0
-ALTER TABLE llx_accounting_account ADD COLUMN centralized tinyint DEFAULT 1 NOT NULL after fk_user_modif;
+ALTER TABLE llx_accounting_account ADD COLUMN centralized tinyint DEFAULT 0 NOT NULL after fk_user_modif;

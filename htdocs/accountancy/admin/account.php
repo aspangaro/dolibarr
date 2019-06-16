@@ -154,6 +154,7 @@ if (empty($reshook))
         }
     }
 
+    // Activated or not
     if ($action == 'disable') {
     	if ($accounting->fetch($id)) {
     		$result = $accounting->account_desactivate($id);
@@ -173,6 +174,7 @@ if (empty($reshook))
     	}
     }
 
+    // Centralized or not
     if ($action == 'disable_centralized') {
         if ($accounting->fetch($id)) {
             $result = $accounting->account_disable_centralized($id);
@@ -209,7 +211,7 @@ if ($action == 'delete') {
 
 $pcgver = $conf->global->CHARTOFACCOUNTS;
 
-$sql = "SELECT aa.rowid, aa.fk_pcg_version, aa.pcg_type, aa.pcg_subtype, aa.account_number, aa.account_parent , aa.label, aa.active, ";
+$sql = "SELECT aa.rowid, aa.fk_pcg_version, aa.pcg_type, aa.pcg_subtype, aa.account_number, aa.account_parent , aa.label, aa.centralized, aa.active, ";
 $sql .= " a2.rowid as rowid2, a2.label as label2, a2.account_number as account_number2";
 $sql .= " FROM " . MAIN_DB_PREFIX . "accounting_account as aa";
 $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."accounting_system as asy ON aa.fk_pcg_version = asy.pcg_version AND aa.entity = " . $conf->entity;

@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2013-2016 Olivier Geffroy      <jeff@jeffinfo.com>
- * Copyright (C) 2013-2017 Alexandre Spangaro   <aspangaro@open-dsi.fr>
+ * Copyright (C) 2013-2019 Alexandre Spangaro   <aspangaro@open-dsi.fr>
  * Copyright (C) 2016-2018 Laurent Destailleur  <eldy@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -66,6 +66,7 @@ $arrayfields=array(
 	'aa.account_parent'=>array('label'=>$langs->trans("Accountparent"), 'checked'=>1),
     'aa.pcg_type'=>array('label'=>$langs->trans("Pcgtype"), 'checked'=>1, 'help'=>'PcgtypeDesc'),
     'aa.pcg_subtype'=>array('label'=>$langs->trans("Pcgsubtype"), 'checked'=>0, 'help'=>'PcgtypeDesc'),
+    'aa.centralized'=>array('label'=>$langs->trans("Centralized"), 'checked'=>1),
 	'aa.active'=>array('label'=>$langs->trans("Activated"), 'checked'=>1)
 );
 
@@ -170,6 +171,25 @@ if (empty($reshook))
     	if ($result < 0) {
     		setEventMessages($accounting->error, $accounting->errors, 'errors');
     	}
+    }
+
+    if ($action == 'disable_centralized') {
+        if ($accounting->fetch($id)) {
+            $result = $accounting->account_disable_centralized($id);
+        }
+
+        $action = 'update';
+        if ($result < 0) {
+            setEventMessages($accounting->error, $accounting->errors, 'errors');
+        }
+    } elseif ($action == 'enable_centralized') {
+        if ($accounting->fetch($id)) {
+            $result = $accounting->account_enable_centralized($id);
+        }
+        $action = 'update';
+        if ($result < 0) {
+            setEventMessages($accounting->error, $accounting->errors, 'errors');
+        }
     }
 }
 
@@ -296,7 +316,8 @@ if ($resql)
 	if (! empty($arrayfields['aa.account_parent']['checked']))	print '<td class="liste_titre"><input type="text" class="flat" size="10" name="search_accountparent" value="' . $search_accountparent . '"></td>';
 	if (! empty($arrayfields['aa.pcg_type']['checked']))		print '<td class="liste_titre"><input type="text" class="flat" size="6" name="search_pcgtype" value="' . $search_pcgtype . '"></td>';
 	if (! empty($arrayfields['aa.pcg_subtype']['checked']))		print '<td class="liste_titre"><input type="text" class="flat" size="6" name="search_pcgsubtype" value="' . $search_pcgsubtype . '"></td>';
-	if (! empty($arrayfields['aa.active']['checked']))			print '<td class="liste_titre">&nbsp;</td>';
+    if (! empty($arrayfields['aa.centralized']['checked']))     print '<td class="liste_titre">&nbsp;</td>';
+    if (! empty($arrayfields['aa.active']['checked']))			print '<td class="liste_titre">&nbsp;</td>';
 	print '<td class="liste_titre maxwidthsearch">';
 	$searchpicto=$form->showFilterAndCheckAddButtons($massactionbutton?1:0, 'checkforselect', 1);
 	print $searchpicto;
@@ -309,7 +330,8 @@ if ($resql)
 	if (! empty($arrayfields['aa.account_parent']['checked']))	print_liste_field_titre($arrayfields['aa.account_parent']['label'], $_SERVER["PHP_SELF"], "aa.account_parent", "", $param, '', $sortfield, $sortorder, 'left ');
 	if (! empty($arrayfields['aa.pcg_type']['checked']))		print_liste_field_titre($arrayfields['aa.pcg_type']['label'], $_SERVER["PHP_SELF"], 'aa.pcg_type', '', $param, '', $sortfield, $sortorder, '', $arrayfields['aa.pcg_type']['help']);
 	if (! empty($arrayfields['aa.pcg_subtype']['checked']))		print_liste_field_titre($arrayfields['aa.pcg_subtype']['label'], $_SERVER["PHP_SELF"], 'aa.pcg_subtype', '', $param, '', $sortfield, $sortorder, '', $arrayfields['aa.pcg_subtype']['help']);
-	if (! empty($arrayfields['aa.active']['checked']))			print_liste_field_titre($arrayfields['aa.active']['label'], $_SERVER["PHP_SELF"], 'aa.active', '', $param, '', $sortfield, $sortorder);
+    if (! empty($arrayfields['aa.centralized']['checked']))     print_liste_field_titre($arrayfields['aa.centralized']['label'], $_SERVER["PHP_SELF"], 'aa.centralized', '', $param, '', $sortfield, $sortorder);
+    if (! empty($arrayfields['aa.active']['checked']))			print_liste_field_titre($arrayfields['aa.active']['label'], $_SERVER["PHP_SELF"], 'aa.active', '', $param, '', $sortfield, $sortorder);
 	print_liste_field_titre($selectedfields, $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'center maxwidthsearch ');
 	print "</tr>\n";
 
@@ -383,6 +405,23 @@ if ($resql)
 			print "</td>\n";
 			if (! $i) $totalarray['nbfield']++;
 		}
+
+        // Centralized or not
+        if (! empty($arrayfields['aa.centralized']['checked']))
+        {
+            print '<td>';
+            if (empty($obj->centralized)) {
+                print '<a class="reposition" href="' . $_SERVER["PHP_SELF"] . '?id=' . $obj->rowid . '&action=enable_centralized">';
+                print img_picto($langs->trans("Disabled"), 'switch_off');
+                print '</a>';
+            } else {
+                print '<a class="reposition" href="' . $_SERVER["PHP_SELF"] . '?id=' . $obj->rowid . '&action=disable_centralized">';
+                print img_picto($langs->trans("Activated"), 'switch_on');
+                print '</a>';
+            }
+            print '</td>';
+            if (! $i) $totalarray['nbfield']++;
+        }
 
 		// Activated or not
 		if (! empty($arrayfields['aa.active']['checked']))

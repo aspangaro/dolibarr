@@ -1,10 +1,10 @@
 <?php
-/* Copyright (C) 2013-2014  Olivier Geffroy      <jeff@jeffinfo.com>
- * Copyright (C) 2013-2016  Alexandre Spangaro   <aspangaro@open-dsi.fr>
- * Copyright (C) 2013-2014  Florian Henry        <florian.henry@open-concept.pro>
- * Copyright (C) 2014       Juanjo Menent        <jmenent@2byte.es>
- * Copyright (C) 2015       Ari Elbaz (elarifr)  <github@accedinfo.com>
- * Copyright (C) 2018       Frédéric France         <frederic.france@netlogic.fr>
+/* Copyright (C) 2013-2014  Olivier Geffroy     <jeff@jeffinfo.com>
+ * Copyright (C) 2013-2019  Alexandre Spangaro  <aspangaro@open-dsi.fr>
+ * Copyright (C) 2013-2014  Florian Henry       <florian.henry@open-concept.pro>
+ * Copyright (C) 2014       Juanjo Menent       <jmenent@2byte.es>
+ * Copyright (C) 2015       Ari Elbaz (elarifr) <github@accedinfo.com>
+ * Copyright (C) 2018       Frédéric France     <frederic.france@netlogic.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -130,6 +130,11 @@ class AccountingAccount extends CommonObject
      */
     public $fk_user_modif;
 
+    /**
+     * @var int Is a centralizer or not
+     */
+    public $centralized;
+
 	/**
 	 * @var int active (duplicate with status)
 	 */
@@ -162,7 +167,7 @@ class AccountingAccount extends CommonObject
 		global $conf;
 
 		if ($rowid || $account_number) {
-			$sql  = "SELECT a.rowid as rowid, a.datec, a.tms, a.fk_pcg_version, a.pcg_type, a.pcg_subtype, a.account_number, a.account_parent, a.label, a.fk_accounting_category, a.fk_user_author, a.fk_user_modif, a.active";
+			$sql  = "SELECT a.rowid as rowid, a.datec, a.tms, a.fk_pcg_version, a.pcg_type, a.pcg_subtype, a.account_number, a.account_parent, a.label, a.fk_accounting_category, a.fk_user_author, a.fk_user_modif, a.centralized, a.active";
 			$sql .= ", ca.label as category_label";
 			$sql .= " FROM " . MAIN_DB_PREFIX . "accounting_account as a";
 			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_accounting_category as ca ON a.fk_accounting_category = ca.rowid";
@@ -200,6 +205,7 @@ class AccountingAccount extends CommonObject
 					$this->account_category_label = $obj->category_label;
 					$this->fk_user_author = $obj->fk_user_author;
 					$this->fk_user_modif = $obj->fk_user_modif;
+                    $this->centralized = $obj->centralized;
 					$this->active = $obj->active;
 					$this->status = $obj->active;
 
@@ -559,6 +565,63 @@ class AccountingAccount extends CommonObject
 			dol_print_error($this->db);
 		}
 	}
+
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+    /**
+     * Account isn't a centralizer
+     *
+     * @param  int  $id         Id
+     * @return int              <0 if KO, >0 if OK
+     */
+    public function account_disable_centralized($id)
+    {
+        // phpcs:enable
+        $this->db->begin();
+
+        $sql = "UPDATE " . MAIN_DB_PREFIX . "accounting_account ";
+        $sql .= "SET centralized = '0'";
+        $sql .= " WHERE rowid = " . $this->db->escape($id);
+
+        dol_syslog(get_class($this) . "::disable_centralized sql=" . $sql, LOG_DEBUG);
+        $result = $this->db->query($sql);
+
+        if ($result) {
+            $this->db->commit();
+            return 1;
+        } else {
+            $this->error = $this->db->lasterror();
+            $this->db->rollback();
+            return - 1;
+        }
+    }
+
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+    /**
+     * Account is a centralizer
+     *
+     * @param  int  $id         Id
+     * @return int              <0 if KO, >0 if OK
+     */
+    public function account_enable_centralized($id)
+    {
+        // phpcs:enable
+        $this->db->begin();
+
+        $sql = "UPDATE " . MAIN_DB_PREFIX . "accounting_account ";
+        $sql .= "SET centralized = '1'";
+        $sql .= " WHERE rowid = " . $this->db->escape($id);
+
+        dol_syslog(get_class($this) . "::enable_centralized sql=" . $sql, LOG_DEBUG);
+        $result = $this->db->query($sql);
+        if ($result) {
+            $this->db->commit();
+            return 1;
+        } else {
+            $this->error = $this->db->lasterror();
+            $this->db->rollback();
+            return - 1;
+        }
+    }
 
     // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
 	/**

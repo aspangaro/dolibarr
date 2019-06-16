@@ -1,7 +1,7 @@
 -- ============================================================================
 -- Copyright (C) 2004-2006  Laurent Destailleur <eldy@users.sourceforge.net>
 -- Copyright (C) 2014       Juanjo Menent       <jmenent@2byte.es>
--- Copyright (C) 2016       Alexandre Spangaro  <aspangaro@open-dsi.fr>
+-- Copyright (C) 2016-2019  Alexandre Spangaro  <aspangaro@open-dsi.fr>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ create table llx_accounting_account
   fk_accounting_category    integer      DEFAULT 0,			  -- ID of personalized group for report
   fk_user_author            integer      DEFAULT NULL,
   fk_user_modif             integer      DEFAULT NULL,
+  centralized               tinyint      DEFAULT 1  NOT NULL,
   active                    tinyint      DEFAULT 1  NOT NULL,
   import_key                varchar(14),
   extraparams               varchar(255)                      -- for other parameters with json format

@@ -27,7 +27,7 @@
 
 /**
  *  \file       htdocs/accountancy/journal/bankjournal.php
- *  \ingroup    Advanced accountancy
+ *  \ingroup    Accountancy (Double entries)
  *  \brief      Page with bank journal
  */
 require '../../main.inc.php';
@@ -986,15 +986,14 @@ if (empty($action) || $action == 'view') {
 	print '<div class="div-table-responsive">';
 	print "<table class=\"noborder\" width=\"100%\">";
 	print "<tr class=\"liste_titre\">";
-	print "<td></td>";
 	print "<td>" . $langs->trans("Date") . "</td>";
 	print "<td>" . $langs->trans("Piece") . ' (' . $langs->trans("ObjectsRef") . ")</td>";
 	print "<td>" . $langs->trans("AccountAccounting") . "</td>";
 	print "<td>" . $langs->trans("SubledgerAccount") . "</td>";
 	print "<td>" . $langs->trans("LabelOperation") . "</td>";
-	print "<td>" . $langs->trans("PaymentMode") . "</td>";
-	print "<td class='right'>" . $langs->trans("Debit") . "</td>";
-	print "<td class='right'>" . $langs->trans("Credit") . "</td>";
+	print '<td class="center">' . $langs->trans("PaymentMode") . "</td>";
+	print '<td class="right">' . $langs->trans("Debit") . "</td>";
+	print '<td class="right">' . $langs->trans("Credit") . "</td>";
 	print "</tr>\n";
 
 	$r = '';
@@ -1018,7 +1017,6 @@ if (empty($action) || $action == 'view') {
 				//var_dump($tabpay[$key]);
 				print '<!-- Bank bank.rowid='.$key.' type='.$tabpay[$key]['type'].' ref='.$tabpay[$key]['ref'].'-->';
 				print '<tr class="oddeven">';
-				print "<td></td>";
 				print "<td>" . $date . "</td>";
 				print "<td>" . $ref . "</td>";
 				// Ledger account
@@ -1042,9 +1040,9 @@ if (empty($action) || $action == 'view') {
 				print "<td>";
 				print $reflabel;
 				print "</td>";
-				print "<td>" . $val["type_payment"] . "</td>";
-				print "<td class='right'>" . ($mt >= 0 ? price($mt) : '') . "</td>";
-				print "<td class='right'>" . ($mt < 0 ? price(- $mt) : '') . "</td>";
+				print '<td class="center">' . $val["type_payment"] . "</td>";
+				print '<td class="right nowraponall">' . ($mt >= 0 ? price($mt) : '') . "</td>";
+				print '<td class="right nowraponall">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
 				print "</tr>";
 			}
 		}
@@ -1060,7 +1058,6 @@ if (empty($action) || $action == 'view') {
 
 					print '<!-- Thirdparty bank.rowid='.$key.' -->';
 					print '<tr class="oddeven">';
-					print "<td></td>";
 					print "<td>" . $date . "</td>";
 					print "<td>" . $ref . "</td>";
 					// Ledger account
@@ -1124,9 +1121,9 @@ if (empty($action) || $action == 'view') {
 					}
 					print "</td>";
 					print "<td>" . $reflabel . "</td>";
-					print "<td>" . $val["type_payment"] . "</td>";
-					print "<td class='right'>" . ($mt < 0 ? price(- $mt) : '') . "</td>";
-					print "<td class='right'>" . ($mt >= 0 ? price($mt) : '') . "</td>";
+					print '<td class="center">' . $val["type_payment"] . "</td>";
+					print '<td class="right nowraponall">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
+					print '<td class="right nowraponall">' . ($mt >= 0 ? price($mt) : '') . "</td>";
 					print "</tr>";
 				}
 			}
@@ -1140,7 +1137,6 @@ if (empty($action) || $action == 'view') {
 
 					print '<!-- Wait bank.rowid='.$key.' -->';
 					print '<tr class="oddeven">';
-					print "<td></td>";
 					print "<td>" . $date . "</td>";
 					print "<td>" . $ref . "</td>";
 					// Ledger account
@@ -1161,9 +1157,9 @@ if (empty($action) || $action == 'view') {
 					*/
 					print "</td>";
 					print "<td>" . $reflabel . "</td>";
-					print "<td>" . $val["type_payment"] . "</td>";
-					print "<td class='right'>" . ($mt < 0 ? price(- $mt) : '') . "</td>";
-					print "<td class='right'>" . ($mt >= 0 ? price($mt) : '') . "</td>";
+					print '<td class="center">' . $val["type_payment"] . "</td>";
+					print '<td class="right nowraponall">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
+					print '<td class="right nowraponall">' . ($mt >= 0 ? price($mt) : '') . "</td>";
 					print "</tr>";
 				}
 			}

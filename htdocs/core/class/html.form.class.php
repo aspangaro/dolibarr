@@ -1914,6 +1914,16 @@ class Form
 				$selected_input_value=$producttmpselect->ref;
 				unset($producttmpselect);
 			}
+			// handle case where product or service module is disabled + no filter specified
+			if ($filtertype == '')
+			{
+				if (empty($conf->product->enabled)) { // when product module is disabled, show services only
+					$filtertype = 1;
+				}
+				elseif (empty($conf->service->enabled)) { // when service module is disabled, show products only
+					$filtertype = 0;
+				}
+			}
 			// mode=1 means customers products
 			$urloption='htmlname='.$htmlname.'&outjson=1&price_level='.$price_level.'&type='.$filtertype.'&mode=1&status='.$status.'&finished='.$finished.'&hidepriceinlabel='.$hidepriceinlabel.'&warehousestatus='.$warehouseStatus;
 			//Price by customer
@@ -2165,7 +2175,14 @@ class Form
 		{
 			$sql.= " AND p.tosell = ".$status;
 		}
-		if (strval($filtertype) != '') $sql.=" AND p.fk_product_type=".$filtertype;
+		// Filter by product type
+		if (strval($filtertype) != '') $sql.= " AND p.fk_product_type = ".$filtertype;
+		elseif (empty($conf->product->enabled)) { // when product module is disabled, show services only
+			$sql.= " AND p.fk_product_type = 1";
+		}
+		elseif (empty($conf->service->enabled)) { // when service module is disabled, show products only
+			$sql.= " AND p.fk_product_type = 0";
+		}
 		// Add criteria on ref/label
 		if ($filterkey != '')
 		{
@@ -6463,7 +6480,7 @@ class Form
     public function showLinkedObjectBlock($object, $morehtmlright = '', $compatibleImportElementsList = false)
 	{
 		global $conf,$langs,$hookmanager;
-		global $bc;
+		global $bc, $action;
 
 		$object->fetchObjectLinked();
 
@@ -6508,6 +6525,7 @@ class Form
 				    $showImportButton=true;
 				}
 
+				$regs = array();
 				if ($objecttype != 'supplier_proposal' && preg_match('/^([^_]+)_([^_]+)/i', $objecttype, $regs))
 				{
 					$element = $regs[1];
@@ -6611,7 +6629,7 @@ class Form
     public function showLinkToObjectBlock($object, $restrictlinksto = array(), $excludelinksto = array())
 	{
 		global $conf, $langs, $hookmanager;
-		global $bc;
+		global $bc, $action;
 
 		$linktoelem='';
 		$linktoelemlist='';
@@ -6645,8 +6663,6 @@ class Form
 				'invoice_supplier'=>array('enabled'=>$conf->supplier_invoice->enabled , 'perms'=>1, 'label'=>'LinkToSupplierInvoice', 'sql'=>"SELECT s.rowid as socid, s.nom as name, s.client, t.rowid, t.ref, t.ref_supplier, t.total_ht FROM ".MAIN_DB_PREFIX."societe as s, ".MAIN_DB_PREFIX."facture_fourn as t WHERE t.fk_soc = s.rowid AND t.fk_soc IN (".$listofidcompanytoscan.') AND t.entity IN ('.getEntity('facture_fourn').')')
 			);
 		}
-
-		global $action;
 
 		// Can complete the possiblelink array
 		$hookmanager->initHooks(array('commonobject'));

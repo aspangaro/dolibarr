@@ -972,7 +972,10 @@ class ExtraFields
 
 		$out='';
 
-		$keyprefix = $keyprefix.'options_';		// Because we work on extrafields
+		if (! preg_match('/options_$/', $keyprefix))	// Because we work on extrafields, we add 'options_' to prefix if not already added
+		{
+			$keyprefix = $keyprefix.'options_';
+		}
 
 		if (! empty($extrafieldsobjectkey))
 		{
@@ -1970,7 +1973,7 @@ class ExtraFields
 	public function setOptionalsFromPost($extralabels, &$object, $onlykey = '')
 	{
 		global $_POST, $langs;
-		$nofillrequired='';// For error when required field left blank
+		$nofillrequired=0;// For error when required field left blank
 		$error_field_required = array();
 
 		if (is_array($this->attributes[$object->table_element]['label'])) $extralabels=$this->attributes[$object->table_element]['label'];
@@ -2001,7 +2004,8 @@ class ExtraFields
 				if ($this->attributes[$object->table_element]['required'][$key])	// Value is required
 				{
 					// Check if empty without using GETPOST, value can be alpha, int, array, etc...
-					if ((! is_array($_POST["options_".$key]) && empty($_POST["options_".$key]) && $_POST["options_".$key] != '0')
+				    if ((! is_array($_POST["options_".$key]) && empty($_POST["options_".$key]) && $this->attributes[$object->table_element]['type'][$key] != 'select' && $_POST["options_".$key] != '0')
+				        || (! is_array($_POST["options_".$key]) && empty($_POST["options_".$key]) && $this->attributes[$object->table_element]['type'][$key] == 'select')
 						|| (is_array($_POST["options_".$key]) && empty($_POST["options_".$key])))
 					{
 						//print 'ccc'.$value.'-'.$this->attributes[$object->table_element]['required'][$key];

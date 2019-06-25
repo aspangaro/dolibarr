@@ -1250,6 +1250,12 @@ function print_left_eldy_menu($db, $menu_array_before, $menu_array_after, &$tabM
 								if ($objp->nature == 8) $nature="inventory";
 								if ($objp->nature == 9) $nature="hasnew";
 
+								// To disable journal when accounting is in due / debt mode (RECETTES-DEPENSES)
+                                if ($conf->global->ACCOUNTING_MODE=="RECETTES-DEPENSES"))
+                                {
+                                    if ($nature == 'sells' || $nature == 'purchases' || $nature == 'expensereports') $nature='';
+                                }
+
 								// To enable when page exists
 								if (empty($conf->global->ACCOUNTANCY_SHOW_DEVELOP_JOURNAL))
 								{

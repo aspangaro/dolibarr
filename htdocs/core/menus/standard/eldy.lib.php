@@ -1251,8 +1251,9 @@ function print_left_eldy_menu($db, $menu_array_before, $menu_array_after, &$tabM
 								if ($objp->nature == 9) $nature="hasnew";
 
 								// To disable journal when accounting is in due / debt mode (RECETTES-DEPENSES)
-                                if ($conf->global->ACCOUNTING_MODE=="RECETTES-DEPENSES"))
+                                if ($conf->global->ACCOUNTING_MODE=="RECETTES-DEPENSES")
                                 {
+                                    $modecompta='induedebtmode';
                                     if ($nature == 'sells' || $nature == 'purchases' || $nature == 'expensereports') $nature='';
                                 }
 
@@ -1266,7 +1267,7 @@ function print_left_eldy_menu($db, $menu_array_before, $menu_array_after, &$tabM
 								{
 									$langs->load('accountancy');
 									$journallabel=$langs->transnoentities($objp->label);	// Labels in this table are set by loading llx_accounting_abc.sql. Label can be 'ACCOUNTING_SELL_JOURNAL', 'InventoryJournal', ...
-									$newmenu->add('/accountancy/journal/'.$nature.'journal.php?mainmenu=accountancy&leftmenu=accountancy_journal&id_journal='.$objp->rowid, $journallabel, 2, $user->rights->accounting->comptarapport->lire);
+									$newmenu->add('/accountancy/journal/'.$nature.'journal'.$modecompta.'.php?mainmenu=accountancy&leftmenu=accountancy_journal&id_journal='.$objp->rowid, $journallabel, 2, $user->rights->accounting->comptarapport->lire);
 								}
 								$i++;
 							}

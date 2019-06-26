@@ -31,12 +31,32 @@
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/report.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
+require_once DOL_DOCUMENT_ROOT . '/core/lib/bank.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/accounting.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/accountancy/class/accountingjournal.class.php';
 require_once DOL_DOCUMENT_ROOT . '/accountancy/class/accountingaccount.class.php';
+require_once DOL_DOCUMENT_ROOT . '/societe/class/societe.class.php';
+require_once DOL_DOCUMENT_ROOT . '/user/class/user.class.php';
+require_once DOL_DOCUMENT_ROOT . '/adherents/class/adherent.class.php';
+require_once DOL_DOCUMENT_ROOT . '/compta/sociales/class/chargesociales.class.php';
+require_once DOL_DOCUMENT_ROOT . '/compta/paiement/class/paiement.class.php';
+require_once DOL_DOCUMENT_ROOT . '/don/class/don.class.php';
+require_once DOL_DOCUMENT_ROOT . '/don/class/paymentdonation.class.php';
+require_once DOL_DOCUMENT_ROOT . '/compta/tva/class/tva.class.php';
+require_once DOL_DOCUMENT_ROOT . '/compta/salaries/class/paymentsalary.class.php';
+require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
+require_once DOL_DOCUMENT_ROOT . '/fourn/class/paiementfourn.class.php';
 require_once DOL_DOCUMENT_ROOT . '/fourn/class/fournisseur.facture.class.php';
 require_once DOL_DOCUMENT_ROOT . '/fourn/class/fournisseur.class.php';
 require_once DOL_DOCUMENT_ROOT . '/accountancy/class/bookkeeping.class.php';
+require_once DOL_DOCUMENT_ROOT . '/societe/class/client.class.php';
+require_once DOL_DOCUMENT_ROOT . '/expensereport/class/expensereport.class.php';
+require_once DOL_DOCUMENT_ROOT . '/expensereport/class/paymentexpensereport.class.php';
+require_once DOL_DOCUMENT_ROOT . '/compta/bank/class/paymentvarious.class.php';
+require_once DOL_DOCUMENT_ROOT . '/compta/bank/class/account.class.php';
+require_once DOL_DOCUMENT_ROOT . '/loan/class/loan.class.php';
+require_once DOL_DOCUMENT_ROOT . '/loan/class/paymentloan.class.php';
+require_once DOL_DOCUMENT_ROOT . '/adherents/class/subscription.class.php';
 
 // Load translation files required by the page
 $langs->loadLangs(array("commercial", "compta","bills","other","accountancy","errors"));
@@ -44,13 +64,13 @@ $langs->loadLangs(array("commercial", "compta","bills","other","accountancy","er
 $id_journal = GETPOST('id_journal', 'int');
 $action = GETPOST('action', 'aZ09');
 
-$date_startmonth = GETPOST('date_startmonth');
-$date_startday = GETPOST('date_startday');
-$date_startyear = GETPOST('date_startyear');
-$date_endmonth = GETPOST('date_endmonth');
-$date_endday = GETPOST('date_endday');
-$date_endyear = GETPOST('date_endyear');
-$in_bookkeeping = GETPOST('in_bookkeeping');
+$date_startmonth = GETPOST('date_startmonth', 'int');
+$date_startday = GETPOST('date_startday', 'int');
+$date_startyear = GETPOST('date_startyear', 'int');
+$date_endmonth = GETPOST('date_endmonth', 'int');
+$date_endday = GETPOST('date_endday', 'int');
+$date_endyear = GETPOST('date_endyear', 'int');
+$in_bookkeeping = GETPOST('in_bookkeeping', 'aZ09');
 if ($in_bookkeeping == '') $in_bookkeeping = 'notyet';
 
 $now = dol_now();
@@ -97,13 +117,18 @@ $idpays = $mysoc->country_id;
 $sql = "SELECT f.rowid, f.ref as ref, f.type, f.datef as df, f.libelle,f.ref_supplier, f.date_lim_reglement as dlf, f.close_code,";
 $sql .= " fd.rowid as fdid, fd.description, fd.product_type, fd.total_ht, fd.tva as total_tva, fd.total_localtax1, fd.total_localtax2, fd.tva_tx, fd.total_ttc, fd.vat_src_code,";
 $sql .= " s.rowid as socid, s.nom as name, s.fournisseur, s.code_client, s.code_fournisseur, s.code_compta, s.code_compta_fournisseur,";
-$sql .= " p.accountancy_code_buy , aa.rowid as fk_compte, aa.account_number as compte, aa.label as label_compte";
-$sql .= " FROM " . MAIN_DB_PREFIX . "facture_fourn_det as fd";
+$sql .= " p.accountancy_code_buy , aa.rowid as fk_compte, aa.account_number as compte, aa.label as label_compte,";
+$sql .= " b.rowid, b.dateo as do, b.datev as dv, b.amount, b.label, b.rappro, b.num_releve, b.num_chq, b.fk_type, b.fk_account,";
+$sql .= " ba.courant, ba.ref as baref, ba.account_number, ba.fk_accountancy_journal,";
+$sql .= " FROM " . MAIN_DB_PREFIX . "bank as b";
+$sql .= " JOIN " . MAIN_DB_PREFIX . "bank_account as ba on b.fk_account=ba.rowid";
+$sql .= " JOIN " . MAIN_DB_PREFIX . "facture_fourn_det as fd";
+$sql .= " JOIN " . MAIN_DB_PREFIX . "facture_fourn as f ON f.rowid = fd.fk_facture_fourn";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product as p ON p.rowid = fd.fk_product";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "accounting_account as aa ON aa.rowid = fd.fk_code_ventilation";
-$sql .= " JOIN " . MAIN_DB_PREFIX . "facture_fourn as f ON f.rowid = fd.fk_facture_fourn";
 $sql .= " JOIN " . MAIN_DB_PREFIX . "societe as s ON s.rowid = f.fk_soc";
-$sql .= " WHERE f.fk_statut > 0";
+$sql .= " WHERE ba.fk_accountancy_journal=" . $id_journal;
+$sql .= " AND f.fk_statut > 0";
 $sql .= " AND fd.fk_code_ventilation > 0";
 $sql .= " AND f.entity IN (" . getEntity('facture_fourn', 0) . ")";  // We don't share object for accountancy
 if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) {
@@ -139,8 +164,12 @@ if ($result) {
 
 	$num = $db->num_rows($result);
 
-	// Variables
-	$cptfour = ($conf->global->ACCOUNTING_ACCOUNT_SUPPLIER != "") ? $conf->global->ACCOUNTING_ACCOUNT_SUPPLIER : 'NotDefined';
+    // Get code of finance journal
+    $accountingjournalstatic = new AccountingJournal($db);
+    $accountingjournalstatic->fetch($id_journal);
+    $journal_code = $accountingjournalstatic->code;
+    $journal_label = $accountingjournalstatic->label;
+
 	$cpttva = (! empty($conf->global->ACCOUNTING_VAT_BUY_ACCOUNT)) ? $conf->global->ACCOUNTING_VAT_BUY_ACCOUNT : 'NotDefined';
 
 	$i = 0;
@@ -148,7 +177,7 @@ if ($result) {
 		$obj = $db->fetch_object($result);
 
 		// Controls
-		$compta_soc = ($obj->code_compta_fournisseur != "") ? $obj->code_compta_fournisseur : $cptfour;
+		$compta_bank = $journal_code;
 
 		$compta_prod = $obj->compte;
 		if (empty($compta_prod)) {
@@ -298,55 +327,57 @@ if ($action == 'writebookkeeping') {
 		{
 			foreach ($tabttc[$key] as $k => $mt) {
 				//if ($mt) {
-					$bookkeeping = new BookKeeping($db);
-					$bookkeeping->doc_date = $val["date"];
-					$bookkeeping->date_lim_reglement = $val["datereg"];
-					$bookkeeping->doc_ref = $val["refsologest"];
-					$bookkeeping->date_create = $now;
-					$bookkeeping->doc_type = 'supplier_invoice';
-					$bookkeeping->fk_doc = $key;
-					$bookkeeping->fk_docdet = 0;    // Useless, can be several lines that are source of this record to add
-					$bookkeeping->thirdparty_code = $companystatic->code_fournisseur;
-					$bookkeeping->subledger_account = $tabcompany[$key]['code_compta_fournisseur'];
-					$bookkeeping->subledger_label = $tabcompany[$key]['name'];
-					$bookkeeping->numero_compte = $conf->global->ACCOUNTING_ACCOUNT_SUPPLIER;
+                $reflabel = '';
+                if (! empty($val['lib'])) $reflabel .= dol_string_nohtmltag($val['lib']) . " - ";
+                $reflabel.= $langs->trans("Bank").' '.dol_string_nohtmltag($val['bank_account_ref']);
+                if (! empty($val['soclib'])) $reflabel .= " - " . dol_string_nohtmltag($val['soclib']);
 
-					$accountingaccount->fetch(null, $conf->global->ACCOUNTING_ACCOUNT_SUPPLIER, true);
-					$bookkeeping->label_compte = $accountingaccount->label;
+				$bookkeeping = new BookKeeping($db);
+				$bookkeeping->doc_date = $val["date"];
+				$bookkeeping->date_lim_reglement = $val["datereg"];
+				$bookkeeping->doc_ref = $val["refsologest"];
+				$bookkeeping->date_create = $now;
+				$bookkeeping->doc_type = 'supplier_invoice';
+                $bookkeeping->fk_doc = $key;
+                $bookkeeping->fk_docdet = $val["fk_bank"];
+                $bookkeeping->numero_compte = $k;
 
-					$bookkeeping->label_operation = dol_trunc($companystatic->name, 16) . ' - ' . $invoicestatic->ref_supplier . ' - ' . $langs->trans("SubledgerAccount");
-					$bookkeeping->montant = $mt;
-					$bookkeeping->sens = ($mt >= 0) ? 'C' : 'D';
-					$bookkeeping->debit = ($mt <= 0) ? -$mt : 0;
-					$bookkeeping->credit = ($mt > 0) ? $mt : 0;
-					$bookkeeping->code_journal = $journal;
-					$bookkeeping->journal_label = $journal_label;
-					$bookkeeping->fk_user_author = $user->id;
-					$bookkeeping->entity = $conf->entity;
+				$accountingaccount->fetch(null, $conf->global->ACCOUNTING_ACCOUNT_SUPPLIER, true);
+				$bookkeeping->label_compte = $accountingaccount->label;
 
-					$totaldebit += $bookkeeping->debit;
-					$totalcredit += $bookkeeping->credit;
+				$bookkeeping->label_operation = dol_trunc($companystatic->name, 16) . ' - ' . $invoicestatic->ref_supplier . ' - ' . $langs->trans("SubledgerAccount");
+				$bookkeeping->montant = $mt;
+				$bookkeeping->sens = ($mt >= 0) ? 'C' : 'D';
+				$bookkeeping->debit = ($mt <= 0) ? -$mt : 0;
+				$bookkeeping->credit = ($mt > 0) ? $mt : 0;
+				$bookkeeping->code_journal = $journal;
+				$bookkeeping->journal_label = $journal_label;
+				$bookkeeping->fk_user_author = $user->id;
+				$bookkeeping->entity = $conf->entity;
 
-					$result = $bookkeeping->create($user);
-					if ($result < 0) {
-						if ($bookkeeping->error == 'BookkeepingRecordAlreadyExists')	// Already exists
-						{
-							$error++;
-							$errorforline++;
-							$errorforinvoice[$key]='alreadyjournalized';
-							//setEventMessages('Transaction for ('.$bookkeeping->doc_type.', '.$bookkeeping->fk_doc.', '.$bookkeeping->fk_docdet.') were already recorded', null, 'warnings');
-						}
-						else
-						{
-							$error++;
-							$errorforline++;
-							$errorforinvoice[$key]='other';
-							setEventMessages($bookkeeping->error, $bookkeeping->errors, 'errors');
-						}
+				$totaldebit += $bookkeeping->debit;
+				$totalcredit += $bookkeeping->credit;
+
+				$result = $bookkeeping->create($user);
+				if ($result < 0) {
+					if ($bookkeeping->error == 'BookkeepingRecordAlreadyExists')	// Already exists
+					{
+						$error++;
+						$errorforline++;
+						$errorforinvoice[$key]='alreadyjournalized';
+						//setEventMessages('Transaction for ('.$bookkeeping->doc_type.', '.$bookkeeping->fk_doc.', '.$bookkeeping->fk_docdet.') were already recorded', null, 'warnings');
 					}
-				//}
-			}
-		}
+					else
+					{
+						$error++;
+						$errorforline++;
+						$errorforinvoice[$key]='other';
+						setEventMessages($bookkeeping->error, $bookkeeping->errors, 'errors');
+					}
+				}
+			    //}
+		    }
+	    }
 
 		// Product / Service
 		if (! $errorforline)

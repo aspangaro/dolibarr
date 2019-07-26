@@ -344,6 +344,25 @@ class PaymentSalary extends CommonObject
     }
 
     /**
+     * Check if a salary can be created into database
+     *
+     * @return	boolean		True or false
+     */
+    public function check()
+    {
+        $newamount=price2num($this->amount, 'MT');
+
+        // Validation parametres
+        if (! $newamount > 0 || empty($this->datep) || empty($this->fk_user) || empty($this->label) || empty($this->datesp) || empty($this->dateep) || empty($this->account_id) || empty($this->type_payment))
+        {
+            return false;
+        }
+
+
+        return true;
+    }
+
+    /**
      *  Create in database
      *
      *  @param      User	$user       User that create

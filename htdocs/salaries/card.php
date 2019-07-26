@@ -203,6 +203,56 @@ if ($action == 'delete')
 	}
 }
 
+// Action clone object
+if ($action == 'confirm_clone' && $confirm != 'yes') { $action=''; }
+
+if ($action == 'confirm_clone' && $confirm == 'yes' && ($user->rights->salaries->write))
+{
+    $db->begin();
+
+    $originalId = $id;
+
+    $object->fetch($id);
+
+    if ($object->id > 0)
+    {
+        $object->paye = 0;
+        $object->id = $object->ref = null;
+        $object->lib = $langs->trans("CopyOf").' '.$object->lib;
+
+        if (GETPOST('clone_for_next_month') != '')
+        {
+            $object->datesp = dol_time_plus_duree($object->datesp, 1, 'm');
+            $object->dateep = dol_time_plus_duree($object->dateep, 1, 'm');
+            $object->datep  = dol_time_plus_duree($object->datep, 1, 'm');
+        }
+
+        if ($object->check())
+        {
+            $id = $object->create($user);
+            if ($id > 0)
+            {
+                $db->commit();
+                $db->close();
+
+                header("Location: ".$_SERVER["PHP_SELF"]."?id=".$id);
+                exit;
+            }
+            else
+            {
+                $id=$originalId;
+                $db->rollback();
+
+                setEventMessages($object->error, $object->errors, 'errors');
+            }
+        }
+    }
+    else
+    {
+        $db->rollback();
+        dol_print_error($db, $object->error);
+    }
+}
 
 /*
  *	View
@@ -374,6 +424,17 @@ if ($id)
 
 	$head=salaries_prepare_head($object);
 
+    // Clone confirmation
+    if ($action === 'clone')
+    {
+        $formclone=array(
+            array('type' => 'checkbox', 'name' => 'clone_for_next_month','label' => $langs->trans("CloneSalaryForNextMonth"), 'value' => 1),
+
+        );
+
+        print $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('ToClone'), $langs->trans('ConfirmCloneSalary', $object->ref), 'confirm_clone', $formclone, 'yes');
+    }
+
 	dol_fiche_head($head, 'card', $langs->trans("SalaryPayment"), -1, 'payment');
 
 	$linkback = '<a href="'.DOL_URL_ROOT.'/salaries/list.php?restore_lastsearch_values=1'.(! empty($socid)?'&socid='.$socid:'').'">'.$langs->trans("BackToList").'</a>';
@@ -478,8 +539,16 @@ if ($id)
 	 * Action buttons
 	 */
 	print '<div class="tabsAction">'."\n";
+
+    // Clone
+    if ($user->rights->salaries->write)
+    {
+        print '<a class="butAction" href="' . dol_buildpath("/salaries/card.php", 1) . '?id=' . $object->id . '&amp;action=clone">'.$langs->trans("ToClone").'</a>';
+    }
+
 	if ($object->rappro == 0)
 	{
+        // Delete
 		if (! empty($user->rights->salaries->delete))
 		{
 			print '<a class="butActionDelete" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=delete">'.$langs->trans("Delete").'</a>';

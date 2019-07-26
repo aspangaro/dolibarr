@@ -109,7 +109,7 @@ class modSalaries extends DolibarrModules
 
 		$r++;
 		$this->rights[$r][0] = 512;
-		$this->rights[$r][1] = 'Create/modify payments of empoyee salaries';
+		$this->rights[$r][1] = 'Create/modify payments of employee salaries';
 		$this->rights[$r][2] = 'w';
 		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'write';

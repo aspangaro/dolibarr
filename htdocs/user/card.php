@@ -221,6 +221,7 @@ if (empty($reshook)) {
 			$object->job = GETPOST("job", 'alpha');
 			$object->signature = GETPOST("signature", 'none');
 			$object->accountancy_code = GETPOST("accountancy_code", 'alphanohtml');
+            $object->accountancy_simplify = GETPOST("accountancy_simplify", 'alphanohtml');
 			$object->note = GETPOST("note", 'none');
 			$object->ldap_sid = GETPOST("ldap_sid", 'alphanohtml');
 			$object->fk_user = GETPOST("fk_user", 'int') > 0 ? GETPOST("fk_user", 'int') : 0;
@@ -373,10 +374,10 @@ if (empty($reshook)) {
 				$object->job = GETPOST("job", 'alpha');
 				$object->signature = GETPOST("signature", 'none');
 				$object->accountancy_code = GETPOST("accountancy_code", 'alpha');
+                $object->accountancy_simplify = GETPOST('accountancy_simplify', 'int');
 				$object->openid = GETPOST("openid", 'alpha');
 				$object->fk_user = GETPOST("fk_user", 'int') > 0 ? GETPOST("fk_user", 'int') : 0;
 				$object->employee = GETPOST('employee', 'int');
-                $object->accountancy_simplify = GETPOST('accountancy_simplify', 'int');
 
 				$object->thm = GETPOST("thm", 'alphanohtml') != '' ? GETPOST("thm", 'alphanohtml') : '';
 				$object->tjm = GETPOST("tjm", 'alphanohtml') != '' ? GETPOST("tjm", 'alphanohtml') : '';
@@ -1660,7 +1661,7 @@ else
 				print '<td>'.$object->accountancy_code.'</td></tr>';
 			}
 
-            // Accountancy code
+            // Simplify accountancy
             if ($conf->accounting->enabled)
             {
                 print '<tr><td>';

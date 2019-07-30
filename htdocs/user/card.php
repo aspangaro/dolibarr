@@ -8,7 +8,7 @@
  * Copyright (C) 2011      Herve Prot           <herve.prot@symeos.com>
  * Copyright (C) 2012-2018 Juanjo Menent        <jmenent@2byte.es>
  * Copyright (C) 2013      Florian Henry        <florian.henry@open-concept.pro>
- * Copyright (C) 2013-2016 Alexandre Spangaro   <aspangaro@open-dsi.fr>
+ * Copyright (C) 2013-2019 Alexandre Spangaro   <aspangaro@open-dsi.fr>
  * Copyright (C) 2015-2017 Jean-François Ferry  <jfefe@aternatik.fr>
  * Copyright (C) 2015      Ari Elbaz (elarifr)  <github@accedinfo.com>
  * Copyright (C) 2015-2018 Charlene Benke       <charlie@patas-monkey.com>
@@ -376,6 +376,7 @@ if (empty($reshook)) {
 				$object->openid = GETPOST("openid", 'alpha');
 				$object->fk_user = GETPOST("fk_user", 'int') > 0 ? GETPOST("fk_user", 'int') : 0;
 				$object->employee = GETPOST('employee', 'int');
+                $object->accountancy_simplify = GETPOST('accountancy_simplify', 'int');
 
 				$object->thm = GETPOST("thm", 'alphanohtml') != '' ? GETPOST("thm", 'alphanohtml') : '';
 				$object->tjm = GETPOST("tjm", 'alphanohtml') != '' ? GETPOST("tjm", 'alphanohtml') : '';
@@ -1131,6 +1132,16 @@ if ($action == 'create' || $action == 'adduserldap')
 		print '</td></tr>';
 	}
 
+    // Simplify accountancy
+    if ($conf->accounting->enabled) {
+        $defaultsimplifyaccountancy = 1;
+        print '<tr><td>';
+        $text=$langs->trans("SimplifyAccountancy");
+        print $form->textwithpicto($text, $langs->trans("SimplifyAccountancyDescription"), 1, 'help', 'classthm') . '</td><td>';
+        print $form->selectyesno("accountancy_simplify", (GETPOST('accountancy_simplify') != '' ? GETPOST('accountancy_simplify') : $defaultsimplifyaccountancy), 1);
+        print '</td></tr>';
+    }
+
 	// User color
 	if (! empty($conf->agenda->enabled))
 	{
@@ -1648,6 +1659,19 @@ else
 				print '<tr><td>'.$langs->trans("AccountancyCode").'</td>';
 				print '<td>'.$object->accountancy_code.'</td></tr>';
 			}
+
+            // Accountancy code
+            if ($conf->accounting->enabled)
+            {
+                print '<tr><td>';
+                $text=$langs->trans("SimplifyAccountancy");
+                print $form->textwithpicto($text, $langs->trans("SimplifyAccountancyDescription"), 1, 'help', 'classtjm');
+                print '</td>';
+                print '<td>';
+                print yn($object->accountancy_simplify);
+                print '</td>';
+                print "</tr>\n";
+            }
 
 			print '</table>';
 
@@ -2437,6 +2461,23 @@ else
 				print '</td>';
 				print "</tr>";
 			}
+
+            // Simplify accountancy
+            if ($conf->accounting->enabled)
+            {
+                print '<tr>';
+                print '<td>'.$form->editfieldkey('SimplifyAccountancy', 'accountancy_simplify', '', $object, 0).'</td><td>';
+                if ($caneditfield) {
+                    print $form->selectyesno("accountancy_simplify", $object->accountancy_simplify, 1);
+                } else {
+                    if ($object->accountancy_simplify){
+                        print $langs->trans("Yes");
+                    } else {
+                        print $langs->trans("No");
+                    }
+                }
+                print '</td></tr>';
+            }
 
 			// User color
 			if (! empty($conf->agenda->enabled))

@@ -31,6 +31,7 @@ create table llx_accounting_account
   account_number            varchar(32)  NOT NULL,
   account_parent            integer DEFAULT 0,                -- Hierarchic parent.
   label                     varchar(255) NOT NULL,
+  labelshort                varchar(255) NOT NULL,
   fk_accounting_category    integer      DEFAULT 0,			  -- ID of personalized group for report
   fk_user_author            integer      DEFAULT NULL,
   fk_user_modif             integer      DEFAULT NULL,

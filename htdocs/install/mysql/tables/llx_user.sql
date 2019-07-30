@@ -94,6 +94,7 @@ create table llx_user
   barcode			varchar(255) DEFAULT NULL,
   fk_barcode_type	integer      DEFAULT 0,
   accountancy_code  varchar(32) NULL,
+  accountancy_simplify  tinyint        DEFAULT 1,	-- 1 to simplify accountancy
   nb_holiday		integer      DEFAULT 0,
   thm				double(24,8),
   tjm				double(24,8),

@@ -97,6 +97,7 @@ if ($action == 'add' && $user->rights->accounting->chartofaccount)
 		$object->account_parent = $account_parent;
 		$object->account_category = GETPOST('account_category', 'alpha');
 		$object->label = GETPOST('label', 'alpha');
+		$object->labelshort = GETPOST('labelshort', 'alpha');
 		$object->active = 1;
 
 		$res = $object->create($user);
@@ -162,6 +163,7 @@ if ($action == 'add' && $user->rights->accounting->chartofaccount)
 		$object->account_parent = $account_parent;
 		$object->account_category = GETPOST('account_category', 'alpha');
 		$object->label = GETPOST('label', 'alpha');
+		$object->labelshort = GETPOST('labelshort', 'alpha');
 
 		$result = $object->update($user);
 
@@ -236,6 +238,10 @@ if ($action == 'create') {
 	print '<tr><td><span class="fieldrequired">' . $langs->trans("Label") . '</span></td>';
 	print '<td><input name="label" size="70" value="' . $object->label . '"></td></tr>';
 
+    // Label to show
+    print '<tr><td><span>' . $langs->trans("LabelToShow") . '</span></td>';
+    print '<td><input name="labelshort" size="70" value="' . $object->labelshort . '"></td></tr>';
+
 	// Account parent
 	print '<tr><td>' . $langs->trans("Accountparent") . '</td>';
 	print '<td>';
@@ -284,7 +290,7 @@ elseif ($id > 0 || $ref) {
 		// Edit mode
 		if ($action == 'update')
 		{
-			dol_fiche_head($head, 'card', $langs->trans('AccountAccounting'), 0, 'billr');
+			dol_fiche_head($head, 'card', $langs->trans('AccountAccounting'), -1, 'billr');
 
 			print '<form name="update" action="' . $_SERVER["PHP_SELF"] . '" method="POST">' . "\n";
 			print '<input type="hidden" name="token" value="' . $_SESSION['newtoken'] . '">';
@@ -302,7 +308,11 @@ elseif ($id > 0 || $ref) {
 			print '<tr><td><span class="fieldrequired">' . $langs->trans("Label") . '</span></td>';
 			print '<td><input name="label" size="70" value="' . $object->label . '"</td></tr>';
 
-			// Account parent
+            // Label to show
+            print '<tr><td><span>' . $langs->trans("LabelToShow") . '</span></td>';
+            print '<td><input name="labelshort" size="70" value="' . $object->labelshort . '"</td></tr>';
+
+            // Account parent
 			print '<tr><td>' . $langs->trans("Accountparent") . '</td>';
 			print '<td>';
 			print $formaccounting->select_account($object->account_parent, 'account_parent', 1);
@@ -354,6 +364,10 @@ elseif ($id > 0 || $ref) {
 			// Label
 			print '<tr><td class="titlefield">' . $langs->trans("Label") . '</td>';
 			print '<td colspan="2">' . $object->label . '</td></tr>';
+
+            // Label to show
+            print '<tr><td class="titlefield">' . $langs->trans("LabelShort") . '</td>';
+            print '<td colspan="2">' . $object->labelshort . '</td></tr>';
 
 			// Account parent
 			$accp = new AccountingAccount($db);

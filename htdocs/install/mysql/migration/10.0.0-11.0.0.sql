@@ -67,3 +67,6 @@ create table llx_payment_salary_extrafields
 ALTER TABLE llx_payment_salary_extrafields ADD INDEX idx_payment_salary_extrafields (fk_object);
 
 UPDATE llx_bank_url set url = REPLACE( url, 'compta/salaries/', 'salaries/');
+
+ALTER TABLE llx_accounting_account ADD COLUMN labelshort varchar(255) NOT NULL after label;
+ALTER TABLE llx_user ADD COLUMN accountancy_simplify tinyint DEFAULT 1 after accountancy_code;

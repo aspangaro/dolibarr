@@ -121,6 +121,11 @@ class AccountingAccount extends CommonObject
     public $label;
 
     /**
+     * @var string Label of account to show
+     */
+    public $labelshort;
+
+    /**
      * @var int ID
      */
     public $fk_user_author;
@@ -162,7 +167,7 @@ class AccountingAccount extends CommonObject
 		global $conf;
 
 		if ($rowid || $account_number) {
-			$sql  = "SELECT a.rowid as rowid, a.datec, a.tms, a.fk_pcg_version, a.pcg_type, a.pcg_subtype, a.account_number, a.account_parent, a.label, a.fk_accounting_category, a.fk_user_author, a.fk_user_modif, a.active";
+			$sql  = "SELECT a.rowid as rowid, a.datec, a.tms, a.fk_pcg_version, a.pcg_type, a.pcg_subtype, a.account_number, a.account_parent, a.label, a.labelshort, a.fk_accounting_category, a.fk_user_author, a.fk_user_modif, a.active";
 			$sql .= ", ca.label as category_label";
 			$sql .= " FROM " . MAIN_DB_PREFIX . "accounting_account as a";
 			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_accounting_category as ca ON a.fk_accounting_category = ca.rowid";
@@ -196,6 +201,7 @@ class AccountingAccount extends CommonObject
 					$this->account_number = $obj->account_number;
 					$this->account_parent = $obj->account_parent;
 					$this->label = $obj->label;
+                    $this->labelshort = $obj->labelshort;
 					$this->account_category = $obj->fk_accounting_category;
 					$this->account_category_label = $obj->category_label;
 					$this->fk_user_author = $obj->fk_user_author;
@@ -239,6 +245,8 @@ class AccountingAccount extends CommonObject
 			$this->account_number = trim($this->account_number);
 		if (isset($this->label))
 			$this->label = trim($this->label);
+        if (isset($this->labelshort))
+            $this->labelshort = trim($this->labelshort);
 
 		if (empty($this->pcg_type) || $this->pcg_type == '-1')
 		{
@@ -261,6 +269,7 @@ class AccountingAccount extends CommonObject
 		$sql .= ", account_number";
 		$sql .= ", account_parent";
 		$sql .= ", label";
+        $sql .= ", labelshort";
 		$sql .= ", fk_accounting_category";
 		$sql .= ", fk_user_author";
 		$sql .= ", active";
@@ -273,7 +282,8 @@ class AccountingAccount extends CommonObject
 		$sql .= ", " . (empty($this->account_number) ? 'NULL' : "'" . $this->db->escape($this->account_number) . "'");
 		$sql .= ", " . (empty($this->account_parent) ? 0 : (int) $this->account_parent);
 		$sql .= ", " . (empty($this->label) ? "''" : "'" . $this->db->escape($this->label) . "'");
-		$sql .= ", " . (empty($this->account_category) ? 0 : (int) $this->account_category);
+        $sql .= ", " . (empty($this->labelshort) ? "''" : "'" . $this->db->escape($this->labelshort) . "'");
+        $sql .= ", " . (empty($this->account_category) ? 0 : (int) $this->account_category);
 		$sql .= ", " . $user->id;
 		$sql .= ", " . (int) $this->active;
 		$sql .= ")";
@@ -344,7 +354,8 @@ class AccountingAccount extends CommonObject
 		$sql .= " , account_number = '" . $this->db->escape($this->account_number) . "'";
 		$sql .= " , account_parent = " . (int) $this->account_parent;
 		$sql .= " , label = " . ($this->label ? "'" . $this->db->escape($this->label) . "'" : "''");
-		$sql .= " , fk_accounting_category = " . (empty($this->account_category) ? 0 : (int) $this->account_category);
+        $sql .= " , labelshort = " . ($this->labelshort ? "'" . $this->db->escape($this->labelshort) . "'" : "''");
+        $sql .= " , fk_accounting_category = " . (empty($this->account_category) ? 0 : (int) $this->account_category);
 		$sql .= " , fk_user_modif = " . $user->id;
 		$sql .= " , active = " . (int) $this->active;
 		$sql .= " WHERE rowid = " . $this->id;

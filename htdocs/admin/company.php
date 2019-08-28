@@ -90,6 +90,17 @@ if ( ($action == 'update' && ! GETPOST("cancel", 'alpha'))
 		dolibarr_del_const($db, "MAIN_INFO_SOCIETE_STATE", $conf->entity);
 	}
 
+    $tmparray=getCountry(GETPOST('country_billing_id', 'int'), 'all', $db, $langs, 0);
+    if (! empty($tmparray['id']))
+    {
+        $mysoc->country_billing_id      = $tmparray['id'];
+        $mysoc->country_billing_code    = $tmparray['code'];
+        $mysoc->country_billing_label   = $tmparray['label'];
+
+        $s=$mysoc->country_billing_id.':'.$mysoc->country_billing_code.':'.$mysoc->country_billing_label;
+        dolibarr_set_const($db, "MAIN_INFO_SOCIETE_BILLING_COUNTRY", $s, 'chaine', 0, '', $conf->entity);
+    }
+
     $db->begin();
 
     dolibarr_set_const($db, "MAIN_INFO_SOCIETE_NOM", GETPOST("nom", 'nohtml'), 'chaine', 0, '', $conf->entity);
@@ -104,6 +115,11 @@ if ( ($action == 'update' && ! GETPOST("cancel", 'alpha'))
 	dolibarr_set_const($db, "MAIN_INFO_SOCIETE_WEB", GETPOST("web", 'alpha'), 'chaine', 0, '', $conf->entity);
 	dolibarr_set_const($db, "MAIN_INFO_SOCIETE_NOTE", GETPOST("note", 'none'), 'chaine', 0, '', $conf->entity);
 	dolibarr_set_const($db, "MAIN_INFO_SOCIETE_GENCOD", GETPOST("barcode", 'alpha'), 'chaine', 0, '', $conf->entity);
+
+	// Billing address
+    dolibarr_set_const($db, "MAIN_INFO_SOCIETE_BILLING_ADDRESS", GETPOST("MAIN_INFO_SOCIETE_BILLING_ADDRESS", 'nohtml'), 'chaine', 0, '', $conf->entity);
+    dolibarr_set_const($db, "MAIN_INFO_SOCIETE_BILLING_TOWN", GETPOST("MAIN_INFO_SOCIETE_BILLING_TOWN", 'nohtml'), 'chaine', 0, '', $conf->entity);
+    dolibarr_set_const($db, "MAIN_INFO_SOCIETE_BILLING_ZIP", GETPOST("MAIN_INFO_SOCIETE_BILLING_ZIP", 'alpha'), 'chaine', 0, '', $conf->entity);
 
 	$varforimage='logo'; $dirforimage=$conf->mycompany->dir_output.'/logos/';
 	if ($_FILES[$varforimage]["tmp_name"])
@@ -454,6 +470,31 @@ if ($action == 'edit' || $action == 'updateedit')
 	print '</td></tr>';
 
 	print '</table>';
+
+    print '<br>';
+
+    print '<table class="noborder" width="100%">';
+    print '<tr class="liste_titre"><th class="titlefield wordbreak">'.$langs->trans("CompanyBillingInfoIfAddressIsDifferent").'</th><th>'.$langs->trans("Value").'</th></tr>'."\n";
+
+    // Billing address
+    print '<tr class="oddeven"><td><label for="MAIN_INFO_SOCIETE_BILLING_ADDRESS">'.$langs->trans("CompanyBillingAddress").'</label></td><td>';
+    print '<textarea name="MAIN_INFO_SOCIETE_BILLING_ADDRESS" id="MAIN_INFO_SOCIETE_BILLING_ADDRESS" class="quatrevingtpercent" rows="'.ROWS_3.'">'. ($conf->global->MAIN_INFO_SOCIETE_BILLING_ADDRESS?$conf->global->MAIN_INFO_SOCIETE_BILLING_ADDRESS:GETPOST("MAIN_INFO_SOCIETE_BILLING_ADDRESS", 'nohtml')) . '</textarea></td></tr>'."\n";
+
+
+    print '<tr class="oddeven"><td><label for="MAIN_INFO_SOCIETE_BILLING_ZIP">'.$langs->trans("CompanyBillingZip").'</label></td><td>';
+    print '<input class="minwidth100" name="MAIN_INFO_SOCIETE_BILLING_ZIP" id="MAIN_INFO_SOCIETE_BILLING_ZIP" value="'. dol_escape_htmltag($conf->global->MAIN_INFO_SOCIETE_BILLING_ZIP?$conf->global->MAIN_INFO_SOCIETE_BILLING_ZIP:GETPOST("MAIN_INFO_SOCIETE_BILLING_ZIP", 'alpha')) . '"></td></tr>'."\n";
+
+
+    print '<tr class="oddeven"><td><label for="MAIN_INFO_SOCIETE_BILLING_TOWN">'.$langs->trans("CompanyBillingTown").'</label></td><td>';
+    print '<input name="MAIN_INFO_SOCIETE_BILLING_TOWN" class="minwidth100" id="MAIN_INFO_SOCIETE_BILLING_TOWN" value="'. dol_escape_htmltag($conf->global->MAIN_INFO_SOCIETE_BILLING_TOWN?$conf->global->MAIN_INFO_SOCIETE_BILLING_TOWN:GETPOST("MAIN_INFO_SOCIETE_BILLING_TOWN", 'nohtml')) . '"></td></tr>'."\n";
+
+    // Country
+    print '<tr class="oddeven"><td><label for="selectcountry_billing_id">'.$langs->trans("Country").'</label></td><td class="maxwidthonsmartphone">';
+    //if (empty($country_selected)) $country_selected=substr($langs->defaultlang,-2);    // By default, country of localization
+    print $form->select_country($mysoc->country_billing_id, 'country_billing_id');
+    if ($user->admin) print info_admin($langs->trans("YouCanChangeValuesForThisListFromDictionarySetup"), 1);
+    print '</td></tr>'."\n";
+    print '</table>';
 
 	print '<br>';
 
@@ -859,6 +900,33 @@ else
 
 	print '</table>';
 	print "</div>";
+
+    print '<br>';
+
+    print '<div class="div-table-responsive-no-min">';
+    print '<table class="noborder" width="100%">';
+    print '<tr class="liste_titre"><td class="titlefield wordbreak">'.$langs->trans("CompanyBillingInfoIfAddressIsDifferent").'</td><td>'.$langs->trans("Value").'</td></tr>';
+
+    print '<tr class="oddeven"><td>'.$langs->trans("CompanyBillingAddress").'</td><td>' . nl2br(empty($conf->global->MAIN_INFO_SOCIETE_BILLING_ADDRESS)?'':$conf->global->MAIN_INFO_SOCIETE_BILLING_ADDRESS) . '</td></tr>';
+
+
+    print '<tr class="oddeven"><td>'.$langs->trans("CompanyBillingZip").'</td><td>' . (empty($conf->global->MAIN_INFO_SOCIETE_BILLING_ZIP)?'':$conf->global->MAIN_INFO_SOCIETE_BILLING_ZIP) . '</td></tr>';
+
+
+    print '<tr class="oddeven"><td>'.$langs->trans("CompanyBillingTown").'</td><td>' . (empty($conf->global->MAIN_INFO_SOCIETE_BILLING_TOWN)?'':$conf->global->MAIN_INFO_SOCIETE_BILLING_TOWN) . '</td></tr>';
+
+
+    print '<tr class="oddeven"><td>'.$langs->trans("CompanyBillingCountry").'</td><td>';
+    if (! empty($mysoc->country_billing_code))
+    {
+        $img=picto_from_langcode($mysoc->country_billing_code);
+        print $img?$img.' ':'';
+        print getCountry($mysoc->country_billing_code, 1);
+    }
+    print '</td></tr>';
+
+    print '</table>';
+    print "</div>";
 
 	print '<br>';
 

@@ -3480,7 +3480,30 @@ class Societe extends CommonObject
 		$this->country=$country_label;
 		if (is_object($langs)) $this->country=($langs->trans('Country'.$country_code)!='Country'.$country_code)?$langs->trans('Country'.$country_code):$country_label;
 
-		//TODO This could be replicated for region but function `getRegion` didn't exist, so I didn't added it.
+        // Billing information
+        $this->address_billing=empty($conf->global->MAIN_INFO_SOCIETE_BILLING_ADDRESS)?'':$conf->global->MAIN_INFO_SOCIETE_BILLING_ADDRESS;
+        $this->zip_billing=empty($conf->global->MAIN_INFO_SOCIETE_BILLING_ZIP)?'':$conf->global->MAIN_INFO_SOCIETE_BILLING_ZIP;
+        $this->town_billing=empty($conf->global->MAIN_INFO_SOCIETE_BILLING_TOWN)?'':$conf->global->MAIN_INFO_SOCIETE_BILLING_TOWN;
+
+        // We define country_billing_id, country_billing_code and country_billing
+        $country_billing_id=$country_billing_code=$country_billing_label='';
+        if (! empty($conf->global->MAIN_INFO_SOCIETE_BILLING_COUNTRY))
+        {
+            $tmp=explode(':', $conf->global->MAIN_INFO_SOCIETE_BILLING_COUNTRY);
+            $country_billing_id=$tmp[0];
+            if (! empty($tmp[1]))   // If $conf->global->MAIN_INFO_SOCIETE_BILLING_COUNTRY is "id:code:label"
+            {
+                $country_billing_code=$tmp[1];
+                $country_billing_label=$tmp[2];
+            }
+        }
+        $this->country_billing_id=$country_billing_id;
+        $this->country_billing_code=$country_billing_code;
+        $this->country_billing=$country_billing_label;
+        if (is_object($langs)) $this->country_billing=($langs->trans('Country'.$country_billing_code)!='Country'.$country_billing_code)?$langs->trans('Country'.$country_billing_code):$country_billing_label;
+
+
+        //TODO This could be replicated for region but function `getRegion` didn't exist, so I didn't added it.
 		// We define state_id, state_code and state
 		$state_id=0;$state_code=$state_label='';
 		if (! empty($conf->global->MAIN_INFO_SOCIETE_STATE))

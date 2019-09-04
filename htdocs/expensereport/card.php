@@ -48,7 +48,7 @@ if (! empty($conf->accounting->enabled)) {
 }
 
 // Load translation files required by the page
-$langs->loadLangs(array("trips","bills","mails"));
+$langs->loadLangs(array("trips","bills","mails","companies"));
 
 $action=GETPOST('action', 'aZ09');
 $cancel=GETPOST('cancel', 'alpha');
@@ -2058,11 +2058,11 @@ else
 				        $totalpaid += $objp->amount;
 				        $i++;
 				    }
-					if (! is_null($totalpaid))
-					{
-				        $totalpaid = price2num($totalpaid);		// Round $totalpaid to fix floating problem after addition into loop
-					}
-					
+                    if (! is_null($totalpaid))
+                    {
+                        $totalpaid = price2num($totalpaid);		// Round $totalpaid to fix floating problem after addition into loop
+                    }
+
 				    $remaintopay = price2num($object->total_ttc - $totalpaid);
 				    $resteapayeraffiche = $remaintopay;
 
@@ -2120,6 +2120,10 @@ else
 					//print '<td class="center">'.$langs->trans('Piece').'</td>';
 					print '<td class="center">'.$langs->trans('Date').'</td>';
 					if (! empty($conf->projet->enabled)) print '<td class="minwidth100imp">'.$langs->trans('Project').'</td>';
+                    if (!empty($conf->global->MAIN_USE_EXPENSE_REBILLED)) {
+                        print '<td class="right">' . $langs->trans('Customer') . '</td>';
+                        print '<td class="right">' . $langs->trans('Rebilled') . '</td>';
+                    }
 					if (!empty($conf->global->MAIN_USE_EXPENSE_IK)) print '<td>'.$langs->trans('CarCategory').'</td>';
 					print '<td class="center">'.$langs->trans('Type').'</td>';
 					print '<td>'.$langs->trans('Description').'</td>';
@@ -2168,6 +2172,14 @@ else
 								}
 								print '</td>';
 							}
+
+							// Rebilled
+                            if (!empty($conf->global->MAIN_USE_EXPENSE_REBILLED)) {
+                                print '<td class="right">' . $line->fk_soc . '</td>';
+
+                                print '<td class="right">' . yn($line->rebilled) . '</td>';
+                            }
+
 							// IK
 							if (!empty($conf->global->MAIN_USE_EXPENSE_IK))
 							{
@@ -2306,6 +2318,7 @@ else
 						    $colspan = 10;
 						    if (! empty($conf->projet->enabled)) $colspan++;
 						    if (!empty($conf->global->MAIN_USE_EXPENSE_IK)) $colspan++;
+                            if (!empty($conf->global->MAIN_USE_EXPENSE_REBILLED)) $colspan+2;
 
 						    print '<tr class="tredited">';
 
@@ -2376,6 +2389,18 @@ else
 								$formproject->select_projects(-1, $line->fk_project, 'fk_projet', 0, 0, 1, 1, 0, 0, 0, '', 0, 0, 'maxwidth300');
 								print '</td>';
 							}
+
+                            if (!empty($conf->global->MAIN_USE_EXPENSE_REBILLED))
+                            {
+                                print '<td class="fk_c_exp_tax_cat">';
+                                $params = array('fk_expense' => $object->id, 'fk_expense_det' => $line->rowid, 'date' => $line->dates);
+                                print $form->selectExpenseCategories($line->fk_c_exp_tax_cat, 'fk_c_exp_tax_cat', 1, array(), 'fk_c_type_fees', $userauthor->default_c_exp_tax_cat, $params);
+                                print '</td>';
+
+                                print '<td class="fk_c_exp_tax_cat">';
+                                print 'rebilled';
+                                print '</td>';
+                            }
 
 							if (!empty($conf->global->MAIN_USE_EXPENSE_IK))
 							{

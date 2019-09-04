@@ -89,5 +89,7 @@ ALTER TABLE llx_projet ADD COLUMN usage_organize_event integer DEFAULT 0;
 
 UPDATE llx_projet set usage_opportunity = 1 WHERE fk_opp_status > 0;
 
+ALTER TABLE llx_expensereport_det ADD COLUMN fk_soc integer DEFAULT NULL after multicurrency_total_ttc;
+ALTER TABLE llx_expensereport_det ADD COLUMN rebilled tinyint DEFAULT 0 after fk_soc;
  
   

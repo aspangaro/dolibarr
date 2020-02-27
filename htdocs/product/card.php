@@ -18,6 +18,7 @@
  * Copyright (C) 2017		Josep Lluís Amador	 <joseplluis@lliuretic.cat>
  * Copyright (C) 2019       Frédéric France      <frederic.france@netlogic.fr>
  * Copyright (C) 2019-2020  Thibault FOUCART     <support@ptibogxiv.net>
+ * Copyright (C) 2020      Stanley Dormoy        <sdormoy@epilot.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -228,6 +229,19 @@ if (empty($reshook))
             	$object->price_min_ttc = GETPOST('price_min');
             else
             	$object->price_min = GETPOST('price_min');
+
+			if(is_array($this->categorie))
+			{
+				foreach($this->categorie as $cat){
+					$sql="INSERT INTO ".MAIN_DB_PREFIX."categorie_product (fk_categorie, fk_product)";
+					$sql.= " values (".$cat['id'].",".$this->id.")";
+					$result = $this->db->query($sql);
+					if (!$result) {
+						$error++;
+						$this->error = $this->db->lasterror();
+					}
+				}
+			}
 
 	        $tva_tx_txt = GETPOST('tva_tx', 'alpha'); // tva_tx can be '8.5'  or  '8.5*'  or  '8.5 (XXX)' or '8.5* (XXX)'
 

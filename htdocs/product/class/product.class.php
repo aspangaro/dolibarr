@@ -5457,6 +5457,18 @@ class Product extends CommonObject
         }
     }
 
+	/**
+	 * Returns the categories used by an product id
+	 *
+	 * @return Object
+	 */
+	public function fetch_categorie()
+	{
+		include_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
+		$c = new Categorie($this->db);
+		$this->categorie=$c->getListForItem($this->id,'product');
+	}
+
     /**
      *  Load information for tab info
      *

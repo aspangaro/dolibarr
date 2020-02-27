@@ -2,6 +2,7 @@
 /* Copyright (C) 2016      Marcos García       <marcosgdf@gmail.com>
  * Copyright (C) 2017      Laurent Destailleur <eldy@users.sourceforge.net>
  * Copyright (C) 2018-2019 Frédéric France     <frederic.france@netlogic.fr>
+ * Copyright (C) 2020      Stanley Dormoy      <sdormoy@epilot.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -144,6 +145,7 @@ if ($_POST) {
 			// For example:  Color->blue, Size->Small, Option->2
 			//var_dump($sanit_features);
 			//var_dump($productCombination2ValuePairs1); exit;
+			$object->fetch_categorie();
 
 			if (!$prodcomb->fetchByProductCombination2ValuePairs($id, $sanit_features))
 			{

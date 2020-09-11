@@ -1039,16 +1039,17 @@ class BookKeeping extends CommonObject
 	/**
 	 * Load object in memory from the database
 	 *
-	 * @param string $sortorder Sort Order
-	 * @param string $sortfield Sort field
-	 * @param int $limit offset limit
-	 * @param int $offset offset limit
-	 * @param array $filter filter array
-	 * @param string $filtermode filter mode (AND or OR)
+	 * @param string	$sortorder		Sort Order
+	 * @param string	$sortfield		Sort field
+	 * @param int		$limit			offset limit
+	 * @param int		$offset			offset limit
+	 * @param array		$filter			filter array
+	 * @param string	$filtermode		filter mode (AND or OR)
+	 * @param int		$typeaccount	0: general account, 1: subledger_account
 	 *
 	 * @return int <0 if KO, >0 if OK
 	 */
-	public function fetchAllBalance($sortorder = '', $sortfield = '', $limit = 0, $offset = 0, array $filter = array(), $filtermode = 'AND')
+	public function fetchAllBalance($sortorder = '', $sortfield = '', $limit = 0, $offset = 0, array $filter = array(), $filtermode = 'AND', $typeaccount = 0)
 	{
 		global $conf;
 
@@ -1056,8 +1057,11 @@ class BookKeeping extends CommonObject
 
 		dol_syslog(__METHOD__, LOG_DEBUG);
 
+		// Define account type
+		$typeaccount = empty($typeaccount) ? 'numero_compte':'subledger_account';
+
 		$sql = 'SELECT';
-		$sql .= " t.numero_compte,";
+		$sql .= " t." . $typeaccount . ",";
 		$sql .= " SUM(t.debit) as debit,";
 		$sql .= " SUM(t.credit) as credit";
 		$sql .= ' FROM '.MAIN_DB_PREFIX.$this->table_element.' as t';
@@ -1087,7 +1091,7 @@ class BookKeeping extends CommonObject
 			$sql .= ' AND '.implode(' '.$filtermode.' ', $sqlwhere);
 		}
 
-		$sql .= ' GROUP BY t.numero_compte';
+		$sql .= ' GROUP BY t.' . $typeaccount;
 
 		if (!empty($sortfield)) {
 			$sql .= $this->db->order($sortfield, $sortorder);
@@ -1107,6 +1111,7 @@ class BookKeeping extends CommonObject
 				$line = new BookKeepingLine();
 
 				$line->numero_compte = $obj->numero_compte;
+				$line->subledger_account = $obj->subledger_account;
 				$line->debit = $obj->debit;
 				$line->credit = $obj->credit;
 

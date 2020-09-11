@@ -201,6 +201,7 @@ TransactionNumShort=Num. transaction
 AccountingCategory=Personalized groups
 GroupByAccountAccounting=Group by accounting account
 AccountingAccountGroupsDesc=You can define here some groups of accounting account. They will be used for personalized accounting reports.
+BalanceOfSubAccounts=Balance of sub-accounts
 ByAccounts=By accounts
 ByPredefinedAccountGroups=By predefined groups
 ByPersonalizedAccountGroups=By personalized groups

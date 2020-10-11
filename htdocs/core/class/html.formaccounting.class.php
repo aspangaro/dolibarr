@@ -347,7 +347,7 @@ class FormAccounting extends Form
 
     // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
 	/**
-	 * Return list of auxilary thirdparty accounts
+	 * Return list of auxiliary thirdparty accounts
 	 *
 	 * @param string   $selectid       Preselected pcg_type
 	 * @param string   $htmlname       Name of field in html form

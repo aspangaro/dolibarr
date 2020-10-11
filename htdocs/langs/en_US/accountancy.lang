@@ -119,6 +119,7 @@ ValidTransaction=Validate transaction
 WriteBookKeeping=Register transactions in accounting
 Bookkeeping=Ledger
 AccountBalance=Account balance
+AccountBalanceSubaccount=Subaccount balance
 ObjectsRef=Source object ref
 CAHTF=Total purchase vendor before tax
 TotalExpenseReport=Total expense report

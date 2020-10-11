@@ -22,7 +22,7 @@
 /**
  *  \file 		htdocs/accountancy/bookkeeping/balance.php
  *  \ingroup 	Accountancy (Double entries)
- *  \brief 		Balance of book keeping
+ *  \brief 		Balance
  */
 
 require '../../main.inc.php';
@@ -43,6 +43,8 @@ $page = GETPOSTISSET('pageplusone') ? (GETPOST('pageplusone') - 1) : GETPOST("pa
 $sortorder = GETPOST("sortorder", 'alpha');
 $sortfield = GETPOST("sortfield", 'alpha');
 $action = GETPOST('action', 'aZ09');
+$option = GETPOST('option', 'int'); // 0:Balance based on general accounts / 1:Balance based on subledger accounts
+if (empty($option)) $option = 0;
 
 // Load variable for pagination
 $limit = GETPOST('limit', 'int') ?GETPOST('limit', 'int') : $conf->liste_limit;
@@ -53,8 +55,6 @@ if (empty($page) || $page == -1 || GETPOST('button_search', 'alpha') || GETPOST(
 $offset = $limit * $page;
 $pageprev = $page - 1;
 $pagenext = $page + 1;
-//if (! $sortfield) $sortfield="p.date_fin";
-//if (! $sortorder) $sortorder="DESC";
 
 $show_subgroup = GETPOST('show_subgroup', 'alpha');
 $search_date_start = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
@@ -100,12 +100,17 @@ if (empty($search_date_start) && !GETPOSTISSET('formfilteraction'))
 	}
 }
 if ($sortorder == "") $sortorder = "ASC";
-if ($sortfield == "") $sortfield = "t.numero_compte";
+if ($option == 1) {
+	if ($sortfield == "") $sortfield = "t.numero_compte";
+} else {
+	if ($sortfield == "") $sortfield = "t.subledger_account";
+}
 
 
 $param = '';
 if (!empty($contextpage) && $contextpage != $_SERVER["PHP_SELF"]) $param .= '&contextpage='.urlencode($contextpage);
 if ($limit > 0 && $limit != $conf->liste_limit) $param .= '&limit='.urlencode($limit);
+if (!empty($option)) $param .= '&option='.urlencode($option);
 
 $filter = array();
 if (!empty($search_date_start)) {
@@ -116,13 +121,24 @@ if (!empty($search_date_end)) {
 	$filter['t.doc_date<='] = $search_date_end;
 	$param .= '&amp;date_endmonth='.GETPOST('date_endmonth', 'int').'&amp;date_endday='.GETPOST('date_endday', 'int').'&amp;date_endyear='.GETPOST('date_endyear', 'int');
 }
-if (!empty($search_accountancy_code_start)) {
-	$filter['t.numero_compte>='] = $search_accountancy_code_start;
-	$param .= '&amp;search_accountancy_code_start='.$search_accountancy_code_start;
-}
-if (!empty($search_accountancy_code_end)) {
-	$filter['t.numero_compte<='] = $search_accountancy_code_end;
-	$param .= '&amp;search_accountancy_code_end='.$search_accountancy_code_end;
+if ($option == 1) {
+	if (!empty($search_accountancy_code_start)) {
+		$filter['t.subledger_account>='] = $search_accountancy_code_start;
+		$param .= '&amp;search_accountancy_code_start=' . $search_accountancy_code_start;
+	}
+	if (!empty($search_accountancy_code_end)) {
+		$filter['t.subledger_account<='] = $search_accountancy_code_end;
+		$param .= '&amp;search_accountancy_code_end=' . $search_accountancy_code_end;
+	}
+} else {
+	if (!empty($search_accountancy_code_start)) {
+		$filter['t.numero_compte>='] = $search_accountancy_code_start;
+		$param .= '&amp;search_accountancy_code_start='.$search_accountancy_code_start;
+	}
+	if (!empty($search_accountancy_code_end)) {
+		$filter['t.numero_compte<='] = $search_accountancy_code_end;
+		$param .= '&amp;search_accountancy_code_end='.$search_accountancy_code_end;
+	}
 }
 
 /*
@@ -148,19 +164,33 @@ if ($action == 'export_csv')
 {
 	$sep = $conf->global->ACCOUNTING_EXPORT_SEPARATORCSV;
 
-	$filename = 'balance';
+	if ($option == 1) {
+		$filename = 'balance_subaccount';
+	} else {
+		$filename = 'balance';
+	}
 	$type_export = 'balance';
 	include DOL_DOCUMENT_ROOT.'/accountancy/tpl/export_journal.tpl.php';
 
-	$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, 0, $filter);
+	if ($option == 1) {
+		$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, 0, $filter, 'AND', 1);
+	} else {
+		$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, 0, $filter);
+	}
+
 	if ($result < 0) {
 		setEventMessages($object->error, $object->errors, 'errors');
 	}
 
 	foreach ($object->lines as $line)
 	{
-		print length_accountg($line->numero_compte).$sep;
-		print $object->get_compte_desc($line->numero_compte).$sep;
+		if ($option == 1) {
+			print length_accounta($line->subledger_account).$sep;
+			print $object->get_compte_desc($line->subledger_account).$sep;
+		} else {
+			print length_accountg($line->numero_compte).$sep;
+			print $object->get_compte_desc($line->numero_compte).$sep;
+		}
 		print price($line->debit).$sep;
 		print price($line->credit).$sep;
 		print price($line->debit - $line->credit).$sep;
@@ -170,8 +200,11 @@ if ($action == 'export_csv')
 	exit;
 }
 
-
-$title_page = $langs->trans("AccountBalance");
+if ($option == 1) {
+	$title_page = $langs->trans("AccountBalanceSubaccount");
+} else {
+	$title_page = $langs->trans("AccountBalance");
+}
 
 llxHeader('', $title_page);
 
@@ -182,13 +215,22 @@ if ($action != 'export_csv')
 	$nbtotalofrecords = '';
 	if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST))
 	{
-		$nbtotalofrecords = $object->fetchAllBalance($sortorder, $sortfield, 0, 0, $filter);
+		if ($option == 1) {
+			$nbtotalofrecords = $object->fetchAllBalance($sortorder, $sortfield, 0, 0, $filter, 'AND', 1);
+		} else {
+			$nbtotalofrecords = $object->fetchAllBalance($sortorder, $sortfield, 0, 0, $filter);
+		}
+
 		if ($nbtotalofrecords < 0) {
 			setEventMessages($object->error, $object->errors, 'errors');
 		}
 	}
 
-	$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, $offset, $filter);
+	if ($option == 1) {
+		$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, $offset, $filter, 'AND', 1);
+	} else {
+		$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, $offset, $filter);
+	}
 	if ($result < 0) {
 		setEventMessages($object->error, $object->errors, 'errors');
 	}
@@ -198,6 +240,7 @@ if ($action != 'export_csv')
 	print '<input type="hidden" name="token" value="'.newToken().'">';
 	print '<input type="hidden" name="formfilteraction" id="formfilteraction" value="list">';
 	print '<input type="hidden" name="action" id="action" value="list">';
+	print '<input type="hidden" name="option" value="'.$option.'">';
 	print '<input type="hidden" name="sortfield" value="'.$sortfield.'">';
 	print '<input type="hidden" name="sortorder" value="'.$sortorder.'">';
 	print '<input type="hidden" name="page" value="'.$page.'">';
@@ -246,26 +289,39 @@ if ($action != 'export_csv')
 
 	print '<tr class="liste_titre_filter">';
 	print '<td class="liste_titre" colspan="5">';
-	print $langs->trans('From');
-	print $formaccounting->select_account($search_accountancy_code_start, 'search_accountancy_code_start', 1, array(), 1, 1, '');
-	print ' ';
-	print $langs->trans('to');
-	print $formaccounting->select_account($search_accountancy_code_end, 'search_accountancy_code_end', 1, array(), 1, 1, '');
+	if ($option == 1) {
+		print $langs->trans('From');
+		print $formaccounting->select_auxaccount($search_accountancy_code_start, 'search_accountancy_code_start', 1, '');
+		print ' ';
+		print $langs->trans('to');
+		print $formaccounting->select_auxaccount($search_accountancy_code_end, 'search_accountancy_code_end', 1, '');
+	} else {
+		print $langs->trans('From');
+		print $formaccounting->select_account($search_accountancy_code_start, 'search_accountancy_code_start', 1, array(), 1, 1, '');
+		print ' ';
+		print $langs->trans('to');
+		print $formaccounting->select_account($search_accountancy_code_end, 'search_accountancy_code_end', 1, array(), 1, 1, '');
+	}
 	print '</td>';
-	print '<td class="liste_titre center">';
-	$searchpicto = $form->showFilterButtons();
+	print '<td class="liste_titre maxwidthsearch">';
+	$searchpicto = $form->showFilterAndCheckAddButtons();
 	print $searchpicto;
 	print '</td>';
 
 	print '</tr>';
 
 	print '<tr class="liste_titre">';
-	print_liste_field_titre("AccountAccounting", $_SERVER['PHP_SELF'], "t.numero_compte", "", $param, "", $sortfield, $sortorder);
+	if ($option == 1) {
+		print_liste_field_titre("SubledgerAccount", $_SERVER['PHP_SELF'], "t.subledger_account", "", $param, "", $sortfield, $sortorder);
+
+	} else {
+		print_liste_field_titre("AccountAccounting", $_SERVER['PHP_SELF'], "t.numero_compte", "", $param, "", $sortfield, $sortorder);
+	}
 	print_liste_field_titre("OpeningBalance", $_SERVER['PHP_SELF'], "", $param, "", 'class="right"', $sortfield, $sortorder);
 	print_liste_field_titre("Debit", $_SERVER['PHP_SELF'], "t.debit", "", $param, 'class="right"', $sortfield, $sortorder);
 	print_liste_field_titre("Credit", $_SERVER['PHP_SELF'], "t.credit", "", $param, 'class="right"', $sortfield, $sortorder);
 	print_liste_field_titre("Balance", $_SERVER["PHP_SELF"], "", $param, "", 'class="right"', $sortfield, $sortorder);
-	print_liste_field_titre('', $_SERVER["PHP_SELF"], "", $param, "", 'width="60" class="center"', $sortfield, $sortorder);
+	print_liste_field_titre('', $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'center maxwidthsearch ');
 	print "</tr>\n";
 
 	$total_debit = 0;
@@ -276,36 +332,49 @@ if ($action != 'export_csv')
 
     $accountingaccountstatic = new AccountingAccount($db);
 
-	$sql = "SELECT t.numero_compte, (SUM(t.debit) - SUM(t.credit)) as opening_balance";
+	if ($option == 1) {
+		$field = 'subledger_account';
+	} else {
+		$field = 'numero_compte';
+	}
+
+	$sql = "SELECT t.".$field.", (SUM(t.debit) - SUM(t.credit)) as opening_balance";
 	$sql .= " FROM ".MAIN_DB_PREFIX."accounting_bookkeeping as t";
 	$sql .= " WHERE t.entity = ".$conf->entity;		// Never do sharing into accounting features
 	$sql .= " AND t.doc_date < '".$db->idate($search_date_start)."'";
-	$sql .= " GROUP BY t.numero_compte";
+	$sql .= " GROUP BY t.".$field;
 
 	$resql = $db->query($sql);
 	$nrows = $resql->num_rows;
 	$opening_balances = array();
 	for ($i = 0; $i < $nrows; $i++) {
 		$arr = $resql->fetch_array();
-		$opening_balances["'".$arr['numero_compte']."'"] = $arr['opening_balance'];
+		$opening_balances["'".$arr[$field]."'"] = $arr['opening_balance'];
 	}
 
 	foreach ($object->lines as $line)
 	{
-        $accountingaccountstatic->fetch(null, $line->numero_compte, true);
-        if (!empty($accountingaccountstatic->account_number)) {
-            $accounting_account = $accountingaccountstatic->getNomUrl(0, 1);
-        } else {
-            $accounting_account = length_accountg($line->numero_compte);
-        }
+		if ($option == 1) {
+			$accounting_account = length_accounta($line->subledger_account);
+		} else {
+			$accountingaccountstatic->fetch(null, $line->numero_compte, true);
+			if (!empty($accountingaccountstatic->account_number)) {
+				$accounting_account = $accountingaccountstatic->getNomUrl(0, 1);
+			} else {
+				$accounting_account = length_accountg($line->numero_compte);
+			}
+		}
 
 		$link = '';
 		$total_debit += $line->debit;
 		$total_credit += $line->credit;
-		$root_account_description = $object->get_compte_racine($line->numero_compte);
-		if (empty($accountingaccountstatic->account_number)) {
-			$link = '<a href="'.DOL_URL_ROOT.'/accountancy/admin/card.php?action=create&accountingaccount='.length_accountg($line->numero_compte).'">'.img_edit_add().'</a>';
+		if (empty($option)) {
+			$root_account_description = $object->get_compte_racine($line->numero_compte);
+			if (empty($accountingaccountstatic->account_number)) {
+				$link = '<a href="'.DOL_URL_ROOT.'/accountancy/admin/card.php?action=create&accountingaccount='.length_accountg($line->numero_compte).'">'.img_edit_add().'</a>';
+			}
 		}
+
 		print '<tr class="oddeven">';
 
 		if (!empty($show_subgroup))
@@ -335,8 +404,13 @@ if ($action != 'export_csv')
 		}
 
 		// $object->get_compte_racine($line->numero_compte);
-		print '<td>'.$accounting_account.'</td>';
-		print '<td class="nowraponall right">'.price($opening_balances["'".$line->numero_compte."'"]).'</td>';
+		if ($option == 1) {
+			print '<td>'.$accounting_account.'</td>';
+			print '<td class="nowraponall right">'.price($opening_balances["'".$line->subledger_account."'"]).'</td>';
+		} else {
+			print '<td>'.$accounting_account.'</td>';
+			print '<td class="nowraponall right">'.price($opening_balances["'".$line->numero_compte."'"]).'</td>';
+		}
 		print '<td class="nowraponall right">'.price($line->debit).'</td>';
 		print '<td class="nowraponall right">'.price($line->credit).'</td>';
 		print '<td class="nowraponall right">'.price(price2num($line->debit - $line->credit, 'MT')).'</td>';

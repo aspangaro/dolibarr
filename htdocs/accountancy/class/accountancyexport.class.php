@@ -51,6 +51,7 @@ class AccountancyExport
 	public static $EXPORT_TYPE_BOB50 = 35;
 	public static $EXPORT_TYPE_CIEL = 40;
 	public static $EXPORT_TYPE_SAGE50_SWISS = 45;
+	public static $EXPORT_TYPE_SAGE100 = 47;
 	public static $EXPORT_TYPE_CHARLEMAGNE = 50;
 	public static $EXPORT_TYPE_QUADRATUS = 60;
 	public static $EXPORT_TYPE_WINFIC = 70;
@@ -113,10 +114,11 @@ class AccountancyExport
 			self::$EXPORT_TYPE_AGIRIS => $langs->trans('Modelcsv_agiris'),
             self::$EXPORT_TYPE_OPENCONCERTO => $langs->trans('Modelcsv_openconcerto'),
 			self::$EXPORT_TYPE_SAGE50_SWISS => $langs->trans('Modelcsv_Sage50_Swiss'),
+			self::$EXPORT_TYPE_SAGE100 => $langs->trans('Modelcsv_Sage100'),
 			self::$EXPORT_TYPE_LDCOMPTA => $langs->trans('Modelcsv_LDCompta'),
 			self::$EXPORT_TYPE_LDCOMPTA10 => $langs->trans('Modelcsv_LDCompta10'),
-			self::$EXPORT_TYPE_FEC => $langs->trans('Modelcsv_FEC'),
 			self::$EXPORT_TYPE_CHARLEMAGNE => $langs->trans('Modelcsv_charlemagne'),
+			self::$EXPORT_TYPE_FEC => $langs->trans('Modelcsv_FEC'),
 		);
 
 		ksort($listofexporttypes, SORT_NUMERIC);
@@ -145,8 +147,10 @@ class AccountancyExport
 			self::$EXPORT_TYPE_AGIRIS => 'agiris',
 			self::$EXPORT_TYPE_OPENCONCERTO => 'openconcerto',
             self::$EXPORT_TYPE_SAGE50_SWISS => 'sage50ch',
+            self::$EXPORT_TYPE_SAGE100 => 'sage100',
             self::$EXPORT_TYPE_LDCOMPTA => 'ldcompta',
             self::$EXPORT_TYPE_LDCOMPTA10 => 'ldcompta10',
+            self::$EXPORT_TYPE_CHARLEMAGNE => 'charlemagne',
 			self::$EXPORT_TYPE_FEC => 'fec',
 		);
 
@@ -209,6 +213,10 @@ class AccountancyExport
 					'label' => $langs->trans('Modelcsv_Sage50_Swiss'),
 					'ACCOUNTING_EXPORT_FORMAT' => 'csv',
 				),
+				self::$EXPORT_TYPE_SAGE100 => array(
+					'label' => $langs->trans('Modelcsv_Sage100'),
+					'ACCOUNTING_EXPORT_FORMAT' => 'pnm',
+				),
                 self::$EXPORT_TYPE_LDCOMPTA => array(
                     'label' => $langs->trans('Modelcsv_LDCompta'),
                     'ACCOUNTING_EXPORT_FORMAT' => 'csv',
@@ -217,12 +225,12 @@ class AccountancyExport
                     'label' => $langs->trans('Modelcsv_LDCompta10'),
                     'ACCOUNTING_EXPORT_FORMAT' => 'csv',
                 ),
-				self::$EXPORT_TYPE_FEC => array(
-					'label' => $langs->trans('Modelcsv_FEC'),
-					'ACCOUNTING_EXPORT_FORMAT' => 'txt',
-				),
 				self::$EXPORT_TYPE_CHARLEMAGNE => array(
 					'label' => $langs->trans('Modelcsv_charlemagne'),
+					'ACCOUNTING_EXPORT_FORMAT' => 'txt',
+				),
+				self::$EXPORT_TYPE_FEC => array(
+					'label' => $langs->trans('Modelcsv_FEC'),
 					'ACCOUNTING_EXPORT_FORMAT' => 'txt',
 				),
 			),
@@ -232,7 +240,8 @@ class AccountancyExport
 			),
 			'format' => array(
 				'csv' => $langs->trans("csv"),
-				'txt' => $langs->trans("txt")
+				'txt' => $langs->trans("txt"),
+				'pnm' => $langs->trans("pnm")
 			),
 		);
 	}
@@ -295,18 +304,22 @@ class AccountancyExport
 			case self::$EXPORT_TYPE_SAGE50_SWISS :
 				$this->exportSAGE50SWISS($TData);
 				break;
+			case self::$EXPORT_TYPE_SAGE100 :
+				$this->exportSAGE100($TData);
+				break;
             case self::$EXPORT_TYPE_LDCOMPTA :
                 $this->exportLDCompta($TData);
                 break;
             case self::$EXPORT_TYPE_LDCOMPTA10 :
                 $this->exportLDCompta10($TData);
                 break;
-            case self::$EXPORT_TYPE_FEC :
-                $this->exportFEC($TData);
-                break;
 			case self::$EXPORT_TYPE_CHARLEMAGNE :
 				$this->exportCharlemagne($TData);
 				break;
+            case self::$EXPORT_TYPE_FEC :
+                $this->exportFEC($TData);
+                break;
+
 			default:
 				$this->errors[] = $langs->trans('accountancy_error_modelnotfound');
 				break;
@@ -691,19 +704,19 @@ class AccountancyExport
 			$date = dol_print_date($line->doc_date, '%d%m%Y');
 
 			print $line->piece_num.$separator;
-			print self::toAnsi($line->label_operation).$separator;
+			print self::toAnsi(dol_string_unaccent($line->label_operation)).$separator;
 			print $date.$separator;
-			print self::toAnsi($line->label_operation).$separator;
+			print self::toAnsi(dol_string_unaccent($line->label_operation)).$separator;
 
 			if (empty($line->subledger_account)) {
 				print length_accountg($line->numero_compte).$separator;
-				print self::toAnsi($line->label_compte).$separator;
+                print self::toAnsi(dol_string_unaccent($line->label_compte)).$separator;
 			} else {
 				print length_accounta($line->subledger_account).$separator;
-				print self::toAnsi($line->subledger_label).$separator;
+                print self::toAnsi(dol_string_unaccent($line->subledger_label)).$separator;
 			}
 
-			print self::toAnsi($line->doc_ref).$separator;
+			print self::toAnsi(dol_string_unaccent($line->doc_ref)).$separator;
 			print price($line->debit).$separator;
 			print price($line->credit).$separator;
 			print price($line->montant).$separator;
@@ -810,58 +823,59 @@ class AccountancyExport
 		foreach ($objectLines as $line) {
 			$date_creation = dol_print_date($line->date_creation, '%Y%m%d');
 			$date_document = dol_print_date($line->doc_date, '%Y%m%d');
+			$date_lettering = dol_print_date($line->date_lettering, '%Y%m%d');
 			$date_validation = dol_print_date($line->date_validated, '%Y%m%d');
 
 			// FEC:JournalCode
-			print $line->code_journal.$separator;
+			print $line->code_journal . $separator;
 
 			// FEC:JournalLib
-			print $line->journal_label.$separator;
+			print $line->journal_label . $separator;
 
 			// FEC:EcritureNum
-			print $line->piece_num.$separator;
+			print $line->piece_num . $separator;
 
 			// FEC:EcritureDate
 			print $date_document . $separator;
 
 			// FEC:CompteNum
-			print $line->numero_compte.$separator;
+			print $line->numero_compte . $separator;
 
 			// FEC:CompteLib
 			print dol_string_unaccent($line->label_compte) . $separator;
 
 			// FEC:CompAuxNum
-			print $line->subledger_account.$separator;
+			print $line->subledger_account . $separator;
 
 			// FEC:CompAuxLib
 			print dol_string_unaccent($line->subledger_label) . $separator;
 
 			// FEC:PieceRef
-			print $line->doc_ref.$separator;
+			print $line->doc_ref . $separator;
 
 			// FEC:PieceDate
-			print dol_string_unaccent($date_creation) . $separator;
+			print $date_creation . $separator;
 
 			// FEC:EcritureLib
-			print $line->label_operation.$separator;
+			print dol_string_unaccent($line->label_operation).$separator;
 
 			// FEC:Debit
-			print price2fec($line->debit).$separator;
+			print price2fec($line->debit) . $separator;
 
 			// FEC:Credit
-			print price2fec($line->credit).$separator;
+			print price2fec($line->credit) . $separator;
 
 			// FEC:EcritureLet
-			print $line->lettering_code.$separator;
+			print $line->lettering_code . $separator;
 
 			// FEC:DateLet
-			print $line->date_lettering.$separator;
+			print $date_lettering . $separator;
 
 			// FEC:ValidDate
 			print $date_validation . $separator;
 
 			// FEC:Montantdevise
-			print $line->multicurrency_amount.$separator;
+			print $line->multicurrency_amount . $separator;
 
 			// FEC:Idevise
 			print $line->multicurrency_code;
@@ -1007,6 +1021,127 @@ class AccountancyExport
             }
         }
     }
+
+	/**
+	 * Export format : SAGE100
+	 *
+	 * https://help.eurecia.com/hc/fr/articles/360000747545-Format-SAGE-LIGNE-100-1000-STD
+	 *
+	 * @param array $objectLines data
+	 *
+	 * @return void
+	 */
+	public function exportSAGE100($objectLines)
+	{
+		global $conf;
+
+		// SAGE100
+		$this->separator = '';
+		$this->end_line = "\r\n";
+
+		print $conf->global->ACCOUNTING_EXPORT_PREFIX_SPEC;
+		print $this->end_line;
+
+		// Print header line
+		foreach ($objectLines as $line)
+		{
+			// Journal
+			print str_pad(self::trunc($line->code_journal, 3), 3, '', 1) . $this->separator;
+
+			// Date
+			$date = dol_print_date($line->doc_date, '%d%m%Y');
+			print $date.$this->separator;
+
+			// Piece type
+			if ($line->doc_type == 'supplier_invoice') {
+				if ($line->montant < 0) {
+					$nature_piece = 'AF';
+				} else {
+					$nature_piece = 'FF';
+				}
+			} elseif ($line->doc_type == 'customer_invoice') {
+				if ($line->montant < 0) {
+					$nature_piece = 'AC';
+				} else {
+					$nature_piece = 'FC';
+				}
+			} else {
+				$nature_piece = '';
+			}
+			print str_pad(self::trunc($nature_piece, 2), 2, '', 1) . $this->separator;
+
+			// Accountancy account
+			print str_pad(self::trunc(length_accountg($line->numero_compte),13), 13, '', STR_PAD_RIGHT) . $this->separator;
+
+			// Accountancy account type
+			if (!empty($line->code_tiers)) {
+				$nature_account = 'X';
+			} else {
+				$nature_account = '';
+			}
+			print str_pad($nature_account, 1, '', STR_PAD_RIGHT) . $this->separator;
+
+			// Subledger account
+			print str_pad(self::trunc($line->code_tiers,13), 13, '', STR_PAD_RIGHT) . $this->separator;
+
+			// Reference piece
+			print str_pad(self::trunc('GL'.$line->piece_num,13), 13, '', STR_PAD_RIGHT) . $this->separator;
+
+			// Label
+			print str_pad(self::trunc($line->label_operation,25), 25, '', STR_PAD_RIGHT) . $this->separator;
+
+			// Payment mode
+			$payment_mode = 'S'; // by default
+			print str_pad($payment_mode, 1, '', STR_PAD_RIGHT) . $this->separator;
+
+			// Echeance date
+			$echeance_date = dol_print_date($line->doc_date, '%d%m%Y'); // by default
+			print $echeance_date.$this->separator;
+
+			// Sens
+			print str_pad($line->sens, 1, '', STR_PAD_RIGHT) . $this->separator;
+
+			// Amount
+			print str_pad(price2fec($line->montant), 20, '', STR_PAD_LEFT) . $this->separator;
+
+			// Ecriture type
+			$ecriture_type = 'N'; // by default
+			print str_pad($ecriture_type, 1, '', STR_PAD_RIGHT) . $this->separator;
+
+			// Piece number
+			print str_pad(self::trunc($line->piece_num,7), 7, '', STR_PAD_RIGHT) . $this->separator;
+
+			// Reserved zone
+			$reserved_zone = ''; // by default
+			print str_pad($reserved_zone, 26, '', STR_PAD_RIGHT) . $this->separator;
+
+			// Devise ISO code
+			$devise_default_iso = ''; // by default
+			print str_pad($devise_default_iso, 3, '', STR_PAD_RIGHT) . $this->separator;
+
+			// Devise Amount
+			$devise_amount = ''; // by default
+			print str_pad($devise_amount, 20, '', STR_PAD_LEFT) . $this->separator;
+
+			// Devise ISO code
+			$devise_iso = ''; // by default
+			print str_pad($devise_iso, 3, '', STR_PAD_RIGHT) . $this->separator;
+
+			// Analytic axe
+			$analytic_axe = ''; // by default
+			print str_pad($analytic_axe, 10, '', STR_PAD_RIGHT) . $this->separator;
+
+			// Analytic section
+			$section_axe = ''; // by default
+			print str_pad($section_axe, 25, '', STR_PAD_RIGHT) . $this->separator;
+
+			// VAT profil
+			$vat_profil = ''; // by default
+			print str_pad($vat_profil, 50, '', STR_PAD_RIGHT) . $this->separator;
+
+			print $this->end_line;
+		}
+	}
 
     /**
      * Export format : LD Compta version 9

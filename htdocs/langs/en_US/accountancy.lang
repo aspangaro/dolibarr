@@ -337,6 +337,7 @@ Modelcsv_openconcerto=Export for OpenConcerto (Test)
 Modelcsv_configurable=Export CSV Configurable
 Modelcsv_FEC=Export FEC
 Modelcsv_Sage50_Swiss=Export for Sage 50 Switzerland
+Modelcsv_Sage100=Export for Sage 100
 Modelcsv_winfic=Export Winfic - eWinfic - WinSis Compta
 ChartofaccountsId=Chart of accounts Id
 

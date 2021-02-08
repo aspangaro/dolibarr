@@ -27,11 +27,9 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/intracommreport/class/intracommreport.class.php';
 
 $langs->loadLangs(array("intracommreport"));
-var_dump($_POST);
-$action = GETPOST('action');
+
+$action = GETPOST('action', "aZ09");
 $exporttype = GETPOSTISSET('exporttype') ? GETPOST('exporttype', 'alphanohtml') : 'deb'; // DEB ou DES
-$year = GETPOSTINT('year');
-$month = GETPOSTINT('month');
 $label = (string) GETPOST('label', 'alphanohtml');
 $type_declaration = (string) GETPOST('type_declaration', 'alphanohtml');
 $backtopage = GETPOST('backtopage', 'alpha');
@@ -43,6 +41,7 @@ $typeOfDeclaration = array(
 	"introduction" => $langs->trans("Introduction"),
 	"expedition" => $langs->trans("Expedition"),
 );
+
 $object = new IntracommReport($db);
 if ($id > 0) {
 	$object->fetch($id);
@@ -78,7 +77,10 @@ if ($user->rights->intracommreport->delete && $action == 'confirm_delete' && $co
 	}
 }
 
-if ($action == 'add' && $user->rights->intracommreport->write) {
+if ($action == 'add' && empty($cancel))
+{
+	$error = 0;
+
 	$object->label = trim($label);
 	$object->type = trim($exporttype);
 	$object->type_declaration =  $type_declaration;
@@ -119,6 +121,39 @@ if ($action == 'add' && $user->rights->intracommreport->write) {
 		$action = 'create';
 	}
 }
+
+if ($action == 'delete')
+{
+	$result = $object->fetch($id);
+
+	$db->begin();
+
+	$ret = $object->delete($user);
+	if ($ret > 0)
+	{
+		if ($object->fk_bank)
+		{
+			$accountline = new AccountLine($db);
+			$result = $accountline->fetch($object->fk_bank);
+			if ($result > 0) $result = $accountline->delete($user); // $result may be 0 if not found (when bank entry was deleted manually and fk_bank point to nothing)
+		}
+
+		if ($result >= 0)
+		{
+			$db->commit();
+			header("Location: ".DOL_URL_ROOT.'/intracommreport/list.php');
+			exit;
+		} else {
+			$object->error = $accountline->error;
+			$db->rollback();
+			setEventMessages($object->error, $object->errors, 'errors');
+		}
+	} else {
+		$db->rollback();
+		setEventMessages($object->error, $object->errors, 'errors');
+	}
+}
+
 
 /*
  * View

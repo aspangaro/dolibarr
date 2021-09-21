@@ -5,6 +5,7 @@
  * Copyright (C) 2011-2012	Juanjo Menent			<jmenent@2byte.es>
  * Copyright (C) 2015		Marcos García			<marcosgdf@gmail.com>
  * Copyright (C) 2021		Frédéric France			<frederic.france@netlogic.fr>
+ * Copyright (C) 2021		Alexandre Spangaro		<aspangaro@open-dsi.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -288,6 +289,15 @@ if (empty($conf->global->MAIN_DISABLE_GLOBAL_WORKBOARD)) {
 		$dashboardlines[$board->element] = $board->load_board($user);
 	}
 
+	// Number of transaction to bind
+	if (!empty($conf->accounting->enabled) && empty($conf->global->MAIN_DISABLE_BLOCK_ACCOUNTANCY) && $user->rights->bind->write) {
+		include_once DOL_DOCUMENT_ROOT.'/accountancy/class/bookkeeping.class.php';
+		$board = new Bookkeeping($db);
+		$dashboardlines[$board->element.'_customerinvoicetobind'] = $board->load_board($user, 'customerinvoicetobind');
+		$dashboardlines[$board->element.'_supplierinvoicetobind'] = $board->load_board($user, 'supplierinvoicetobind');
+		$dashboardlines[$board->element.'_expensereporttobind'] = $board->load_board($user, 'expensereporttobind');
+	}
+
 	$object = new stdClass();
 	$parameters = array();
 	$action = '';
@@ -396,6 +406,13 @@ if (empty($conf->global->MAIN_DISABLE_GLOBAL_WORKBOARD)) {
 				'globalStatsKey' => 'holidays',
 				'stats' =>
 					array('holiday'),
+			),
+		'accounting' =>
+			array(
+				'groupName' => 'Accountancy',
+				'globalStatsKey' => 'accounting',
+				'stats' =>
+					array('customerinvoicetobind', 'supplierinvoicetobind', 'expensereportstobind'),
 			),
 	);
 

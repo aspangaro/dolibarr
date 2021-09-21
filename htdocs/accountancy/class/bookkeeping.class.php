@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2014-2017  Olivier Geffroy     <jeff@jeffinfo.com>
- * Copyright (C) 2015-2017  Alexandre Spangaro  <aspangaro@open-dsi.fr>
+ * Copyright (C) 2015-2021  Alexandre Spangaro  <aspangaro@open-dsi.fr>
  * Copyright (C) 2015-2020  Florian Henry       <florian.henry@open-concept.pro>
  * Copyright (C) 2018-2020  Frédéric France     <frederic.france@netlogic.fr>
  *
@@ -2071,6 +2071,72 @@ class BookKeeping extends CommonObject
 		} else {
 			$this->error = "Error ".$this->db->lasterror();
 			dol_syslog(__METHOD__." ".$this->error, LOG_ERR);
+			return -1;
+		}
+	}
+
+	// phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+	/**
+	 *      Load indicators for dashboard (this->nbtodo and this->nbtodolate)
+	 *
+	 *      @param	User	$user   		Objet user
+	 *      @param  string  $option         'customerinvoicetobind', 'supplierinvoicetobind' or 'expensereporttobind'
+	 *      @return WorkboardResponse|int 	<0 if KO, WorkboardResponse if OK
+	 */
+	public function load_board($user, $option = 'customerinvoicetobind')
+	{
+		// phpcs:enable
+		global $conf, $langs;
+
+		if ($user->socid) {
+			return -1; // protection to avoid call by external user
+		}
+
+		$sql = "SELECT det.fk_code_ventilation";
+		if ($option == 'supplierinvoicetobind') {
+			$sql .= " FROM ".MAIN_DB_PREFIX."facture_fourn_det as det";
+		} elseif ($option == 'expensereporttobind') {
+			$sql .= " FROM ".MAIN_DB_PREFIX."expensereport_det as det";
+		} else {
+			$sql .= " FROM ".MAIN_DB_PREFIX."facturedet as det";
+		}
+		$sql .= " WHERE det.fk_code_ventilation < 1";
+		// $sql .= " AND ex.entity IN (".getEntity('expensereport').")";
+
+		$resql = $this->db->query($sql);
+		if ($resql) {
+			$langs->load("accountancy");
+
+			$response = new WorkboardResponse();
+			if ($option == 'supplierinvoicetobind') {
+				$response->label = $langs->trans("SupplierInvoiceToBind");
+				$response->labelShort = $langs->trans("SupplierInvoiceToBind");
+				$response->url = DOL_URL_ROOT.'/supplier/index.php?mainmenu=accountancy';
+			} elseif ($option == 'expensereporttobind') {
+				$response->label = $langs->trans("ExpenseReportsToBind");
+				$response->labelShort = $langs->trans("ExpenseReportsToBind");
+				$response->url = DOL_URL_ROOT.'/expensereport/index.php?mainmenu=accountancy';
+			} else {
+				$response->label = $langs->trans("CustomerInvoiceToBind");
+				$response->labelShort = $langs->trans("CustomerInvoiceToBind");
+				$response->url = DOL_URL_ROOT.'/customer/index.php?mainmenu=accountancy';
+			}
+			$response->img = img_object('', "accountancy");
+
+			while ($obj = $this->db->fetch_object($resql)) {
+				if ($option == 'supplierinvoicetobind') {
+					$response->nbtodo++;
+				} elseif ($option == 'expensereporttobind') {
+					$response->nbtodo++;
+				} else {
+					$response->nbtodo++;
+				}
+			}
+
+			return $response;
+		} else {
+			dol_print_error($this->db);
+			$this->error = $this->db->error();
 			return -1;
 		}
 	}

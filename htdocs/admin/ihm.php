@@ -419,6 +419,12 @@ if ($mode == 'dashboard') {
 		print ajax_constantonoff("MAIN_DISABLE_BLOCK_HOLIDAY", array(), $conf->entity, 0, 0, 1, 0, 0, 0, '_red', 'dashboard');
 		print '</td>';
 		print '</tr>';
+
+		// Block accountancy
+		print '<tr class="oddeven"><td>' . $langs->trans('DashboardDisableBlockAccountancy') . '</td><td>';
+		print ajax_constantonoff("MAIN_DISABLE_BLOCK_ACCOUNTANCY", array(), $conf->entity, 0, 0, 1, 0, 0, 0, '_red', 'dashboard');
+		print '</td>';
+		print '</tr>';
 	}
 
 	print '</table>' . "\n";

@@ -2179,6 +2179,7 @@ DashboardDisableBlockBank=Disable the thumb for banks
 DashboardDisableBlockAdherent=Disable the thumb for memberships
 DashboardDisableBlockExpenseReport=Disable the thumb for expense reports
 DashboardDisableBlockHoliday=Disable the thumb for leaves
+DashboardDisableBlockAccountancy=Disable the thumb for accountancy
 EnabledCondition=Condition to have field enabled (if not enabled, visibility will always be off)
 IfYouUseASecondTaxYouMustSetYouUseTheMainTax=If you want to use a second tax, you must enable also the first sale tax
 IfYouUseAThirdTaxYouMustSetYouUseTheMainTax=If you want to use a third tax, you must enable also the first sale tax

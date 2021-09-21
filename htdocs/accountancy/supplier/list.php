@@ -98,7 +98,7 @@ $hookmanager->initHooks(array('accountancysupplierlist'));
 
 $formaccounting = new FormAccounting($db);
 $accounting = new AccountingAccount($db);
-// TODO: we should need to check if result is a really exist accountaccount rowid.....
+// TODO: we should need to check if result is a really exist accountingaccount rowid.....
 $aarowid_s = $accounting->fetch('', $conf->global->ACCOUNTING_SERVICE_BUY_ACCOUNT, 1);
 $aarowid_p = $accounting->fetch('', $conf->global->ACCOUNTING_PRODUCT_BUY_ACCOUNT, 1);
 

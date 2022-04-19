@@ -1,6 +1,6 @@
 -- ============================================================================
 -- Copyright (C) 2013-2014 Olivier Geffroy      <jeff@jeffinfo.com>
--- Copyright (C) 2013-2019 Alexandre Spangaro   <aspangaro@open-dsi.fr>
+-- Copyright (C) 2013-2022 Alexandre Spangaro   <aspangaro@open-dsi.fr>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ CREATE TABLE llx_accounting_bookkeeping
 (
   rowid                 integer NOT NULL AUTO_INCREMENT PRIMARY KEY,
   entity                integer DEFAULT 1 NOT NULL,	-- 					| multi company id
-  piece_num             integer NOT NULL,			-- FEC:EcritureNum  | accounting transaction id
+  piece_num             varchar(128) NOT NULL,		-- FEC:EcritureNum  | accounting transaction id
   doc_date              date NOT NULL,				-- FEC:PieceDate    | date of source document
   doc_type              varchar(30) NOT NULL,		-- 					| facture_client/reglement_client/facture_fournisseur/reglement_fournisseur/import
   doc_ref               varchar(300) NOT NULL,		-- FEC:PieceRef		| facture_client/reglement_client/... reference number

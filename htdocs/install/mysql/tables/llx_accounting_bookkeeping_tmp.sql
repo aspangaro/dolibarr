@@ -48,7 +48,7 @@ CREATE TABLE llx_accounting_bookkeeping_tmp
   fk_user               integer NULL,				-- The id of user that validate the accounting source document
   code_journal          varchar(32) NOT NULL,		-- FEC:JournalCode
   journal_label         varchar(255),				-- FEC:JournalLib
-  piece_num             integer NOT NULL,			-- FEC:EcritureNum
+  piece_num             varchar(128) NOT NULL,		-- FEC:EcritureNum
   date_validated        datetime,					-- FEC:ValidDate	| if empty: movement not validated / if not empty: movement validated (No deleting / No modification) 
   import_key            varchar(14),
   extraparams	        varchar(255)				-- for other parameters with json format

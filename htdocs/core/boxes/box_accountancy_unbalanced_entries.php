@@ -80,14 +80,16 @@ class box_accountancy_unbalanced_entries extends ModeleBoxes
 		$this->info_box_head = array('text' => $langs->trans("BoxTitleUnbalancedEntries", $max));
 
 		if ($user->rights->accounting->mouvements->lire) {
-			$sql = "SELECT DISTINCT b.piece_num";
+			$sql = "SELECT SUM(b.debit) as debit";
+			$sql .= ", SUM(b.credit) as credit";
+			$sql .= ", b.piece_num";
 			$sql .= ", b.doc_date as date_movement";
 			$sql .= ", b.label_operation";
 			$sql .= ", b.montant as amount";
 			$sql .= ", b.code_journal";
 			$sql .= " FROM ".MAIN_DB_PREFIX."accounting_bookkeeping as b";
 			$sql .= " WHERE b.entity = ".$conf->entity;
-			$sql .= " GROUP BY b.piece_num DESC ";
+			$sql .= " GROUP BY b.piece_num DESC";
 			$sql .= " HAVING SUM(b.debit) != SUM(b.credit) ";
 			$sql .= $this->db->plimit($max, 0);
 
@@ -102,7 +104,8 @@ class box_accountancy_unbalanced_entries extends ModeleBoxes
 					$date		= $this->db->jdate($objp->date_movement);
 					$journal	= $objp->code_journal;
 					$label		= $objp->label_operation;
-					$amount		= $objp->amount;
+					$debit		= $objp->debit;
+					$credit		= $objp->credit;
 
 					// adding id (rowid) will give two lines (debit and credit)
 					// so rowid isn't in sql request
@@ -135,7 +138,12 @@ class box_accountancy_unbalanced_entries extends ModeleBoxes
 
 					$this->info_box_contents[$line][] = array(
 						'td' => 'class="nowraponall right"',
-						'text' => price($amount, 0, $langs, 0, -1, -1, $conf->currency),
+						'text' => price($debit, 0, $langs, 0, -1, -1, $conf->currency),
+					);
+
+					$this->info_box_contents[$line][] = array(
+						'td' => 'class="nowraponall right"',
+						'text' => price($credit, 0, $langs, 0, -1, -1, $conf->currency),
 					);
 
 					$line++;

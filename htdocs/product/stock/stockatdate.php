@@ -33,7 +33,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.commande.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/html.formproduct.class.php';
-require_once './lib/replenishment.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/product/stock/lib/replenishment.lib.php';
 
 // Load translation files required by the page
 $langs->loadLangs(array('products', 'stocks', 'orders'));
@@ -45,7 +45,7 @@ if ($user->socid) {
 $result = restrictedArea($user, 'produit|service');
 
 // Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
-$hookmanager->initHooks(array('stockatdate'));
+$hookmanager->initHooks(array('stockatdatelist'));
 
 //checks if a product has been ordered
 
@@ -62,6 +62,7 @@ if (GETPOSTISSET('dateday') && GETPOSTISSET('datemonth') && GETPOSTISSET('dateye
 
 $search_ref = GETPOST('search_ref', 'alphanohtml');
 $search_nom = GETPOST('search_nom', 'alphanohtml');
+$searchOnlyStockAboveZero = GETPOST('search_only_stock_above_zero', 'int');
 
 $now = dol_now();
 
@@ -113,6 +114,7 @@ if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x'
 	$fk_warehouse = 0;
 	$search_ref = '';
 	$search_nom = '';
+	$searchOnlyStockAboveZero = 0;
 }
 
 $warehouseStatus = array();
@@ -142,6 +144,9 @@ if ($date && $dateIsValid) {	// Avoid heavy sql if mandatory date is not defined
 		$sql .= " AND ps.fk_entrepot = ".((int) $fk_warehouse);
 	}
 	$sql .= " GROUP BY fk_product, fk_entrepot";
+	if ($searchOnlyStockAboveZero > 0) {
+		$sql .= " HAVING SUM(ps.reel) > 0";
+	}
 	//print $sql;
 
 	$resql = $db->query($sql);
@@ -197,6 +202,10 @@ if ($date && $dateIsValid) {
 		$sql .= " AND sm.fk_entrepot = ".((int) $fk_warehouse);
 	}
 	$sql .= " GROUP BY sm.fk_product, sm.fk_entrepot";
+	if ($searchOnlyStockAboveZero > 0) {
+		$sql .= " HAVING SUM(sm.value) > 0";
+	}
+
 	$resql = $db->query($sql);
 
 	if ($resql) {
@@ -205,9 +214,9 @@ if ($date && $dateIsValid) {
 
 		while ($i < $num) {
 			$obj = $db->fetch_object($resql);
-			$fk_product = $obj->fk_product;
+			$fk_product		= $obj->fk_product;
 			$fk_entrepot 	= $obj->fk_entrepot;
-			$stock = $obj->stock;
+			$stock			= $obj->stock;
 			$nbofmovement	= $obj->nbofmovement;
 
 			// Pour llx_product_stock.reel
@@ -242,7 +251,7 @@ $num = 0;
 
 $title = $langs->trans('StockAtDate');
 
-$sql = 'SELECT p.rowid, p.ref, p.label, p.description, p.price,';
+$sql = 'SELECT p.rowid, p.ref, p.label, p.description, p.pmp, p.price,';
 $sql .= ' p.price_ttc, p.price_base_type, p.fk_product_type, p.desiredstock, p.seuil_stock_alerte,';
 $sql .= ' p.tms as datem, p.duration, p.tobuy, p.stock, ';
 if ($fk_warehouse > 0) {
@@ -280,6 +289,13 @@ if ($fk_warehouse > 0) {
 } else {
 	$sql .= ' GROUP BY p.rowid, p.ref, p.label, p.description, p.price, p.price_ttc, p.price_base_type, p.fk_product_type, p.desiredstock, p.seuil_stock_alerte,';
 	$sql .= ' p.tms, p.duration, p.tobuy, p.stock';
+}
+if ($searchOnlyStockAboveZero > 0) {
+	if ($fk_warehouse > 0) {
+		$sql .= " HAVING SUM(ps.reel) > 0";
+	} else {
+		$sql .= " HAVING SUM(p.stock) > 0";
+	}
 }
 // Add where from hooks
 $parameters = array();
@@ -335,6 +351,10 @@ $head[1][0] = DOL_URL_ROOT.'/product/stock/stockatdate.php?mode=future';
 $head[1][1] = $langs->trans("StockAtDateInFuture");
 $head[1][2] = 'stockatdatefuture';
 
+$stocklabel = $langs->trans('StockAtDate');
+if ($mode == 'future') {
+	$stocklabel = $langs->trans("VirtualStockAtDate");
+}
 
 print load_fiche_titre($langs->trans('StockAtDate'), '', 'stock');
 
@@ -355,13 +375,17 @@ print '<input type="hidden" name="mode" value="'.$mode.'">';
 print '<div class="inline-block valignmiddle" style="padding-right: 20px;">';
 print '<span class="fieldrequired">'.$langs->trans('Date').'</span> '.$form->selectDate(($date ? $date : -1), 'date');
 
-print ' <span class="clearbothonsmartphone marginleftonly paddingleftonly marginrightonly paddingrightonly">&nbsp;</span> ';
+print '<span class="clearbothonsmartphone marginleftonly paddingleftonly marginrightonly paddingrightonly">&nbsp;</span>';
 print img_picto('', 'product', 'class="pictofiwedwidth"').' ';
 print $form->select_produits($productid, 'productid', '', 0, 0, -1, 2, '', 0, array(), 0, $langs->trans('Product'), 0, 'maxwidth300', 0, '', null, 1);
 
-print ' <span class="clearbothonsmartphone marginleftonly paddingleftonly marginrightonly paddingrightonly">&nbsp;</span> ';
+print '<span class="clearbothonsmartphone marginleftonly paddingleftonly marginrightonly paddingrightonly">&nbsp;</span>';
 print img_picto('', 'stock', 'class="pictofiwedwidth"');
 print $formproduct->selectWarehouses((GETPOSTISSET('fk_warehouse') ? $fk_warehouse : 'ifonenodefault'), 'fk_warehouse', '', 1, 0, 0, $langs->trans('Warehouse'), 0, 0, null, '', null, 1, false, 'e.ref');
+
+print '<span class="clearbothonsmartphone marginleftonly paddingleftonly marginrightonly paddingrightonly">&nbsp;</span>';
+print '<input type="checkbox" class="valignmiddle" id="search_only_stock_above_zero" name="search_only_stock_above_zero" value="1"'.($searchOnlyStockAboveZero == 1 ? ' checked="checked"' : '').'/><label class="none valignmiddle" for="search_only_stock_above_zero">'.$langs->trans('OnlyStockAboveZero', $stocklabel).'</label>';
+
 print '</div>';
 
 $parameters = array();
@@ -405,11 +429,6 @@ print_barre_liste('', $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorde
 
 print '<div class="div-table-responsive">'; // You can use div-table-responsive-no-min if you dont need reserved height for your table
 print '<table class="liste centpercent">';
-
-$stocklabel = $langs->trans('StockAtDate');
-if ($mode == 'future') {
-	$stocklabel = $langs->trans("VirtualStockAtDate");
-}
 
 //print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST" name="formulaire">';
 print '<input type="hidden" name="token" value="'.newToken().'">';
@@ -562,18 +581,18 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 
 			// PMP value
 			print '<td class="right">';
-			if (price2num($objp->estimatedvalue, 'MT')) {
-				print price(price2num($objp->estimatedvalue, 'MT'), 1);
+			if (price2num($stock * $objp->pmp, 'MT')) {
+				print price(price2num($stock * $objp->pmp, 'MT'), 1);
 			} else {
 				print '';
 			}
-			$totalbuyingprice += $objp->estimatedvalue;
+			$totalbuyingprice += $stock * $objp->pmp;
 			print '</td>';
 
 			// Selling value
 			print '<td class="right">';
 			if (empty($conf->global->PRODUIT_MULTIPRICES)) {
-				print price(price2num($objp->sellvalue, 'MT'), 1);
+				print price(price2num($stock * $objp->price, 'MT'), 1);
 			} else {
 				$htmltext = $langs->trans("OptionMULTIPRICESIsOn");
 				print $form->textwithtooltip($langs->trans("Variable"), $htmltext);

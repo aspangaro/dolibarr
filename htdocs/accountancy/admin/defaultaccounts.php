@@ -95,10 +95,13 @@ if ($conf->loan->enabled) {
 	$list_account[] = 'LOAN_ACCOUNTING_ACCOUNT_INTEREST';
 	$list_account[] = 'LOAN_ACCOUNTING_ACCOUNT_INSURANCE';
 }
-if ($conf->societe->enabled) {
-	$list_account[] = 'ACCOUNTING_ACCOUNT_CUSTOMER_DEPOSIT';
-}
 $list_account[] = 'ACCOUNTING_ACCOUNT_SUSPENSE';
+if ($conf->societe->enabled || $conf->fournisseur->enabled) {
+	$list_account[] = '---Deposits---';
+	$list_account[] = 'ACCOUNTING_ACCOUNT_CUSTOMER_DEPOSIT';
+	$list_account[] = 'ACCOUNTING_ACCOUNT_SUPPLIER_DEPOSIT';
+}
+
 
 /*
  * Actions
@@ -134,6 +137,19 @@ if ($action == 'update') {
 	}
 }
 
+if ($action == 'setdisableauxiliaryaccountonsupplierdeposit') {
+	$setDisableAuxiliaryAccountOnSupplierDeposit = GETPOST('value', 'int');
+	$res = dolibarr_set_const($db, "ACCOUNTING_ACCOUNT_SUPPLIER_USE_AUXILIARY_ON_DEPOSIT", $setDisableAuxiliaryAccountOnSupplierDeposit, 'yesno', 0, '', $conf->entity);
+	if (!($res > 0)) {
+		$error++;
+	}
+
+	if (!$error) {
+		setEventMessages($langs->trans("SetupSaved"), null, 'mesgs');
+	} else {
+		setEventMessages($langs->trans("Error"), null, 'mesgs');
+	}
+}
 
 /*
  * View
@@ -210,6 +226,8 @@ foreach ($list_account as $key) {
 			print img_picto('', 'vat', 'class="pictofixedwidth"');
 		} elseif (preg_match('/^ACCOUNTING_ACCOUNT_CUSTOMER/', $key)) {
 			print img_picto('', 'bill', 'class="pictofixedwidth"');
+		} elseif (preg_match('/^ACCOUNTING_ACCOUNT_SUPPLIER/', $key)) {
+			print img_picto('', 'supplier_invoice', 'class="pictofixedwidth"');
 		} elseif (preg_match('/^LOAN_ACCOUNTING_ACCOUNT/', $key)) {
 			print img_picto('', 'loan', 'class="pictofixedwidth"');
 		} elseif (preg_match('/^DONATION_ACCOUNTING/', $key)) {
@@ -230,6 +248,22 @@ foreach ($list_account as $key) {
 		print '</tr>';
 	}
 }
+
+if ($conf->fournisseur->enabled) {
+	print '<tr class="oddeven">';
+	print '<td>' . img_picto('', 'supplier_invoice', 'class="pictofixedwidth"') . $langs->trans("UseAuxiliaryAccountOnSupplierDeposit") . '</td>';
+	if (!empty($conf->global->ACCOUNTING_ACCOUNT_SUPPLIER_USE_AUXILIARY_ON_DEPOSIT)) {
+		print '<td class="right"><a class="reposition" href="' . $_SERVER['PHP_SELF'] . '?token=' . newToken() . '&action=setdisableauxiliaryaccountonsupplierdeposit&value=0">';
+		print img_picto($langs->trans("Activated"), 'switch_on', '', false, 0, 0, '', 'warning');
+		print '</a></td>';
+	} else {
+		print '<td class="right"><a class="reposition" href="' . $_SERVER['PHP_SELF'] . '?token=' . newToken() . '&action=setdisableauxiliaryaccountonsupplierdeposit&value=1">';
+		print img_picto($langs->trans("Disabled"), 'switch_off');
+		print '</a></td>';
+	}
+	print '</tr>';
+}
+
 
 
 print "</table>\n";

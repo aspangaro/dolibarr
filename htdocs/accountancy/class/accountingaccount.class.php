@@ -731,7 +731,7 @@ class AccountingAccount extends CommonObject
 	 * @param 	Product 							$product 			Product object sell or buy
 	 * @param 	Facture|FactureFournisseur 			$facture 			Facture
 	 * @param 	FactureLigne|SupplierInvoiceLine	$factureDet 		Facture Det
-	 * @param 	array 								$accountingAccount 	Array of Account account
+	 * @param 	array 								$accountingAccount 	Array of Accounting account
 	 * @param 	string 								$type 				Customer / Supplier
 	 * @return	array       											Accounting accounts suggested
 	 */
@@ -743,9 +743,9 @@ class AccountingAccount extends CommonObject
 		// Instantiate hooks for external modules
 		$hookmanager->initHooks(array('accoutancyBindingCalculation'));
 
-		// Execute hook accoutancyBindingCalculation
+		// Execute hook accountancyBindingCalculation
 		$parameters = array('buyer' => $buyer, 'seller' => $seller, 'product' => $product, 'facture' => $facture, 'factureDet' => $factureDet ,'accountingAccount'=>$accountingAccount, $type);
-		$reshook = $hookmanager->executeHooks('accoutancyBindingCalculation', $parameters); // Note that $action and $object may have been modified by some hooks
+		$reshook = $hookmanager->executeHooks('accountancyBindingCalculation', $parameters); // Note that $action and $object may have been modified by some hooks
 
 		if (empty($reshook)) {
 			if ($type == 'customer') {
@@ -863,21 +863,46 @@ class AccountingAccount extends CommonObject
 				if (!empty($buyer->code_compta_product)) {
 					$code_t = $buyer->code_compta_product;
 					$suggestedid = $accountingAccount['thirdparty'];
-					$suggestedaccountingaccountfor = 'thridparty';
+					$suggestedaccountingaccountfor = 'thirdparty';
 				}
 			}
 
-			// Manage Deposit
-			if ($factureDet->desc == "(DEPOSIT)" || $facture->type == $facture::TYPE_DEPOSIT) {
-				$accountdeposittoventilated = new self($this->db);
-				$result = $accountdeposittoventilated->fetch('', $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER_DEPOSIT, 1);
-				if ($result < 0) {
-					return -1;
-				}
+			// Manage customer deposit
+			if (!empty($conf->global->ACCOUNTING_ACCOUNT_CUSTOMER_DEPOSIT) && $type == 'customer') {
+				if ($factureDet->desc == "(DEPOSIT)" || $facture->type == $facture::TYPE_DEPOSIT) {
+					$accountdeposittoventilated = new self($this->db);
+					$result = $accountdeposittoventilated->fetch('', $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER_DEPOSIT, 1);
+					if ($result < 0) {
+						return -1;
+					}
 
-				$code_l = $accountdeposittoventilated->ref;
-				$suggestedid = $accountdeposittoventilated->rowid;
-				$suggestedaccountingaccountfor = 'deposit';
+					dol_syslog('suggestid '.$accountdeposittoventilated->rowid, LOG_ERR);
+
+					$code_l = $accountdeposittoventilated->ref;
+					$code_p = '';
+					$code_t = '';
+					$suggestedid = $accountdeposittoventilated->rowid;
+					$suggestedaccountingaccountfor = 'deposit';
+				}
+			}
+
+			// Manage supplier deposit
+			if (!empty($conf->global->ACCOUNTING_ACCOUNT_SUPPLIER_DEPOSIT) && $type == 'supplier') {
+				if ($factureDet->desc == "(DEPOSIT)" || $facture->type == $facture::TYPE_DEPOSIT) {
+					$accountdeposittoventilated = new self($this->db);
+					if ($type == 'supplier') {
+						$result = $accountdeposittoventilated->fetch('', $conf->global->ACCOUNTING_ACCOUNT_SUPPLIER_DEPOSIT, 1);
+					}
+					if ($result < 0) {
+						return -1;
+					}
+
+					$code_l = $accountdeposittoventilated->ref;
+					$code_p = '';
+					$code_t = '';
+					$suggestedid = $accountdeposittoventilated->rowid;
+					$suggestedaccountingaccountfor = 'deposit';
+				}
 			}
 
 			// If $suggestedid could not be guessed yet, we set it from the generic default accounting code $code_l

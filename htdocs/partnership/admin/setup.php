@@ -116,7 +116,7 @@ print '<div class="div-table-responsive-no-min">'; // You can use div-table-resp
 print '<table class="noborder centpercent">';
 
 print '<tr class="liste_titre">';
-print '<td>'.$langs->trans("Setting").'</td>';
+print '<td>'.$langs->trans("Parameters").'</td>';
 print '<td>'.$langs->trans("Value").'</td>';
 print '<td>'.$langs->trans("Examples").'</td>';
 print '</tr>';
@@ -159,7 +159,7 @@ print '<div class="div-table-responsive-no-min">'; // You can use div-table-resp
 print '<table class="noborder centpercent">';
 
 print '<tr class="liste_titre">';
-print '<td>'.$langs->trans("Setting").'</td>';
+print '<td>'.$langs->trans("Parameter").'</td>';
 print '<td>'.$langs->trans("Value").'</td>';
 print '<td>'.$langs->trans("Examples").'</td>';
 print '</tr>';

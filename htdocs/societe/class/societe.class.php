@@ -1335,8 +1335,11 @@ class Societe extends CommonObject
 			$this->get_codefournisseur($this, 1);
 		}
 
+		$this->accountancy_account_general_customer = trim($this->accountancy_account_general_customer);
 		$this->code_compta_client = trim(empty($this->code_compta) ? $this->code_compta_client : $this->code_compta);
 		$this->code_compta = $this->code_compta_client; // for backward compatibility
+
+		$this->accountancy_account_general_supplier = trim($this->accountancy_account_general_supplier);
 		$this->code_compta_fournisseur = trim($this->code_compta_fournisseur);
 
 		// Check parameters. More tests are done later in the ->verify()
@@ -1714,9 +1717,13 @@ class Societe extends CommonObject
 		$sql .= ', s.fk_forme_juridique as forme_juridique_code';
 		$sql .= ', s.webservices_url, s.webservices_key, s.model_pdf';
 		if (empty($conf->global->MAIN_COMPANY_PERENTITY_SHARED)) {
-			$sql .= ', s.code_compta, s.code_compta_fournisseur, s.accountancy_code_buy, s.accountancy_code_sell';
+			$sql .= ', s.accountancy_account_general_customer, s.code_compta';
+			$sql .= ', s.accountancy_account_general_supplier, s.code_compta_fournisseur';
+			$sql .= ', s.accountancy_code_buy, s.accountancy_code_sell';
 		} else {
-			$sql .= ', spe.accountancy_code_customer as code_compta, spe.accountancy_code_supplier as code_compta_fournisseur, spe.accountancy_code_buy, spe.accountancy_code_sell';
+			$sql .= ', spe.accountancy_account_general_customer, spe.accountancy_code_customer as code_compta';
+			$sql .= ', spe.accountancy_account_general_customer, spe.accountancy_code_supplier as code_compta_fournisseur';
+			$sql .= ', spe.accountancy_code_buy, spe.accountancy_code_sell';
 		}
 		$sql .= ', s.code_client, s.code_fournisseur, s.parent, s.barcode';
 		$sql .= ', s.fk_departement as state_id, s.fk_pays as country_id, s.fk_stcomm, s.mode_reglement, s.cond_reglement, s.deposit_percent, s.transport_mode';
@@ -1863,7 +1870,10 @@ class Societe extends CommonObject
 				$this->code_fournisseur = $obj->code_fournisseur;
 
 				$this->code_compta = $obj->code_compta;			// For backward compatibility
+				$this->accountancy_account_general_customer = $obj->accountancy_account_general_customer;
 				$this->code_compta_client = $obj->code_compta;
+
+				$this->accountancy_account_general_supplier = $obj->accountancy_account_general_supplier;
 				$this->code_compta_fournisseur = $obj->code_compta_fournisseur;
 
 				$this->barcode = $obj->barcode;

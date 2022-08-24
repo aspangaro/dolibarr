@@ -6,11 +6,11 @@
  * Copyright (C) 2005-2017 Regis Houssin               <regis.houssin@inodbox.com>
  * Copyright (C) 2008      Raphael Bertrand (Resultic) <raphael.bertrand@resultic.fr>
  * Copyright (C) 2010-2020 Juanjo Menent               <jmenent@2byte.es>
- * Copyright (C) 2013      Alexandre Spangaro          <aspangaro@open-dsi.fr>
+ * Copyright (C) 2013-2022 Alexandre Spangaro          <aspangaro@open-dsi.fr>
  * Copyright (C) 2015-2021 Frédéric France             <frederic.france@netlogic.fr>
  * Copyright (C) 2015      Marcos García               <marcosgdf@gmail.com>
  * Copyright (C) 2020      Open-Dsi         		   <support@open-dsi.fr>
- * Copyright (C) 2022      Anthony Berton     			<anthony.berton@bb2a.fr>
+ * Copyright (C) 2022      Anthony Berton              <anthony.berton@bb2a.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -158,6 +158,15 @@ if (empty($reshook)) {
 	}
 
 	// set accountancy code
+	if ($action == 'setcustomeraccountancycodegeneral') {
+		$result = $object->fetch($id);
+		$object->accountancy_account_general_customer = GETPOST("customeraccountancycodegeneral");
+		$result = $object->update($object->id, $user, 1, 1, 0);
+		if ($result < 0) {
+			setEventMessages($object->error, $object->errors, 'errors');
+		}
+	}
+
 	if ($action == 'setcustomeraccountancycode') {
 		$result = $object->fetch($id);
 		$object->code_compta_client = GETPOST("customeraccountancycode");
@@ -356,6 +365,14 @@ if ($object->id > 0) {
 			print ' <span class="error">('.$langs->trans("WrongCustomerCode").')</span>';
 		}
 		print '</td></tr>';
+
+		print '<tr>';
+		print '<td>';
+		print $form->editfieldkey("CustomerAccountancyCodeGeneral", 'customeraccountancycodegeneral', $object->accountancy_account_general_customer, $object, $user->rights->societe->creer);
+		print '</td><td>';
+		print $form->editfieldval("CustomerAccountancyCodeGeneral", 'customeraccountancycodegeneral', $object->accountancy_account_general_customer, $object, $user->rights->societe->creer);
+		print '</td>';
+		print '</tr>';
 
 		print '<tr>';
 		print '<td>';

@@ -44,7 +44,11 @@
 -- Accountancy - length alignment of accounting accounts
 ALTER TABLE llx_societe MODIFY COLUMN code_compta varchar(32);
 ALTER TABLE llx_societe MODIFY COLUMN code_compta_fournisseur varchar(32);
+ALTER TABLE llx_societe_perentity MODIFY COLUMN accountancy_code_customer varchar(32);
+ALTER TABLE llx_societe_perentity MODIFY COLUMN accountancy_code_supplier varchar(32);
 
 -- Accountancy - Manage general account of a subledger
 ALTER TABLE llx_societe ADD COLUMN accountancy_account_general_customer varchar(32) DEFAULT NULL AFTER code_fournisseur;
 ALTER TABLE llx_societe ADD COLUMN accountancy_account_general_supplier varchar(32) DEFAULT NULL AFTER code_compta;
+ALTER TABLE llx_societe_perentity ADD COLUMN accountancy_account_general_customer varchar(32) DEFAULT NULL AFTER entity;
+ALTER TABLE llx_societe_perentity ADD COLUMN accountancy_account_general_supplier varchar(32) DEFAULT NULL AFTER accountancy_code_customer;

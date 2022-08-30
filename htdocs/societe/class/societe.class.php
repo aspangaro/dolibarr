@@ -8,7 +8,7 @@
  * Copyright (C) 2008       Patrick Raguin          <patrick.raguin@auguria.net>
  * Copyright (C) 2010-2018  Juanjo Menent           <jmenent@2byte.es>
  * Copyright (C) 2013       Florian Henry           <florian.henry@open-concept.pro>
- * Copyright (C) 2013-2021  Alexandre Spangaro      <aspangaro@open-dsi.fr>
+ * Copyright (C) 2013-2022  Alexandre Spangaro      <aspangaro@open-dsi.fr>
  * Copyright (C) 2013       Peter Fontaine          <contact@peterfontaine.fr>
  * Copyright (C) 2014-2015  Marcos García           <marcosgdf@gmail.com>
  * Copyright (C) 2015       Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
@@ -579,7 +579,13 @@ class Societe extends CommonObject
 	public $code_fournisseur;
 
 	/**
-	 * Accounting code for client
+	 * Accounting general code for customer
+	 * @var string
+	 */
+	public $accountancy_account_general_customer;
+
+	/**
+	 * Accounting code for customer
 	 * @var string
 	 */
 	public $code_compta_client;
@@ -590,12 +596,17 @@ class Societe extends CommonObject
 	 */
 	public $code_compta;
 
-
 	/**
 	 * Accounting code for customer
 	 * @var string
 	 */
 	public $accountancy_code_customer;
+
+	/**
+	 * Accounting general code for supplier
+	 * @var string
+	 */
+	public $accountancy_account_general_supplier;
 
 	/**
 	 * Accounting code for supplier
@@ -611,7 +622,7 @@ class Societe extends CommonObject
 
 
 	/**
-	 * Accounting code for product (for level 3 of suggestion of prouct accounting account)
+	 * Accounting code for product (for level 3 of suggestion of product accounting account)
 	 * @var string
 	 */
 	public $code_compta_product;
@@ -887,7 +898,9 @@ class Societe extends CommonObject
 		}
 		$this->import_key = trim($this->import_key);
 
+		$this->accountancy_account_general_customer = trim($this->accountancy_account_general_customer);
 		$this->accountancy_code_customer = trim($this->code_compta);
+		$this->accountancy_account_general_supplier = trim($this->accountancy_account_general_supplier);
 		$this->accountancy_code_supplier = trim($this->code_compta_fournisseur);
 		$this->accountancy_code_buy = trim($this->accountancy_code_buy);
 		$this->accountancy_code_sell = trim($this->accountancy_code_sell);
@@ -1514,10 +1527,12 @@ class Societe extends CommonObject
 				$sql .= ", accountancy_code_sell= '".$this->db->escape($this->accountancy_code_sell)."'";
 
 				if ($customer) {
+					$sql .= ", accountancy_account_general_customer = ".(!empty($this->accountancy_account_general_customer) ? "'".$this->db->escape($this->accountancy_account_general_customer)."'" : "null");
 					$sql .= ", code_compta = ".(!empty($this->code_compta_client) ? "'".$this->db->escape($this->code_compta_client)."'" : "null");
 				}
 
 				if ($supplier) {
+					$sql .= ", accountancy_account_general_customer = ".(!empty($this->accountancy_account_general_supplier) ? "'".$this->db->escape($this->accountancy_account_general_supplier)."'" : "null");
 					$sql .= ", code_compta_fournisseur = ".(($this->code_compta_fournisseur != "") ? "'".$this->db->escape($this->code_compta_fournisseur)."'" : "null");
 				}
 			}
@@ -1614,7 +1629,9 @@ class Societe extends CommonObject
 					$sql .= ") VALUES (";
 					$sql .= $this->id;
 					$sql .= ", ".$conf->entity;
+					$sql .= ", '".$this->db->escape($this->accountancy_account_general_customer)."'";
 					$sql .= ", '".$this->db->escape($this->code_compta_client)."'";
+					$sql .= ", '".$this->db->escape($this->accountancy_account_general_supplier)."'";
 					$sql .= ", '".$this->db->escape($this->code_compta_fournisseur)."'";
 					$sql .= ", '".$this->db->escape($this->accountancy_code_buy)."'";
 					$sql .= ", '".$this->db->escape($this->accountancy_code_sell)."'";
@@ -1722,7 +1739,7 @@ class Societe extends CommonObject
 			$sql .= ', s.accountancy_code_buy, s.accountancy_code_sell';
 		} else {
 			$sql .= ', spe.accountancy_account_general_customer, spe.accountancy_code_customer as code_compta';
-			$sql .= ', spe.accountancy_account_general_customer, spe.accountancy_code_supplier as code_compta_fournisseur';
+			$sql .= ', spe.accountancy_account_general_supplier, spe.accountancy_code_supplier as code_compta_fournisseur';
 			$sql .= ', spe.accountancy_code_buy, spe.accountancy_code_sell';
 		}
 		$sql .= ', s.code_client, s.code_fournisseur, s.parent, s.barcode';

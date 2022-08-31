@@ -235,8 +235,12 @@ if (empty($reshook)) {
 	include DOL_DOCUMENT_ROOT.'/core/actions_massactions.inc.php';
 }
 
+$rowids = GETPOST('rowid', 'array');
+
 // Conciliation
-if ((GETPOST('confirm_savestatement', 'alpha') || GETPOST('confirm_reconcile', 'alpha')) && !empty($user->rights->banque->consolidate)
+if ((GETPOST('confirm_savestatement', 'alpha') || GETPOST('confirm_reconcile', 'alpha'))
+	&& (GETPOST("num_releve", "alpha") || !empty($rowids))
+	&& !empty($user->rights->banque->consolidate)
 	&& (!GETPOSTISSET('pageplusone') || (GETPOST('pageplusone') == GETPOST('pageplusoneold')))) {
 	$error = 0;
 
@@ -357,7 +361,7 @@ if (GETPOST('save') && !$cancel && !empty($user->rights->banque->modifier)) {
 		$error++;
 		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Amount")), null, 'errors');
 	}
-	if (!$bankaccountid > 0) {
+	if (!($bankaccountid > 0)) {
 		$error++;
 		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("BankAccount")), null, 'errors');
 	}
@@ -512,10 +516,16 @@ $buttonreconcile = '';
 $morehtmlref = '';
 
 if ($id > 0 || !empty($ref)) {
-	$title = $langs->trans("FinancialAccount").' - '.$langs->trans("Transactions");
-	$helpurl = "";
-	llxHeader('', $title, $helpurl);
+	$title = $object->ref.' - '.$langs->trans("Transactions");
+} else {
+	$title = $langs->trans("BankTransactions");
+}
+$help_url = '';
 
+llxHeader('', $title, $help_url, '', 0, 0, array(), array(), $param);
+
+
+if ($id > 0 || !empty($ref)) {
 	// Load bank groups
 	require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/bankcateg.class.php';
 	$bankcateg = new BankCateg($db);
@@ -570,10 +580,7 @@ if ($id > 0 || !empty($ref)) {
 			}
 		}
 	}
-} else {
-	llxHeader('', $langs->trans("BankTransactions"), '', '', 0, 0, array(), array(), $param);
 }
-
 
 $sql = "SELECT b.rowid, b.dateo as do, b.datev as dv, b.amount, b.label, b.rappro as conciliated, b.num_releve, b.num_chq,";
 $sql .= " b.fk_account, b.fk_type, b.fk_bordereau,";

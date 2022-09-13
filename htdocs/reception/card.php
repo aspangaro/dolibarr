@@ -1,17 +1,18 @@
 <?php
-/* Copyright (C) 2003-2008	Rodolphe Quiedeville	<rodolphe@quiedeville.org>
- * Copyright (C) 2005-2016	Laurent Destailleur		<eldy@users.sourceforge.net>
- * Copyright (C) 2005		Simon TOSSER			<simon@kornog-computing.com>
- * Copyright (C) 2005-2012	Regis Houssin			<regis.houssin@capnetworks.com>
- * Copyright (C) 2011-2017	Juanjo Menent			<jmenent@2byte.es>
- * Copyright (C) 2013       Florian Henry		  	<florian.henry@open-concept.pro>
+/* Copyright (C) 2003-2008  Rodolphe Quiedeville    <rodolphe@quiedeville.org>
+ * Copyright (C) 2005-2016  Laurent Destailleur     <eldy@users.sourceforge.net>
+ * Copyright (C) 2005       Simon TOSSER            <simon@kornog-computing.com>
+ * Copyright (C) 2005-2012  Regis Houssin           <regis.houssin@capnetworks.com>
+ * Copyright (C) 2011-2017  Juanjo Menent           <jmenent@2byte.es>
+ * Copyright (C) 2013       Florian Henry           <florian.henry@open-concept.pro>
  * Copyright (C) 2013       Marcos García           <marcosgdf@gmail.com>
- * Copyright (C) 2014		Cedric GROSS			<c.gross@kreiz-it.fr>
- * Copyright (C) 2014-2017	Francis Appels			<francis.appels@yahoo.com>
- * Copyright (C) 2015		Claudio Aschieri		<c.aschieri@19.coop>
- * Copyright (C) 2016		Ferran Marcet			<fmarcet@2byte.es>
- * Copyright (C) 2016		Yasser Carreón			<yacasia@gmail.com>
- * Copyright (C) 2018	    Quentin Vial-Gouteyron  <quentin.vial-gouteyron@atm-consulting.fr>
+ * Copyright (C) 2014       Cedric GROSS            <c.gross@kreiz-it.fr>
+ * Copyright (C) 2014-2017  Francis Appels          <francis.appels@yahoo.com>
+ * Copyright (C) 2015       Claudio Aschieri        <c.aschieri@19.coop>
+ * Copyright (C) 2016       Ferran Marcet           <fmarcet@2byte.es>
+ * Copyright (C) 2016       Yasser Carreón          <yacasia@gmail.com>
+ * Copyright (C) 2018       Quentin Vial-Gouteyron  <quentin.vial-gouteyron@atm-consulting.fr>
+ * Copyright (C) 2022	    Alexandre Spangaro      <aspangaro@open-dsi.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,7 +59,7 @@ if ((isModEnabled("fournisseur") && empty($conf->global->MAIN_USE_NEW_SUPPLIERMO
 if (isModEnabled('productbatch')) {
 	require_once DOL_DOCUMENT_ROOT.'/product/class/productbatch.class.php';
 }
-if (!empty($conf->project->enabled)) {
+if (isModEnabled('project')) {
 	require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
 	require_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
 }
@@ -116,6 +117,7 @@ include DOL_DOCUMENT_ROOT.'/core/actions_fetchobject.inc.php'; // Must be includ
 // Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $hookmanager->initHooks(array('receptioncard', 'globalcard'));
 
+$date_reception = dol_mktime(12, 0, 0, GETPOST('remonth', 'int'), GETPOST('reday', 'int'), GETPOST('reyear', 'int'));
 $date_delivery = dol_mktime(GETPOST('date_deliveryhour', 'int'), GETPOST('date_deliverymin', 'int'), 0, GETPOST('date_deliverymonth', 'int'), GETPOST('date_deliveryday', 'int'), GETPOST('date_deliveryyear', 'int'));
 
 if ($id > 0 || !empty($ref)) {
@@ -268,6 +270,12 @@ if (empty($reshook)) {
 
 		$db->begin();
 
+		if (empty($date_reception)) {
+			setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("DateReception")), null, 'errors');
+			$action = 'create';
+			$error++;
+		}
+
 		$object->note = GETPOST('note', 'alpha');
 		$object->origin = $origin;
 		$object->origin_id = $origin_id;
@@ -293,6 +301,7 @@ if (empty($reshook)) {
 		$object->socid = $objectsrc->socid;
 		$object->ref_supplier = GETPOST('ref_supplier', 'alpha');
 		$object->model_pdf = GETPOST('model');
+		$object->date_reception = $date_reception; // Date reception
 		$object->date_delivery = $date_delivery; // Date delivery planed
 		$object->fk_delivery_address = $objectsrc->fk_delivery_address;
 		$object->shipping_method_id = GETPOST('shipping_method_id', 'int');
@@ -471,6 +480,14 @@ if (empty($reshook)) {
 			if ($result < 0) {
 				setEventMessages($object->error, $object->errors, 'errors');
 		}*/
+	} elseif ($action == 'setdate_reception' && $permissiontoadd) {
+		$datereception = dol_mktime(12, 0, 0, GETPOST('rec_month', 'int'), GETPOST('rec_day', 'int'), GETPOST('rec_year', 'int'));
+
+		$object->fetch($id);
+		$result = $object->setReceptionDate($user, $datereception);
+		if ($result < 0) {
+			setEventMessages($object->error, $object->errors, 'errors');
+		}
 	} elseif ($action == 'setdate_livraison' && $permissiontoadd) {
 		$datedelivery = dol_mktime(GETPOST('liv_hour', 'int'), GETPOST('liv_min', 'int'), 0, GETPOST('liv_month', 'int'), GETPOST('liv_day', 'int'), GETPOST('liv_year', 'int'));
 
@@ -796,6 +813,11 @@ if ($action == 'create') {
 			print '<tr><td class="titlefieldcreate fieldrequired">'.$langs->trans('Company').'</td>';
 			print '<td colspan="3">'.$soc->getNomUrl(1).'</td>';
 			print '</tr>';
+
+			// Date
+			print '<tr><td class="fieldrequired">'.$langs->trans('DateReception').'</td><td>';
+			print $form->selectDate('', '', '', '', '', "add", 1, 1);
+			print '</td></tr>';
 
 			// Project
 			if (!empty($conf->project->enabled)) {
@@ -1453,10 +1475,28 @@ if ($action == 'create') {
 			print '</tr>';
 		}
 
-		// Date creation
-		print '<tr><td class="titlefield">'.$langs->trans("DateCreation").'</td>';
-		print '<td colspan="3">'.dol_print_date($object->date_creation, "dayhour", "tzuserrel")."</td>\n";
-		print '</tr>';
+		// Date reception
+		print '<tr><td class="titlefield">';
+		print '<table class="nobordernopadding" width="100%"><tr><td>';
+		print $langs->trans('DateReception');
+		print '</td>';
+
+		if ($action != 'editdate_reception') {
+			print '<td class="right"><a class="editfielda" href="'.$_SERVER["PHP_SELF"].'?action=editdate_reception&amp;id='.$object->id.'">'.img_edit($langs->trans('SetReceptionDate'), 1).'</a></td>';
+		}
+		print '</tr></table>';
+		print '</td><td colspan="2">';
+		if ($action == 'editdate_reception') {
+			print '<form name="setdate_reception" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" method="post">';
+			print '<input type="hidden" name="token" value="'.newToken().'">';
+			print '<input type="hidden" name="action" value="setdate_reception">';
+			print $form->selectDate($object->date_reception ? $object->date_reception : -1, 'rec_', 1, 1, '', "setdate_reception", 1, 0);
+			print '<input type="submit" class="button" value="'.$langs->trans('Modify').'">';
+			print '</form>';
+		} else {
+			print $object->date_reception ? dol_print_date($object->date_reception, 'day', "tzuserrel") : '&nbsp;';
+		}
+		print '</td>';
 
 		// Delivery date planned
 		print '<tr><td height="10">';
@@ -1477,7 +1517,7 @@ if ($action == 'create') {
 			print '<input type="submit" class="button button-edit" value="'.$langs->trans('Modify').'">';
 			print '</form>';
 		} else {
-			print $object->date_delivery ? dol_print_date($object->date_delivery, 'dayhour') : '&nbsp;';
+			print $object->date_delivery ? dol_print_date($object->date_delivery, 'day') : '&nbsp;';
 		}
 		print '</td>';
 		print '</tr>';

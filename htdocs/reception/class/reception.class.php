@@ -1,16 +1,17 @@
 <?php
-/* Copyright (C) 2003-2008	Rodolphe Quiedeville	<rodolphe@quiedeville.org>
- * Copyright (C) 2005-2012	Regis Houssin			<regis.houssin@capnetworks.com>
- * Copyright (C) 2007		Franky Van Liedekerke	<franky.van.liedekerke@telenet.be>
- * Copyright (C) 2006-2012	Laurent Destailleur		<eldy@users.sourceforge.net>
- * Copyright (C) 2011-2017	Juanjo Menent			<jmenent@2byte.es>
- * Copyright (C) 2013       Florian Henry		  	<florian.henry@open-concept.pro>
- * Copyright (C) 2014		Cedric GROSS			<c.gross@kreiz-it.fr>
+/* Copyright (C) 2003-2008  Rodolphe Quiedeville    <rodolphe@quiedeville.org>
+ * Copyright (C) 2005-2012  Regis Houssin           <regis.houssin@capnetworks.com>
+ * Copyright (C) 2007       Franky Van Liedekerke   <franky.van.liedekerke@telenet.be>
+ * Copyright (C) 2006-2012  Laurent Destailleur     <eldy@users.sourceforge.net>
+ * Copyright (C) 2011-2017  Juanjo Menent           <jmenent@2byte.es>
+ * Copyright (C) 2013       Florian Henry           <florian.henry@open-concept.pro>
+ * Copyright (C) 2014       Cedric GROSS            <c.gross@kreiz-it.fr>
  * Copyright (C) 2014-2015  Marcos García           <marcosgdf@gmail.com>
  * Copyright (C) 2014-2020  Francis Appels          <francis.appels@yahoo.com>
  * Copyright (C) 2015       Claudio Aschieri        <c.aschieri@19.coop>
- * Copyright (C) 2016-2022	Ferran Marcet			<fmarcet@2byte.es>
- * Copyright (C) 2018		Quentin Vial-Gouteyron  <quentin.vial-gouteyron@atm-consulting.fr>
+ * Copyright (C) 2016-2022  Ferran Marcet           <fmarcet@2byte.es>
+ * Copyright (C) 2018       Quentin Vial-Gouteyron  <quentin.vial-gouteyron@atm-consulting.fr>
+ * Copyright (C) 2022       Alexandre Spangaro      <aspangaro@open-dsi.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -208,9 +209,9 @@ class Reception extends CommonObject
 	/**
 	 *  Create reception en base
 	 *
-	 *  @param	User	$user       Objet du user qui cree
+	 *  @param	User	$user       Object user that create
 	 *  @param	int		$notrigger	1=Does not execute triggers, 0= execute triggers
-	 *  @return int 				<0 si erreur, id reception creee si ok
+	 *  @return int 				<0 if error, reception id created if ok
 	 */
 	public function create($user, $notrigger = 0)
 	{
@@ -379,7 +380,7 @@ class Reception extends CommonObject
 
 		$sql = "SELECT e.rowid, e.ref, e.fk_soc as socid, e.date_creation, e.ref_supplier, e.ref_ext, e.fk_user_author, e.fk_statut";
 		$sql .= ", e.weight, e.weight_units, e.size, e.size_units, e.width, e.height";
-		$sql .= ", e.date_reception as date_reception, e.model_pdf,  e.date_delivery";
+		$sql .= ", e.date_reception as date_reception, e.model_pdf, e.date_delivery";
 		$sql .= ", e.fk_shipping_method, e.tracking_number";
 		$sql .= ", el.fk_source as origin_id, el.sourcetype as origin";
 		$sql .= ", e.note_private, e.note_public";
@@ -416,10 +417,9 @@ class Reception extends CommonObject
 				$this->statut               = $obj->fk_statut;
 				$this->user_author_id       = $obj->fk_user_author;
 				$this->date_creation        = $this->db->jdate($obj->date_creation);
-				$this->date                 = $this->db->jdate($obj->date_reception); // TODO deprecated
-				$this->date_reception = $this->db->jdate($obj->date_reception); // TODO deprecated
-				$this->date_reception = $this->db->jdate($obj->date_reception); // Date real
-				$this->date_delivery        = $this->db->jdate($obj->date_delivery); // Date planed
+				$this->date                 = $this->db->jdate($obj->date_reception); // deprecated
+				$this->date_reception 		= $this->db->jdate($obj->date_reception); // Date real
+				$this->date_delivery        = $this->db->jdate($obj->date_delivery); // Date planned
 				$this->model_pdf            = $obj->model_pdf;
 				$this->modelpdf             = $obj->model_pdf; // deprecated
 				$this->shipping_method_id = $obj->fk_shipping_method;
@@ -1396,11 +1396,40 @@ class Reception extends CommonObject
 	}
 
 	/**
+	 *	Set the reception date
+	 *
+	 *	@param      User			$user        		User tht modify
+	 *	@param      integer 		$reception_date     Reception date
+	 *	@return     int         						<0 if KO, >0 if OK
+	 */
+	public function setReceptionDate($user, $reception_date)
+	{
+		// phpcs:enable
+		if ($user->rights->reception->creer) {
+			$sql = "UPDATE ".MAIN_DB_PREFIX."reception";
+			$sql .= " SET date_reception = ".($reception_date ? "'".$this->db->idate($reception_date)."'" : 'null');
+			$sql .= " WHERE rowid = ".((int) $this->id);
+
+			dol_syslog(get_class($this)."::setReceptionDate", LOG_DEBUG);
+			$resql = $this->db->query($sql);
+			if ($resql) {
+				$this->date_reception = $reception_date;
+				return 1;
+			} else {
+				$this->error = $this->db->error();
+				return -1;
+			}
+		} else {
+			return -2;
+		}
+	}
+
+	/**
 	 *	Set the planned delivery date
 	 *
-	 *	@param      User			$user        		Objet utilisateur qui modifie
-	 *	@param      integer 		$delivery_date     Delivery date
-	 *	@return     int         						<0 if KO, >0 if OK
+	 *	@param      User			$user				User that modify
+	 *	@param      integer 		$delivery_date		Delivery date
+	 *	@return     int									<0 if KO, >0 if OK
 	 */
 	public function setDeliveryDate($user, $delivery_date)
 	{

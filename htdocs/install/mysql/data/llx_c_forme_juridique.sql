@@ -109,7 +109,7 @@ insert into llx_c_forme_juridique (fk_pays, code, libelle) values (2, '228', 'VO
 insert into llx_c_forme_juridique (fk_pays, code, libelle) values (2, '229', 'VS0  - Vennootschap met sociaal oogmerk');
 
 
--- France: Extrait de http://www.insee.fr/fr/nom_def_met/nomenclatures/cj/cjniveau2.htm
+-- France: Extrait de https://www.insee.fr/fr/information/2028129
 insert into llx_c_forme_juridique (fk_pays, code, libelle) values (1,'11','Artisan Commerçant (EI)');
 insert into llx_c_forme_juridique (fk_pays, code, libelle) values (1,'12','Commerçant (EI)');
 insert into llx_c_forme_juridique (fk_pays, code, libelle) values (1,'13','Artisan (EI)');
@@ -383,6 +383,13 @@ INSERT INTO llx_c_forme_juridique (fk_pays, code, libelle) VALUES (20, '2009', '
 INSERT INTO llx_c_forme_juridique (fk_pays, code, libelle) VALUES (20, '2010', 'Enkelt bolag');
 INSERT INTO llx_c_forme_juridique (fk_pays, code, libelle) VALUES (20, '2011', 'Ideell förening');
 INSERT INTO llx_c_forme_juridique (fk_pays, code, libelle) VALUES (20, '2012', 'Stiftelse');
+
+-- Burundi (id contry=61)
+insert into llx_c_forme_juridique (fk_pays, code, libelle) values (61,'6100','Indépendant - Personne physique');
+insert into llx_c_forme_juridique (fk_pays, code, libelle) values (61,'6101','Société Unipersonnelle');
+insert into llx_c_forme_juridique (fk_pays, code, libelle) values (61,'6102','Société de personne à responsabilité limité (SPRL)');
+insert into llx_c_forme_juridique (fk_pays, code, libelle) values (61,'6103','Société anonyme (SA)');
+insert into llx_c_forme_juridique (fk_pays, code, libelle) values (61,'6104','Société coopérative');
 
 -- Croatia (id country=76)
 INSERT INTO llx_c_forme_juridique (fk_pays, code, libelle) VALUES (76, '7601', 'Društvo s ograničenom odgovornošću (d.o.o.)');

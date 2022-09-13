@@ -2,7 +2,7 @@
 /* Copyright (C) 2003       Rodolphe Quiedeville    <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2020  Laurent Destailleur     <eldy@users.sourceforge.net>
  * Copyright (C) 2005-2009  Regis Houssin           <regis.houssin@inodbox.com>
- * Copyright (C) 2015-2021  Alexandre Spangaro      <aspangaro@open-dsi.fr>
+ * Copyright (C) 2015-2022  Alexandre Spangaro      <aspangaro@open-dsi.fr>
  * Copyright (C) 2017       Ferran Marcet           <fmarcet@2byte.es>
  * Copyright (C) 2018       Frédéric France         <frederic.france@netlogic.fr>
  *
@@ -117,7 +117,7 @@ $permissiontoadd = $user->rights->expensereport->creer; // Used by the include o
 
 $upload_dir = $conf->expensereport->dir_output.'/'.dol_sanitizeFileName($object->ref);
 
-$projectRequired = $conf->projet->enabled && ! empty($conf->global->EXPENSEREPORT_PROJECT_IS_REQUIRED);
+$projectRequired = $conf->project->enabled && ! empty($conf->global->EXPENSEREPORT_PROJECT_IS_REQUIRED);
 $fileRequired = !empty($conf->global->EXPENSEREPORT_FILE_IS_REQUIRED);
 
 if ($object->id > 0) {
@@ -138,7 +138,7 @@ $candelete = 0;
 if (!empty($user->rights->expensereport->supprimer)) {
 	$candelete = 1;
 }
-if ($object->statut == ExpenseReport::STATUS_DRAFT && $user->rights->expensereport->write && in_array($object->fk_user_author, $childids)) {
+if ($object->statut == ExpenseReport::STATUS_DRAFT && $user->hasRight('expensereport', 'write') && in_array($object->fk_user_author, $childids)) {
 	$candelete = 1;
 }
 
@@ -263,7 +263,7 @@ if (empty($reshook)) {
 		if ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && empty($user->rights->expensereport->creer))
 			|| (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && empty($user->rights->expensereport->creer) && empty($user->rights->expensereport->writeall_advance))) {
 			$error++;
-			setEventMessages($langs->trans("NotEnoughPermission"), null, 'errors');
+			setEventMessages($langs->trans("NotEnoughPermissions"), null, 'errors');
 		}
 		if (!$error) {
 			if (empty($conf->global->MAIN_USE_ADVANCED_PERMS) || empty($user->rights->expensereport->writeall_advance)) {
@@ -1336,6 +1336,15 @@ if (empty($reshook)) {
 
 						$object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
 					}
+
+					unset($qty);
+					unset($value_unit_ht);
+					unset($value_unit);
+					unset($vatrate);
+					unset($comments);
+					unset($fk_c_type_fees);
+					unset($fk_project);
+					unset($date);
 				}
 
 				//header("Location: ".$_SERVER["PHP_SELF"]."?id=".$id);
@@ -1458,6 +1467,8 @@ if ($action == 'create') {
 	}
 
 	// Public note
+	$note_public = GETPOSTISSET('note_public') ? GETPOST('note_public', 'restricthtml') : '';
+
 	print '<tr>';
 	print '<td class="tdtop">'.$langs->trans('NotePublic').'</td>';
 	print '<td>';
@@ -1467,6 +1478,8 @@ if ($action == 'create') {
 	print '</td></tr>';
 
 	// Private note
+	$note_private = GETPOSTISSET('note_private') ? GETPOST('note_private', 'restricthtml') : '';
+
 	if (empty($user->socid)) {
 		print '<tr>';
 		print '<td class="tdtop">'.$langs->trans('NotePrivate').'</td>';
@@ -1615,6 +1628,8 @@ if ($action == 'create') {
 
 			print dol_get_fiche_head($head, 'card', $langs->trans("ExpenseReport"), -1, 'trip');
 
+			$formconfirm = '';
+
 			// Clone confirmation
 			if ($action == 'clone') {
 				// Create an array for form
@@ -1682,7 +1697,7 @@ if ($action == 'create') {
 			 // Thirdparty
 			 $morehtmlref.='<br>'.$langs->trans('ThirdParty') . ' : ' . $soc->getNomUrl(1);
 			 // Project
-			 if (! empty($conf->projet->enabled))
+			 if (! empty($conf->project->enabled))
 			 {
 			 $langs->load("projects");
 			 $morehtmlref.='<br>'.$langs->trans('Project') . ' ';
@@ -1914,6 +1929,7 @@ if ($action == 'create') {
 
 			// List of payments already done
 			$nbcols = 3;
+			$nbrows = 0;
 			if (!empty($conf->banque->enabled)) {
 				$nbrows++;
 				$nbcols++;
@@ -1934,7 +1950,7 @@ if ($action == 'create') {
 
 			// Payments already done (from payment on this expensereport)
 			$sql = "SELECT p.rowid, p.num_payment, p.datep as dp, p.amount, p.fk_bank,";
-			$sql .= "c.code as p_code, c.libelle as payment_type,";
+			$sql .= "c.code as payment_code, c.libelle as payment_type,";
 			$sql .= "ba.rowid as baid, ba.ref as baref, ba.label, ba.number as banumber, ba.account_number, ba.fk_accountancy_journal";
 			$sql .= " FROM ".MAIN_DB_PREFIX."expensereport as e, ".MAIN_DB_PREFIX."payment_expensereport as p";
 			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_paiement as c ON p.fk_typepayment = c.id";
@@ -1953,18 +1969,20 @@ if ($action == 'create') {
 					$objp = $db->fetch_object($resql);
 
 					$paymentexpensereportstatic->id = $objp->rowid;
-					$paymentexpensereportstatic->datepaye = $db->jdate($objp->dp);
+					$paymentexpensereportstatic->datep = $db->jdate($objp->dp);
 					$paymentexpensereportstatic->ref = $objp->rowid;
 					$paymentexpensereportstatic->num_payment = $objp->num_payment;
-					$paymentexpensereportstatic->payment_code = $objp->payment_code;
+					$paymentexpensereportstatic->type_code = $objp->payment_code;
+					$paymentexpensereportstatic->type_label = $objp->payment_type;
 
 					print '<tr class="oddseven">';
 					print '<td>';
 					print $paymentexpensereportstatic->getNomUrl(1);
 					print '</td>';
 					print '<td>'.dol_print_date($db->jdate($objp->dp), 'day')."</td>\n";
-					$labeltype = $langs->trans("PaymentType".$objp->p_code) != ("PaymentType".$objp->p_code) ? $langs->trans("PaymentType".$objp->p_code) : $objp->payment_type;
+					$labeltype = $langs->trans("PaymentType".$objp->payment_code) != ("PaymentType".$objp->payment_code) ? $langs->trans("PaymentType".$objp->payment_code) : $objp->payment_type;
 					print "<td>".$labeltype.' '.$objp->num_payment."</td>\n";
+					// Bank account
 					if (!empty($conf->banque->enabled)) {
 						$bankaccountstatic->id = $objp->baid;
 						$bankaccountstatic->ref = $objp->baref;
@@ -2046,7 +2064,7 @@ if ($action == 'create') {
 				print '<td class="center linecollinenb">'.$langs->trans('LineNb').'</td>';
 				//print '<td class="center">'.$langs->trans('Piece').'</td>';
 				print '<td class="center linecoldate">'.$langs->trans('Date').'</td>';
-				if (!empty($conf->projet->enabled)) {
+				if (!empty($conf->project->enabled)) {
 					print '<td class="minwidth100imp linecolproject">'.$langs->trans('Project').'</td>';
 				}
 				print '<td class="center linecoltype">'.$langs->trans('Type').'</td>';
@@ -2091,7 +2109,7 @@ if ($action == 'create') {
 						print '<td class="center linecoldate">'.dol_print_date($db->jdate($line->date), 'day').'</td>';
 
 						// Project
-						if (!empty($conf->projet->enabled)) {
+						if (!empty($conf->project->enabled)) {
 							print '<td class="center dateproject">';
 							if ($line->fk_project > 0) {
 								$projecttmp->id = $line->fk_project;
@@ -2126,7 +2144,8 @@ if ($action == 'create') {
 						// IK
 						if (!empty($conf->global->MAIN_USE_EXPENSE_IK)) {
 							print '<td class="fk_c_exp_tax_cat linecoltaxcat">';
-							print dol_getIdFromCode($db, $line->fk_c_exp_tax_cat, 'c_exp_tax_cat', 'rowid', 'label');
+							$exp_tax_cat_label = dol_getIdFromCode($db, $line->fk_c_exp_tax_cat, 'c_exp_tax_cat', 'rowid', 'label');
+							print $langs->trans($exp_tax_cat_label);
 							print '</td>';
 						}
 
@@ -2251,7 +2270,7 @@ if ($action == 'create') {
 					if ($action == 'editline' && $line->rowid == GETPOST('rowid', 'int')) {
 						// Add line with link to add new file or attach line to an existing file
 						$colspan = 11;
-						if (!empty($conf->projet->enabled)) {
+						if (!empty($conf->project->enabled)) {
 							$colspan++;
 						}
 						if (!empty($conf->global->MAIN_USE_EXPENSE_IK)) {
@@ -2265,7 +2284,7 @@ if ($action == 'create') {
 						print $numline;
 						print '</td>';
 
-						print '<td colspan="'.($colspan - 1).'" class="liste_titre">';
+						print '<td colspan="'.($colspan - 1).'" class="liste_titre"> ';
 						print '<a href="" class="commonlink auploadnewfilenow reposition">'.$langs->trans("UploadANewFileNow");
 						print img_picto($langs->trans("UploadANewFileNow"), 'chevron-down', '', false, 0, 0, '', 'marginleftonly');
 						print '</a>';
@@ -2326,7 +2345,7 @@ if ($action == 'create') {
 						print '</td>';
 
 						// Select project
-						if (!empty($conf->projet->enabled)) {
+						if (!empty($conf->project->enabled)) {
 							print '<td>';
 							$formproject->select_projects(-1, $line->fk_project, 'fk_project', 0, 0, $projectRequired ? 0 : 1, 1, 0, 0, 0, '', 0, 0, 'maxwidth300');
 							print '</td>';
@@ -2367,7 +2386,7 @@ if ($action == 'create') {
 
 						// Quantity
 						print '<td class="right">';
-						print '<input type="text" min="0" class="right maxwidth50" name="qty" value="'.dol_escape_htmltag($line->qty).'" />';  // We must be able to enter decimal qty
+						print '<input type="text" min="0" class="input_qty right maxwidth50"  name="qty" value="'.dol_escape_htmltag($line->qty).'" />';  // We must be able to enter decimal qty
 						print '</td>';
 
 						//print '<td class="right">'.$langs->trans('AmountHT').'</td>';
@@ -2399,7 +2418,7 @@ if ($action == 'create') {
 				if (!empty($conf->global->MAIN_USE_EXPENSE_IK)) {
 					$colspan++;
 				}
-				if (!empty($conf->projet->enabled)) {
+				if (!empty($conf->project->enabled)) {
 					$colspan++;
 				}
 				if ($action != 'editline') {
@@ -2476,7 +2495,7 @@ if ($action == 'create') {
 				print '<tr class="liste_titre expensereportcreate">';
 				print '<td></td>';
 				print '<td class="center expensereportcreatedate">'.$langs->trans('Date').'</td>';
-				if (!empty($conf->projet->enabled)) {
+				if (!empty($conf->project->enabled)) {
 					print '<td class="minwidth100imp">'.$form->textwithpicto($langs->trans('Project'), $langs->trans("ClosedProjectsAreHidden")).'</td>';
 				}
 				print '<td class="center expensereportcreatetype">'.$langs->trans('Type').'</td>';
@@ -2494,26 +2513,25 @@ if ($action == 'create') {
 				print '<td></td>';
 				print '<td></td>';
 				print '</tr>';
-
 				print '<tr class="oddeven nohover">';
 
 				// Line number
 				print '<td></td>';
 
 				// Select date
-				print '<td class="center">';
+				print '<td class="center inputdate">';
 				print $form->selectDate($date ? $date : -1, 'date', 0, 0, 0, '', 1, 1);
 				print '</td>';
 
 				// Select project
-				if (!empty($conf->projet->enabled)) {
-					print '<td>';
+				if (!empty($conf->project->enabled)) {
+					print '<td class="inputproject">';
 					$formproject->select_projects(-1, $fk_project, 'fk_project', 0, 0, $projectRequired ? 0 : 1, -1, 0, 0, 0, '', 0, 0, 'maxwidth300');
 					print '</td>';
 				}
 
 					// Select type
-					print '<td class="center">';
+					print '<td class="center inputtype">';
 					print $formexpensereport->selectTypeExpenseReport($fk_c_type_fees, 'fk_c_type_fees', 1);
 					print '</td>';
 
@@ -2525,12 +2543,12 @@ if ($action == 'create') {
 				}
 
 				// Add comments
-				print '<td>';
+				print '<td class="inputcomment">';
 				print '<textarea class="flat_ndf centpercent" name="comments" rows="'.ROWS_2.'">'.dol_escape_htmltag($comments, 0, 1).'</textarea>';
 				print '</td>';
 
 				// Select VAT
-				print '<td class="right">';
+				print '<td class="right inputvat">';
 				$defaultvat = -1;
 				if (!empty($conf->global->EXPENSEREPORT_NO_DEFAULT_VAT)) {
 					$conf->global->MAIN_VAT_DEFAULT_IF_AUTODETECT_FAILS = 'none';
@@ -2539,18 +2557,18 @@ if ($action == 'create') {
 				print '</td>';
 
 				// Unit price net
-				print '<td class="right">';
+				print '<td class="right inputpricenet">';
 				print '<input type="text" class="right maxwidth50" id="value_unit_ht" name="value_unit_ht" value="'.dol_escape_htmltag($value_unit_ht).'"'.$taxlessUnitPriceDisabled.' />';
 				print '</td>';
 
 				// Unit price with tax
-				print '<td class="right">';
+				print '<td class="right inputtax">';
 				print '<input type="text" class="right maxwidth50" id="value_unit" name="value_unit" value="'.dol_escape_htmltag($value_unit).'">';
 				print '</td>';
 
 				// Quantity
-				print '<td class="right">';
-				print '<input type="text" min="0" class="right maxwidth50" name="qty" value="'.dol_escape_htmltag($qty ? $qty : 1).'">'; // We must be able to enter decimal qty
+				print '<td class="right inputqty">';
+				print '<input type="text" min="0" class=" input_qty right maxwidth50"  name="qty" value="'.dol_escape_htmltag($qty ? $qty : 1).'">'; // We must be able to enter decimal qty
 				print '</td>';
 
 				// Picture
@@ -2561,7 +2579,7 @@ if ($action == 'create') {
 					print '<td class="right"></td>';
 				}
 
-				print '<td class="center">';
+				print '<td class="center inputbuttons">';
 				print $form->buttonsSaveCancel("Add", '', '', 1);
 				print '</td>';
 
@@ -2570,7 +2588,7 @@ if ($action == 'create') {
 
 			print '</table>';
 			print '</div>';
-
+			//var_dump($object);
 			print '<script javascript>
 
 			/* JQuery for product free or predefined select */
@@ -2587,6 +2605,52 @@ if ($action == 'create') {
 						jQuery("#value_unit_ht").val("");
 					}
 				});
+
+                /* unit price coéf calculation */
+                jQuery(".input_qty, #fk_c_type_fees, #select_fk_c_exp_tax_cat, #vatrate ").change(function(event) {
+
+                    let type_fee = jQuery("#fk_c_type_fees").find(":selected").val();
+                    let tax_cat = jQuery("#select_fk_c_exp_tax_cat").find(":selected").val();
+                    let tva = jQuery("#vatrate").find(":selected").val();
+                    let qty = jQuery(".input_qty").val();
+
+
+
+					let path = "'.dol_buildpath("/expensereport/ajax/ajaxik.php", 1) .'";
+					path += "?fk_c_exp_tax_cat="+tax_cat;
+					path +="&fk_expense="+'.$object->id.';
+                    path += "&vatrate="+tva;
+                    path += "&qty="+qty;
+
+                    if (type_fee == 4) { // frais_kilométriques
+
+                        if (tax_cat == "" || parseInt(tax_cat) <= 0){
+                            return ;
+                        }
+
+						jQuery.ajax({
+							url: path
+							,async:false
+							,dataType:"json"
+							,success:function(response) {
+                                if (response.response_status == "success"){
+                                jQuery("#value_unit_ht").val(response.data);
+                                jQuery("#value_unit_ht").trigger("change");
+                                jQuery("#value_unit").val("");
+                                } else if(response.response_status == "error" && response.errorMessage != undefined && response.errorMessage.length > 0 ){
+                                    $.jnotify(response.errorMessage, "error", {timeout: 0, type: "error"},{ remove: function (){} } );
+                                }
+							},
+
+						});
+                    }
+
+					/*console.log(event.which);		// discard event tag and arrows
+					if (event.which != 9 && (event.which < 37 || event.which > 40) && jQuery("#value_unit").val() != "") {
+						jQuery("#value_unit_ht").val("");
+					}*/
+				});
+
 			});
 
 			</script>';

@@ -61,7 +61,7 @@ if ($this->element == 'supplier_proposal' || $this->element == 'order_supplier' 
 }
 
 // VAT
-print '<td class="linecolvat right" style="width: 80px">';
+print '<td class="linecolvat right nowraponall">';
 if (!empty($conf->global->FACTURE_LOCAL_TAX1_OPTION) || !empty($conf->global->FACTURE_LOCAL_TAX2_OPTION)) {
 	print $langs->trans('Taxes');
 } else {
@@ -85,7 +85,7 @@ if (in_array($object->element, array('propal', 'commande', 'facture')) && $objec
 print '</td>';
 
 // Price HT
-print '<td class="linecoluht right" style="width: 80px">'.$langs->trans('PriceUHT').'</td>';
+print '<td class="linecoluht right nowraponall">'.$langs->trans('PriceUHT').'</td>';
 
 // Multicurrency
 if (!empty($conf->multicurrency->enabled) && $this->multicurrency_code != $conf->currency) {
@@ -93,7 +93,7 @@ if (!empty($conf->multicurrency->enabled) && $this->multicurrency_code != $conf-
 }
 
 if ($inputalsopricewithtax) {
-	print '<td class="right" style="width: 80px">'.$langs->trans('PriceUTTC').'</td>';
+	print '<td class="right nowraponall">'.$langs->trans('PriceUTTC').'</td>';
 }
 
 // Qty
@@ -105,7 +105,24 @@ if (!empty($conf->global->PRODUCT_USE_UNITS)) {
 }
 
 // Reduction short
-print '<td class="linecoldiscount right">'.$langs->trans('ReductionShort').'</td>';
+print '<td class="linecoldiscount right nowraponall">';
+print $langs->trans('ReductionShort');
+
+if (in_array($object->element, array('propal', 'commande', 'facture')) && $object->status == $object::STATUS_DRAFT) {
+	global $mysoc;
+
+	if (empty($disableedit)) {
+		print '<a class="reposition" href="'.$_SERVER["PHP_SELF"].'?mode=remiseforalllines&id='.$object->id.'">'.img_edit($langs->trans("UpdateForAllLines"), 0, 'class="clickvatforalllines opacitymedium paddingleft cursorpointer"').'</a>';
+	}
+	//print '<script>$(document).ready(function() { $(".clickremiseforalllines").click(function() { jQuery(".classremiseforalllines").toggle(); }); });</script>';
+	if (GETPOST('mode', 'aZ09') == 'remiseforalllines') {
+		print '<div class="remiseforalllines inline-block nowraponall">';
+		print '<input class="inline-block smallpaddingimp width50 right" name="remiseforalllines" value="" placeholder="%">';
+		print '<input class="inline-block button smallpaddingimp" type="submit" name="submitforalllines" value="'.$langs->trans("Update").'">';
+		print '</div>';
+	}
+}
+print '</td>';
 
 // Fields for situation invoice
 if (isset($this->situation_cycle_ref) && $this->situation_cycle_ref) {

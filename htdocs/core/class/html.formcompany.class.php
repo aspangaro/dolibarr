@@ -183,7 +183,7 @@ class FormCompany extends Form
 		if (!empty($htmlname) && $user->admin) {
 			print ' '.info_admin($langs->trans("YouCanChangeValuesForThisListFromDictionarySetup"), 1);
 		}
-		print '<input type="submit" class="button button-save valignmiddle" value="'.$langs->trans("Modify").'">';
+		print '<input type="submit" class="button button-save valignmiddle small" value="'.$langs->trans("Modify").'">';
 		print '</form>';
 	}
 
@@ -234,7 +234,7 @@ class FormCompany extends Form
 		if (!empty($htmlname) && $user->admin) {
 			print ' '.info_admin($langs->trans("YouCanChangeValuesForThisListFromDictionarySetup"), 1);
 		}
-		print '<input type="submit" class="button button-save valignmiddle" value="'.$langs->trans("Modify").'">';
+		print '<input type="submit" class="button button-save valignmiddle small" value="'.$langs->trans("Modify").'">';
 		print '</form>';
 	}
 
@@ -406,7 +406,7 @@ class FormCompany extends Form
 							// Show break
 							$key = $langs->trans("Country".strtoupper($obj->country_code));
 							$valuetoshow = ($key != "Country".strtoupper($obj->country_code)) ? $obj->country_code." - ".$key : $obj->country;
-							print '<option value="-1" disabled>----- '.$valuetoshow." -----</option>\n";
+							print '<option value="-2" disabled>----- '.$valuetoshow." -----</option>\n";
 							$country = $obj->country;
 						}
 
@@ -825,13 +825,14 @@ class FormCompany extends Form
 	/**
 	 * showContactRoles on view and edit mode
 	 *
-	 * @param string $htmlname Html component name and id
-	 * @param Contact $contact Contact Obejct
-	 * @param string $rendermode view, edit
-	 * @param array $selected $key=>$val $val is selected Roles for input mode
-	 * @return string   String with contacts roles
+	 * @param 	string 		$htmlname 	Html component name and id
+	 * @param 	Contact 	$contact 	Contact Obejct
+	 * @param 	string 		$rendermode view, edit
+	 * @param 	array		$selected 	$key=>$val $val is selected Roles for input mode
+	 * @param	string		$morecss	More css
+	 * @return 	string   				String with contacts roles
 	 */
-	public function showRoles($htmlname, Contact $contact, $rendermode = 'view', $selected = array())
+	public function showRoles($htmlname, Contact $contact, $rendermode = 'view', $selected = array(), $morecss = 'minwidth500')
 	{
 		if ($rendermode === 'view') {
 			$toprint = array();
@@ -856,7 +857,7 @@ class FormCompany extends Form
 					$selected = $newselected;
 				}
 			}
-			return $this->multiselectarray($htmlname, $contactType, $selected, 0, 0, 'minwidth500');
+			return $this->multiselectarray($htmlname, $contactType, $selected, 0, 0, $morecss);
 		}
 
 		return 'ErrorBadValueForParameterRenderMode'; // Should not happened

@@ -3,7 +3,7 @@
  * Copyright (C) 2004-2019  Laurent Destailleur     <eldy@users.sourceforge.net>
  * Copyright (C) 2005-2012  Regis Houssin           <regis.houssin@inodbox.com>
  * Copyright (C) 2012-2016  Marcos García           <marcosgdf@gmail.com>
- * Copyright (C) 2013-2019	Juanjo Menent           <jmenent@2byte.es>
+ * Copyright (C) 2013-2023	Juanjo Menent           <jmenent@2byte.es>
  * Copyright (C) 2013-2015  Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
  * Copyright (C) 2013       Jean Heimburger         <jean@tiaris.info>
  * Copyright (C) 2013       Cédric Salvador         <csalvador@gpcsolutions.fr>
@@ -95,6 +95,7 @@ $search_accountancy_code_buy = GETPOST("search_accountancy_code_buy", 'alpha');
 $search_accountancy_code_buy_intra = GETPOST("search_accountancy_code_buy_intra", 'alpha');
 $search_accountancy_code_buy_export = GETPOST("search_accountancy_code_buy_export", 'alpha');
 $search_finished = GETPOST("search_finished", 'int');
+$search_units = GETPOST('search_units', 'int');
 $optioncss = GETPOST('optioncss', 'alpha');
 $type = GETPOST("type", "int");
 $mode = GETPOST('mode', 'alpha');
@@ -353,6 +354,7 @@ if (empty($reshook)) {
 		$search_accountancy_code_buy_intra = '';
 		$search_accountancy_code_buy_export = '';
 		$search_array_options = array();
+		$search_units = '';
 	}
 
 	// Mass actions
@@ -570,6 +572,9 @@ if ($search_accountancy_code_buy_intra) {
 }
 if ($search_accountancy_code_buy_export) {
 	$sql .= natural_search($alias_product_perentity . '.accountancy_code_buy_export', $search_accountancy_code_buy_export);
+}
+if (!empty($conf->global->PRODUCT_USE_UNITS) && $search_units) {
+	$sql .= natural_search('cu.rowid', $search_units);
 }
 // Add where from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
@@ -1021,6 +1026,7 @@ if (!empty($arrayfields['p.volume_units']['checked'])) {
 // Unit
 if (!empty($arrayfields['cu.label']['checked'])) {
 	print '<td class="liste_titre">';
+	print $form->selectUnits($search_units, 'search_units', 1);
 	print '</td>';
 }
 
@@ -1277,7 +1283,7 @@ if (!empty($arrayfields['p.stock']['checked'])) {
 	print_liste_field_titre($arrayfields['p.stock']['label'], $_SERVER["PHP_SELF"], "p.stock", "", $param, '', $sortfield, $sortorder, 'right ');
 }
 if (!empty($arrayfields['stock_virtual']['checked'])) {
-	print_liste_field_titre($arrayfields['stock_virtual']['label'], $_SERVER["PHP_SELF"], "", "", $param, '', $sortfield, $sortorder, 'right ');
+	print_liste_field_titre($arrayfields['stock_virtual']['label'], $_SERVER["PHP_SELF"], "", "", $param, '', $sortfield, $sortorder, 'right ', 'VirtualStockDesc');
 }
 if (!empty($arrayfields['p.tobatch']['checked'])) {
 	print_liste_field_titre($arrayfields['p.tobatch']['label'], $_SERVER["PHP_SELF"], "p.tobatch", "", $param, '', $sortfield, $sortorder, 'center ');
@@ -1368,6 +1374,7 @@ while ($i < $imaxinloop) {
 		$product_static->ref_fourn = empty($obj->ref_supplier) ? '' : $obj->ref_supplier; // deprecated
 		$product_static->ref_supplier = empty($obj->ref_supplier) ? '' : $obj->ref_supplier;
 		$product_static->label = $obj->label;
+		$product_static->barcode = $obj->barcode;
 		$product_static->finished = $obj->finished;
 		$product_static->type = $obj->fk_product_type;
 		$product_static->status_buy = $obj->tobuy;
@@ -1417,7 +1424,7 @@ while ($i < $imaxinloop) {
 	if ($mode == 'kanban') {
 		if ($i == 0) {
 			print '<tr><td colspan="12">';
-			print '<div class="box-flex-container">';
+			print '<div class="box-flex-container kanban">';
 		}
 		$product_static->price = $obj->price;
 		// Output Kanban
@@ -1854,7 +1861,7 @@ while ($i < $imaxinloop) {
 				}
 				if ($usercancreadprice) {
 					if ($product_static->stock_reel < 0) { print '<span class="warning">'; }
-					print price(price2num($product_static->stock_reel, 'MS'));
+					print price(price2num($product_static->stock_reel, 'MS'), 0, $langs, 1, 0);
 					if ($product_static->stock_reel < 0) { print '</span>'; }
 				}
 			}
@@ -1872,7 +1879,7 @@ while ($i < $imaxinloop) {
 				}
 				if ($usercancreadprice) {
 					if ($product_static->stock_theorique < 0) { print '<span class="warning">'; }
-					print price(price2num($product_static->stock_theorique, 'MS'));
+					print price(price2num($product_static->stock_theorique, 'MS'), 0, $langs, 1, 0);
 					if ($product_static->stock_theorique < 0) { print '</span>'; }
 				}
 			}

@@ -87,6 +87,11 @@ abstract class CommonObject
 	public $element;
 
 	/**
+	 * @var int The related element
+	 */
+	public $fk_element;
+
+	/**
 	 * @var string 	Name to use for 'features' parameter to check module permissions user->rights->feature with restrictedArea().
 	 * 				Undefined means same value than $element. Can be use to force a check on another element for example for class of line, we mention here the parent element.
 	 */
@@ -390,6 +395,22 @@ abstract class CommonObject
 	 * @see setShippingMethod()
 	 */
 	public $shipping_method_id;
+
+	/**
+	 * @var string Shipping method label
+	 * @see setShippingMethod()
+	 */
+	public $shipping_method;
+
+	/**
+	 * @var string multicurrency code
+	 */
+	public $multicurrency_code;
+
+	/**
+	 * @var string multicurrency tx
+	 */
+	public $multicurrency_tx;
 
 	/**
 	 * @var string
@@ -710,19 +731,24 @@ abstract class CommonObject
 	{
 		global $action, $extrafields, $langs, $hookmanager;
 
+		$MAX_EXTRAFIELDS_TO_SHOW_IN_TOOLTIP = 5;	// If there is too much extrafields, we do not include them into tooltip
+
 		$datas = $this->getTooltipContentArray($params);
 
+		// Add extrafields
 		if (!empty($extrafields->attributes[$this->table_element]['label'])) {
-			foreach ($extrafields->attributes[$this->table_element]['label'] as $key => $val) {
-				if (!empty($extrafields->attributes[$this->table_element]['langfile'][$key])) {
-					$langs->load($extrafields->attributes[$this->table_element]['langfile'][$key]);
-				}
-				$labelextra = $langs->trans((string) $extrafields->attributes[$this->table_element]['label'][$key]);
-				if ($extrafields->attributes[$this->table_element]['type'][$key] == 'separate') {
-					$datas[$key]= '<br><b><u>'. $labelextra . '</u></b>';
-				} else {
-					$value = (empty($this->array_options['options_' . $key]) ? '' : $this->array_options['options_' . $key]);
-					$datas[$key]= '<br><b>'. $labelextra . ':</b> ' . $extrafields->showOutputField($key, $value, '', $this->table_element);
+			if (count($extrafields->attributes[$this->table_element]['label']) < $MAX_EXTRAFIELDS_TO_SHOW_IN_TOOLTIP) {
+				foreach ($extrafields->attributes[$this->table_element]['label'] as $key => $val) {
+					if (!empty($extrafields->attributes[$this->table_element]['langfile'][$key])) {
+						$langs->load($extrafields->attributes[$this->table_element]['langfile'][$key]);
+					}
+					$labelextra = $langs->trans((string) $extrafields->attributes[$this->table_element]['label'][$key]);
+					if ($extrafields->attributes[$this->table_element]['type'][$key] == 'separate') {
+						$datas[$key]= '<br><b><u>'. $labelextra . '</u></b>';
+					} else {
+						$value = (empty($this->array_options['options_' . $key]) ? '' : $this->array_options['options_' . $key]);
+						$datas[$key]= '<br><b>'. $labelextra . ':</b> ' . $extrafields->showOutputField($key, $value, '', $this->table_element);
+					}
 				}
 			}
 		}

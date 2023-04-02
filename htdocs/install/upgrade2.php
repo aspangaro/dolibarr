@@ -5,6 +5,8 @@
  * Copyright (C) 2010       Juanjo Menent           <jmenent@2byte.es>
  * Copyright (C) 2015-2016  Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
  * Copyright (C) 2023      	Gauthier VERDOL       	<gauthier.verdol@atm-consulting.fr>
+ * Copyright (C) 2023      	Kamel Khelifa       	<kkhelifa@open-dsi.fr>
+ * Copyright (C) 2023      	Alexandre Spangaro     	<aspangaro@open-dsi.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -494,10 +496,11 @@ if (!GETPOST('action', 'aZ09') || preg_match('/upgrade/i', GETPOST('action', 'aZ
 			}
 
 			// Scripts for 18.0
-			$afterversionarray = explode('.', '170.9');
+			$afterversionarray = explode('.', '17.0.9');
 			$beforeversionarray = explode('.', '18.0.9');
 			if (versioncompare($versiontoarray, $afterversionarray) >= 0 && versioncompare($versiontoarray, $beforeversionarray) <= 0) {
 				migrate_contractdet_rank();
+				migrate_amounts_invoice_situation();
 			}
 		}
 
@@ -5212,5 +5215,356 @@ function migrate_contractdet_rank()
 
 	if (!$resultstring) {
 		print '<tr class="trforrunsql" style=""><td class="wordbreak" colspan="4">'.$langs->trans("NothingToDo")."</td></tr>\n";
+	}
+}
+
+/**
+ * Migrate amounts of situation invoice form cumulated to not cumulated
+ *
+ * @return  void
+ */
+function migrate_amounts_invoice_situation()
+{
+	global $db, $langs, $mysoc;
+
+	$error = 0;
+	$resultstring = '';
+
+	$db->begin();
+	print '<tr class="trforrunsql"><td colspan="4">';
+	print '<b>' . $langs->trans('MigrationInvoiceSituationAmounts') . "</b><br>\n";
+
+	// List all invoice situation
+	require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
+
+	$sql = "SELECT DISTINCT f.rowid";
+	$sql .= " FROM " . $db->prefix() . "facture as f";
+	$sql .= " WHERE f.type = " . Facture::TYPE_SITUATION;
+	$sql .= " AND f.situation_cycle_ref IS NOT NULL";
+	$sql .= " ORDER BY f.situation_counter ASC, f.rowid ASC";
+
+	$resql = $db->query($sql);
+	if ($resql) {
+		$invoice = new Facture($db);
+		while ($obj = $db->fetch_object($resql)) {
+			$result = $invoice->fetch($obj->rowid);
+			if ($result > 0) $result = $invoice->update_price(1);
+			if ($result > 0) {
+				$line_info = array();
+				if ($invoice->type != Facture::TYPE_CREDIT_NOTE) {
+					// Get sum of older invoice lines for this situation invoice
+					$sql2 = "SELECT f.rang, SUM(f.total_ht) AS total_ht, SUM(f.situation_percent) AS total_situation_percent, SUM(f.total_tva) AS total_tva";
+					$sql2 .= ", SUM(f.total_localtax1) AS total_localtax1, SUM(f.total_localtax2) AS total_localtax2";
+					$sql2 .= ", SUM(f.total_ttc) AS total_ttc, SUM(f.buy_price_ht) AS total_buy_price_ht, SUM(f.multicurrency_total_ht) AS multicurrency_total_ht";
+					$sql2 .= ", SUM(f.multicurrency_total_tva) AS multicurrency_total_tva, SUM(f.multicurrency_total_ttc) AS multicurrency_total_ttc";
+					$sql2 .= " FROM " . $db->prefix() . "facturedet AS f";
+					$sql2 .= " LEFT JOIN " . $db->prefix() . "facture AS f ON f.rowid = f.fk_facture";
+					$sql2 .= " WHERE f.situation_cycle_ref = " . (int)$invoice->situation_cycle_ref;
+					$sql2 .= " AND f.situation_counter < " . (int)$invoice->situation_counter;
+					$sql2 .= " GROUP BY f.rang";
+					$resql2 = $db->query($sql2);
+					if ($resql) {
+						while ($obj2 = $db->fetch_object($resql2)) {
+							$line_info[$obj2->rang] = array(
+								'total_situation_percent' => $obj2->total_situation_percent,
+								'total_ht' => $obj2->total_ht,
+								'total_tva' => $obj2->total_tva,
+								'total_localtax1' => $obj2->total_localtax1,
+								'total_localtax2' => $obj2->total_localtax2,
+								'total_ttc' => $obj2->total_ttc,
+								'total_buy_price_ht' => $obj2->total_buy_price_ht,
+								'multicurrency_total_ht' => $obj2->multicurrency_total_ht,
+								'multicurrency_total_tva' => $obj2->multicurrency_total_tva,
+								'multicurrency_total_ttc' => $obj2->multicurrency_total_ttc,
+							);
+						}
+						$db->free($resql2);
+					} else {
+						$error++;
+					}
+				}
+
+				// Set fixed lines
+				$sum_total_ht = 0;
+				$sum_total_tva = 0;
+				$sum_total_localtax1 = 0;
+				$sum_total_localtax2 = 0;
+				$sum_total_ttc = 0;
+				$sum_multicurrency_total_ht = 0;
+				$sum_multicurrency_total_tva = 0;
+				$sum_multicurrency_total_ttc = 0;
+				foreach ($invoice->lines as $i => $line) {
+					$old_total_situation_percent = isset($line_info[$line->rang]['total_situation_percent']) ? $line_info[$line->rang]['total_situation_percent'] : 0;
+					$old_total_ht = isset($line_info[$line->rang]['total_ht']) ? $line_info[$line->rang]['total_ht'] : 0;
+					$old_total_tva = isset($line_info[$line->rang]['total_tva']) ? $line_info[$line->rang]['total_tva'] : 0;
+					$old_total_localtax1 = isset($line_info[$line->rang]['total_localtax1']) ? $line_info[$line->rang]['total_localtax1'] : 0;
+					$old_total_localtax2 = isset($line_info[$line->rang]['total_localtax2']) ? $line_info[$line->rang]['total_localtax2'] : 0;
+					$old_total_ttc = isset($line_info[$line->rang]['total_ttc']) ? $line_info[$line->rang]['total_ttc'] : 0;
+					$old_total_buy_price_ht = isset($line_info[$line->rang]['total_buy_price_ht']) ? $line_info[$line->rang]['total_buy_price_ht'] : 0;
+					$old_multicurrency_total_ht = isset($line_info[$line->rang]['multicurrency_total_ht']) ? $line_info[$line->rang]['multicurrency_total_ht'] : 0;
+					$old_multicurrency_total_tva = isset($line_info[$line->rang]['multicurrency_total_tva']) ? $line_info[$line->rang]['multicurrency_total_tva'] : 0;
+					$old_multicurrency_total_ttc = isset($line_info[$line->rang]['multicurrency_total_ttc']) ? $line_info[$line->rang]['multicurrency_total_ttc'] : 0;
+
+					if ($invoice->type != Facture::TYPE_CREDIT_NOTE) {
+						$invoice->fetch_thirdparty();
+
+						$txtva = $line->vat_src_code ? $line->tva_tx . ' (' . $line->vat_src_code . ')' : $line->tva_tx;
+
+						$localtax1_tx = get_localtax($txtva, 1, $invoice->thirdparty);
+						$localtax2_tx = get_localtax($txtva, 2, $invoice->thirdparty);
+
+						$localtaxes_type = getLocalTaxesFromRate($txtva, 0, $invoice->thirdparty, $mysoc);
+						$tabprice = calcul_price_total($line->qty, $line->subprice, $line->remise_percent, $line->tva_tx, $localtax1_tx, $localtax2_tx, 0, 'HT',
+							$line->info_bits, $line->product_type, $mysoc, $localtaxes_type, 100, $invoice->multicurrency_tx, $line->pa_ht);
+
+						$total_situation_percent = price2num($line->situation_percent - $old_total_situation_percent);
+						$total_ht = price2num(($tabprice[0] * $line->situation_percent / 100) - $old_total_ht, 'MT');
+						$total_tva = price2num(($tabprice[1] * $line->situation_percent / 100) - $old_total_tva, 'MT');
+						$total_localtax1 = price2num(($tabprice[9] * $line->situation_percent / 100) - $old_total_localtax1, 'MT');
+						$total_localtax2 = price2num(($tabprice[10] * $line->situation_percent / 100) - $old_total_localtax2, 'MT');
+						$total_ttc = price2num(($tabprice[2] * $line->situation_percent / 100) - $old_total_ttc, 'MT');
+						$total_buy_price_ht = price2num(($line->pa_ht * $line->situation_percent / 100) - $old_total_buy_price_ht, 'MT');
+						$multicurrency_total_ht = price2num(($tabprice[16] * $line->situation_percent / 100) - $old_multicurrency_total_ht, 'MT');
+						$multicurrency_total_tva = price2num(($tabprice[17] * $line->situation_percent / 100) - $old_multicurrency_total_tva, 'MT');
+						$multicurrency_total_ttc = price2num(($tabprice[18] * $line->situation_percent / 100) - $old_multicurrency_total_ttc, 'MT');
+					} else {
+						$total_situation_percent = $line->situation_percent;
+						$total_ht = $line->total_ht;
+						$total_tva = $line->total_tva;
+						$total_localtax1 = $line->total_localtax1;
+						$total_localtax2 = $line->total_localtax2;
+						$total_ttc = $line->total_ttc;
+						$total_buy_price_ht = price2num(($line->pa_ht * $line->situation_percent / 100) - $old_total_buy_price_ht, 'MT');
+						$multicurrency_total_ht = $line->multicurrency_total_ht;
+						$multicurrency_total_tva = $line->multicurrency_total_tva;
+						$multicurrency_total_ttc = $line->multicurrency_total_ttc;
+					}
+
+					$sum_total_ht += $total_ht;
+					$sum_total_tva += $total_tva;
+					$sum_total_localtax1 += $total_localtax1;
+					$sum_total_localtax2 += $total_localtax2;
+					$sum_total_ttc += $total_ttc;
+					$sum_multicurrency_total_ht += $multicurrency_total_ht;
+					$sum_multicurrency_total_tva += $multicurrency_total_tva;
+					$sum_multicurrency_total_ttc += $multicurrency_total_ttc;
+
+					$result = setFixedLine($line->id, $line->fk_facture, $line->fk_parent_line, $line->fk_product,
+						$line->label, $line->desc, $line->vat_src_code, $line->tva_tx,
+						$line->localtax1_tx, $line->localtax1_type, $line->localtax2_tx, $line->localtax2_type, $line->qty, $line->remise_percent, $line->remise,
+						$line->fk_remise_except, $line->subprice, $total_ht, $total_tva, $total_localtax1, $total_localtax2, $total_ttc,
+						$line->product_type, $line->date_start, $line->date_end, $line->info_bits, $total_buy_price_ht, $line->fk_fournprice,
+						$line->special_code, $line->rang, $line->fk_contract_line, $line->fk_unit, $line->import_key, $line->fk_code_ventilation, $total_situation_percent,
+						$line->fk_prev_id, $line->fk_user_author, $line->fk_user_modif, $line->fk_multicurrency, $line->multicurrency_code, $line->multicurrency_subprice,
+						$multicurrency_total_ht, $multicurrency_total_tva, $multicurrency_total_ttc, $line->ref_ext);
+					if ($result < 0) {
+						return -1;
+					}
+				}
+
+				// Fix amount gap
+				if (price2num($sum_total_ht, 'MT') != price2num($invoice->total_ht, 'MT') || price2num($sum_total_tva, 'MT') != price2num($invoice->total_tva, 'MT') ||
+					price2num($sum_total_localtax1, 'MT') != price2num($invoice->total_localtax1, 'MT') || price2num($sum_total_localtax2, 'MT') != price2num($invoice->total_localtax2, 'MT') ||
+					price2num($sum_total_ttc, 'MT') != price2num($invoice->total_ttc, 'MT') || price2num($sum_multicurrency_total_ht, 'MT') != price2num($invoice->multicurrency_total_ht, 'MT') ||
+					price2num($sum_multicurrency_total_tva, 'MT') != price2num($invoice->multicurrency_total_tva, 'MT') || price2num($sum_multicurrency_total_ttc, 'MT') != price2num($invoice->multicurrency_total_ttc, 'MT')
+				) {
+					foreach ($invoice->lines as $i => $line) {
+						if (!empty($line->total_ht)) {
+							$old_total_situation_percent = isset($line_info[$line->rang]['total_situation_percent']) ? $line_info[$line->rang]['total_situation_percent'] : 0;
+							$old_total_ht = isset($line_info[$line->rang]['total_ht']) ? $line_info[$line->rang]['total_ht'] : 0;
+							$old_total_tva = isset($line_info[$line->rang]['total_tva']) ? $line_info[$line->rang]['total_tva'] : 0;
+							$old_total_localtax1 = isset($line_info[$line->rang]['total_localtax1']) ? $line_info[$line->rang]['total_localtax1'] : 0;
+							$old_total_localtax2 = isset($line_info[$line->rang]['total_localtax2']) ? $line_info[$line->rang]['total_localtax2'] : 0;
+							$old_total_ttc = isset($line_info[$line->rang]['total_ttc']) ? $line_info[$line->rang]['total_ttc'] : 0;
+							$old_total_buy_price_ht = isset($line_info[$line->rang]['total_buy_price_ht']) ? $line_info[$line->rang]['total_buy_price_ht'] : 0;
+							$old_multicurrency_total_ht = isset($line_info[$line->rang]['multicurrency_total_ht']) ? $line_info[$line->rang]['multicurrency_total_ht'] : 0;
+							$old_multicurrency_total_tva = isset($line_info[$line->rang]['multicurrency_total_tva']) ? $line_info[$line->rang]['multicurrency_total_tva'] : 0;
+							$old_multicurrency_total_ttc = isset($line_info[$line->rang]['multicurrency_total_ttc']) ? $line_info[$line->rang]['multicurrency_total_ttc'] : 0;
+
+							if ($invoice->type != Facture::TYPE_CREDIT_NOTE) {
+								$invoice->fetch_thirdparty();
+
+								$txtva = $line->vat_src_code ? $line->tva_tx . ' (' . $line->vat_src_code . ')' : $line->tva_tx;
+
+								$localtax1_tx = get_localtax($txtva, 1, $invoice->thirdparty);
+								$localtax2_tx = get_localtax($txtva, 2, $invoice->thirdparty);
+
+								$localtaxes_type = getLocalTaxesFromRate($txtva, 0, $invoice->thirdparty, $mysoc);
+								$tabprice = calcul_price_total($line->qty, $line->subprice, $line->remise_percent, $line->tva_tx, $localtax1_tx, $localtax2_tx, 0, 'HT',
+									$line->info_bits, $line->product_type, $mysoc, $localtaxes_type, 100, $invoice->multicurrency_tx, $line->pa_ht);
+
+								$total_situation_percent = price2num($line->situation_percent - $old_total_situation_percent);
+								$total_ht = price2num(($tabprice[0] * $line->situation_percent / 100) - $old_total_ht, 'MT');
+								$total_tva = price2num(($tabprice[1] * $line->situation_percent / 100) - $old_total_tva, 'MT');
+								$total_localtax1 = price2num(($tabprice[9] * $line->situation_percent / 100) - $old_total_localtax1, 'MT');
+								$total_localtax2 = price2num(($tabprice[10] * $line->situation_percent / 100) - $old_total_localtax2, 'MT');
+								$total_ttc = price2num(($tabprice[2] * $line->situation_percent / 100) - $old_total_ttc, 'MT');
+								$total_buy_price_ht = price2num(($line->pa_ht * $line->situation_percent / 100) - $old_total_buy_price_ht, 'MT');
+								$multicurrency_total_ht = price2num(($tabprice[16] * $line->situation_percent / 100) - $old_multicurrency_total_ht, 'MT');
+								$multicurrency_total_tva = price2num(($tabprice[17] * $line->situation_percent / 100) - $old_multicurrency_total_tva, 'MT');
+								$multicurrency_total_ttc = price2num(($tabprice[18] * $line->situation_percent / 100) - $old_multicurrency_total_ttc, 'MT');
+							} else {
+								$total_situation_percent = $line->situation_percent;
+								$total_ht = $line->total_ht;
+								$total_tva = $line->total_tva;
+								$total_localtax1 = $line->total_localtax1;
+								$total_localtax2 = $line->total_localtax2;
+								$total_ttc = $line->total_ttc;
+								$total_buy_price_ht = price2num(($line->pa_ht * $line->situation_percent / 100) - $old_total_buy_price_ht, 'MT');
+								$multicurrency_total_ht = $line->multicurrency_total_ht;
+								$multicurrency_total_tva = $line->multicurrency_total_tva;
+								$multicurrency_total_ttc = $line->multicurrency_total_ttc;
+							}
+
+							$result = setFixedLine($line->id, $line->fk_facture, $line->fk_parent_line, $line->fk_product,
+								$line->label, $line->desc, $line->vat_src_code, $line->tva_tx,
+								$line->localtax1_tx, $line->localtax1_type, $line->localtax2_tx, $line->localtax2_type, $line->qty, $line->remise_percent, $line->remise,
+								$line->fk_remise_except, $line->subprice, $total_ht + $invoice->total_ht - $sum_total_ht,
+								$total_tva + $invoice->total_tva - $sum_total_tva, $total_localtax1 + $invoice->total_localtax1 - $sum_total_localtax1,
+								$total_localtax2 + $invoice->total_localtax2 - $sum_total_localtax2, $total_ttc + $invoice->total_ttc - $sum_total_ttc,
+								$line->product_type, $line->date_start, $line->date_end, $line->info_bits, $total_buy_price_ht, $line->fk_fournprice,
+								$line->special_code, $line->rang, $line->fk_contract_line, $line->fk_unit, $line->import_key, $line->fk_code_ventilation, $total_situation_percent,
+								$line->fk_prev_id, $line->fk_user_author, $line->fk_user_modif, $line->fk_multicurrency, $line->multicurrency_code, $line->multicurrency_subprice,
+								$multicurrency_total_ht + $invoice->multicurrency_total_ht - $sum_multicurrency_total_ht,
+								$multicurrency_total_tva + $invoice->multicurrency_total_tva - $sum_multicurrency_total_tva,
+								$multicurrency_total_ttc + $invoice->multicurrency_total_ttc - $sum_multicurrency_total_ttc, $line->ref_ext);
+							break;
+						}
+					}
+				}
+			}
+			if ($result < 0) {
+				$error++;
+			}
+			$resultstring = '.';
+			print $resultstring;
+		}
+	} else {
+		$error++;
+	}
+
+	if (!$error) {
+		$db->commit();
+	} else {
+		dol_print_error($db);
+		$db->rollback();
+	}
+
+	print '</td></tr>';
+
+	if (!$resultstring) {
+		print '<tr class="trforrunsql" style=""><td class="wordbreak" colspan="4">' . $langs->trans("NothingToDo") . "</td></tr>\n";
+	}
+}
+
+/**
+ * Insert fixed line
+ *
+ * @param	int		$line_id		Line ID
+ * @return	int						<0 if KO, $=0 if nothing, $>0 if OK
+ */
+function setFixedLine($line_id, $fk_facture, $fk_parent_line, $fk_product, $label, $description, $vat_src_code, $tva_tx,
+					  $localtax1_tx, $localtax1_type, $localtax2_tx, $localtax2_type, $qty, $remise_percent, $remise,
+					  $fk_remise_except, $subprice, $total_ht, $total_tva, $total_localtax1, $total_localtax2,
+					  $total_ttc, $product_type, $date_start, $date_end, $info_bits, $buy_price_ht, $fk_product_fournisseur_price,
+					  $special_code, $rang, $fk_contract_line, $fk_unit, $import_key, $fk_code_ventilation, $situation_percent,
+					  $fk_prev_id, $fk_user_author, $fk_user_modif, $fk_multicurrency, $multicurrency_code, $multicurrency_subprice,
+					  $multicurrency_total_ht, $multicurrency_total_tva, $multicurrency_total_ttc, $ref_ext)
+{
+	global $db, $conf;
+
+	if (empty($conf->global->INVOICE_USE_SITUATION)) {
+		return 0;
+	}
+
+	// Clean parameters
+	$description = trim($description);
+	if (empty($tva_tx)) $tva_tx = 0;
+	if (empty($localtax1_tx)) $localtax1_tx = 0;
+	if (empty($localtax2_tx)) $localtax2_tx = 0;
+	if (empty($localtax1_type)) $localtax1_type = 0;
+	if (empty($localtax2_type)) $localtax2_type = 0;
+	if (empty($total_localtax1)) $total_localtax1 = 0;
+	if (empty($total_localtax2)) $total_localtax2 = 0;
+	if (empty($rang)) $rang = 0;
+	if (empty($remise_percent)) $remise_percent = 0;
+	if (empty($remise)) $remise = 0;
+	if (empty($info_bits)) $info_bits = 0;
+	if (empty($subprice)) $subprice = 0;
+	if (empty($ref_ext)) $ref_ext = '';
+	if (empty($special_code)) $special_code = 0;
+	if (empty($fk_parent_line)) $fk_parent_line = 0;
+	if (empty($fk_prev_id)) $fk_prev_id = 0;
+	if (!isset($situation_percent) || $situation_percent > 100 || (string)$situation_percent == '') $situation_percent = 100;
+	if (empty($buy_price_ht)) $buy_price_ht = 0;
+	if (empty($multicurrency_subprice)) $multicurrency_subprice = 0;
+	if (empty($multicurrency_total_ht)) $multicurrency_total_ht = 0;
+	if (empty($multicurrency_total_tva)) $multicurrency_total_tva = 0;
+	if (empty($multicurrency_total_ttc)) $multicurrency_total_ttc = 0;
+
+	$sql = "SELECT rowid FROM " . $db->prefix() . "facturedet WHERE rowid = " . (int)$line_id;
+	$resql = $db->query($sql);
+	if (!$resql) {
+		return -1;
+	}
+
+	$found = $db->num_rows($resql) > 0;
+	$db->free($resql);
+
+	if (!empty($found)) {
+		$sql = "UPDATE " . $db->prefix() . "facturedet";
+		$sql .= " SET fk_facture = " . (int)$fk_facture;
+		$sql .= ", fk_parent_line = " . ($fk_parent_line > 0 ? $fk_parent_line : "null");
+		$sql .= ", fk_product = " . ($fk_product > 0 ? $fk_product : "null");
+		$sql .= ", label = " . (!empty($label) ? "'" . $db->escape($label) . "'" : "null");
+		$sql .= ", description = '" . $db->escape($description) . "'";
+		$sql .= ", vat_src_code = " . (empty($vat_src_code) ? "''" : "'" . $db->escape($vat_src_code) . "'");
+		$sql .= ", tva_tx = " . price2num($tva_tx);
+		$sql .= ", localtax1_tx = " . price2num($localtax1_tx);
+		$sql .= ", localtax1_type = '" . $db->escape($localtax1_type) . "'";
+		$sql .= ", localtax2_tx = " . price2num($localtax2_tx);
+		$sql .= ", localtax2_type = '" . $db->escape($localtax2_type) . "'";
+		$sql .= ", qty = " . price2num($qty);
+		$sql .= ", remise_percent = " . price2num($remise_percent);
+		$sql .= ", remise = " . price2num($remise);
+		$sql .= ", fk_remise_except = " . (!empty($fk_remise_except) ? $fk_remise_except : "null");
+		$sql .= ", subprice = " . price2num($subprice);
+		$sql .= ", total_ht = " . price2num($total_ht);
+		$sql .= ", total_tva = " . price2num($total_tva);
+		$sql .= ", total_localtax1 = " . price2num($total_localtax1);
+		$sql .= ", total_localtax2 = " . price2num($total_localtax2);
+		$sql .= ", total_ttc = " . price2num($total_ttc);
+		$sql .= ", product_type = " . (int)$product_type;
+		$sql .= ", date_start = " . (!empty($date_start) ? "'" . $db->idate($date_start) . "'" : "null");
+		$sql .= ", date_end = " . (!empty($date_end) ? "'" . $db->idate($date_end) . "'" : "null");
+		$sql .= ", info_bits = '" . $db->escape($info_bits) . "'";
+		$sql .= ", buy_price_ht = " . price2num($buy_price_ht);
+		$sql .= ", fk_product_fournisseur_price = " . (!empty($fk_product_fournisseur_price) ? $fk_product_fournisseur_price : "null");
+		$sql .= ", special_code = " . $special_code;
+		$sql .= ", rang = " . $rang;
+		$sql .= ", fk_contract_line = " . ($fk_contract_line > 0 ? $fk_contract_line : "null");
+		$sql .= ", fk_unit = " . (!$fk_unit ? 'NULL' : $fk_unit);
+		$sql .= ", import_key = " . (!empty($import_key) ? "'" . $db->escape($import_key) . "'" : "null");
+		$sql .= ", fk_code_ventilation = " . $fk_code_ventilation;
+		$sql .= ", situation_percent = " . $situation_percent;
+		$sql .= ", fk_prev_id = " . (!empty($fk_prev_id) ? $fk_prev_id : "null");
+		$sql .= ", fk_user_author = " . (int)$fk_user_author;
+		$sql .= ", fk_user_modif = " . (int)$fk_user_modif;
+		$sql .= ", fk_multicurrency = " . (int)$fk_multicurrency;
+		$sql .= ", multicurrency_code = '" . $db->escape($multicurrency_code) . "'";
+		$sql .= ", multicurrency_subprice = " . price2num($multicurrency_subprice);
+		$sql .= ", multicurrency_total_ht = " . price2num($multicurrency_total_ht);
+		$sql .= ", multicurrency_total_tva = " . price2num($multicurrency_total_tva);
+		$sql .= ", multicurrency_total_ttc = " . price2num($multicurrency_total_ttc);
+		$sql .= ", ref_ext = '" . $db->escape($ref_ext) . "'";
+		$sql .= " WHERE rowid = " . (int)$line_id;
+
+		//	dol_syslog(__METHOD__ . " - SQL: " . $sql, LOG_NOTICE);
+		$resql = $db->query($sql);
+		if (!$resql) {
+			return -1;
+		}
+
+		return 1;
 	}
 }

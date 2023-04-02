@@ -85,11 +85,13 @@ if (empty($conf->dol_no_mouse_hover)) {
 		tooltipClass: "mytooltip",
 		open: function (event, ui) {
 			var elem = $(this);
-			var params = $(this).attr("data-params");
+			var params = JSON.parse($(this).attr("data-params"));
+			params.token = "'.currentToken().'";
 			$.ajax({
 				url:"' . dol_buildpath('/core/ajax/ajaxtooltip.php', 1) . '",
 				type: "post",
-				data: JSON.parse(params),
+				async: false,
+				data: params,
 				success: function(response){
 					// Setting content option
 					elem.tooltip("option","content",response);

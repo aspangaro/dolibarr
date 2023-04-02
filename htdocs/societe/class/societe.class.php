@@ -53,6 +53,11 @@ class Societe extends CommonObject
 	use CommonSocialNetworks;
 
 	/**
+	 * @var string ID of module.
+	 */
+	public $module = 'societe';
+
+	/**
 	 * @var string ID to identify managed object
 	 */
 	public $element = 'societe';
@@ -253,7 +258,7 @@ class Societe extends CommonObject
 		'last_main_doc' =>array('type'=>'varchar(255)', 'label'=>'LastMainDoc', 'enabled'=>1, 'visible'=>-1, 'position'=>270),
 		'fk_multicurrency' =>array('type'=>'integer', 'label'=>'Fk multicurrency', 'enabled'=>1, 'visible'=>-1, 'position'=>440),
 		'multicurrency_code' =>array('type'=>'varchar(255)', 'label'=>'Multicurrency code', 'enabled'=>1, 'visible'=>-1, 'position'=>445),
-		'fk_account' =>array('type'=>'integer', 'label'=>'AccountingAccount', 'enabled'=>1, 'visible'=>-1, 'position'=>450),
+		'fk_account' =>array('type'=>'integer', 'label'=>'PaymentBankAccount', 'enabled'=>1, 'visible'=>-1, 'position'=>450),
 		'fk_warehouse' =>array('type'=>'integer', 'label'=>'Warehouse', 'enabled'=>1, 'visible'=>-1, 'position'=>455),
 		'logo' =>array('type'=>'varchar(255)', 'label'=>'Logo', 'enabled'=>1, 'visible'=>-1, 'position'=>400),
 		'logo_squarred' =>array('type'=>'varchar(255)', 'label'=>'Logo squarred', 'enabled'=>1, 'visible'=>-1, 'position'=>401),
@@ -615,9 +620,10 @@ class Societe extends CommonObject
 	/**
 	 * Duplicate of code_compta_client (for backward compatibility)
 	 * @var string
+	 * @deprecated
+	 * @see $code_compta_client
 	 */
 	public $code_compta;
-
 
 	/**
 	 * Accounting code for customer
@@ -637,13 +643,11 @@ class Societe extends CommonObject
 	 */
 	public $accountancy_code_supplier;
 
-
 	/**
 	 * Accounting code for product (for level 3 of suggestion of prouct accounting account)
 	 * @var string
 	 */
 	public $code_compta_product;
-
 
 	/**
 	 * @var string
@@ -2411,7 +2415,7 @@ class Societe extends CommonObject
 	 *  @param	int			$mode			0=Array with properties, 1=Array of id.
 	 *  @param	string		$sortfield		List of sort fields, separated by comma. Example: 't1.fielda,t2.fieldb'
 	 *  @param	string		$sortorder		Sort order, separated by comma. Example: 'ASC,DESC';
-	 *  @return array       				Array of sales representatives of third party
+	 *  @return array|int      				Array of sales representatives of third party or <0 if KO
 	 */
 	public function getSalesRepresentatives(User $user, $mode = 0, $sortfield = null, $sortorder = null)
 	{
@@ -2609,9 +2613,11 @@ class Societe extends CommonObject
 
 		$langs->loadLangs(['companies', 'commercial']);
 
-		$datas = [];
+		$datas = array();
 
 		$option = $params['option'] ?? '';
+		$nofetch = !empty($params['nofetch']);
+
 		$name = $this->name;
 
 		if (!empty($this->name_alias) && empty($noaliasinname)) {
@@ -2715,14 +2721,28 @@ class Societe extends CommonObject
 		if (!empty($this->code_client) && ($this->client == 1 || $this->client == 3)) {
 			$datas['customercode'] = '<br><b>'.$langs->trans('CustomerCode').':</b> '.$this->code_client;
 		}
+		if (isModEnabled('accounting') && ($this->client == 1 || $this->client == 3)) {
+			$langs->load('compta');
+			$datas['accountancycustomercode'] = '<br><b>'.$langs->trans('CustomerAccountancyCode').':</b> '.($this->code_compta ? $this->code_compta : $this->code_compta_client);
+		}
+		// show categories for this record only in ajax to not overload lists
+		if (!$nofetch && isModEnabled('categorie') && $this->client) {
+			require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
+			$form = new Form($this->db);
+			$datas['categories_customer'] = '<br>' . $form->showCategories($this->id, Categorie::TYPE_CUSTOMER, 1, 1);
+		}
 		if (!empty($this->code_fournisseur) && $this->fournisseur) {
 			$datas['suppliercode'] = '<br><b>'.$langs->trans('SupplierCode').':</b> '.$this->code_fournisseur;
 		}
-		if (isModEnabled('accounting') && ($this->client == 1 || $this->client == 3)) {
-			$datas['accountancycustomercode'] = '<br><b>'.$langs->trans('CustomerAccountancyCode').':</b> '.($this->code_compta ? $this->code_compta : $this->code_compta_client);
-		}
 		if (isModEnabled('accounting') && $this->fournisseur) {
+			$langs->load('compta');
 			$datas['accountancysuppliercode'] = '<br><b>'.$langs->trans('SupplierAccountancyCode').':</b> '.$this->code_compta_fournisseur;
+		}
+		// show categories for this record only in ajax to not overload lists
+		if (!$nofetch && isModEnabled('categorie') && $this->fournisseur) {
+			require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
+			$form = new Form($this->db);
+			$datas['categories_supplier'] = '<br>' . $form->showCategories($this->id, Categorie::TYPE_SUPPLIER, 1, 1);
 		}
 
 		$datas['divclose'] = '</div>';
@@ -2789,12 +2809,13 @@ class Societe extends CommonObject
 			'id' => $this->id,
 			'objecttype' => $this->element,
 			'option' => $option,
+			'nofetch' => 1,
 		];
 		$classfortooltip = 'classfortooltip';
 		$dataparams = '';
 		if (getDolGlobalInt('MAIN_ENABLE_AJAX_TOOLTIP')) {
 			$classfortooltip = 'classforajaxtooltip';
-			$dataparams = ' data-params='.json_encode($params);
+			$dataparams = " data-params='".json_encode($params)."'";
 			// $label = $langs->trans('Loading');
 		}
 		$label = implode($this->getTooltipContentArray($params));
@@ -4337,7 +4358,9 @@ class Societe extends CommonObject
 		global $langs;
 
 		$this->id = 0;
+		$this->entity = $conf->entity;
 		$this->name = getDolGlobalString('MAIN_INFO_SOCIETE_NOM');
+		$this->nom = $this->name; // deprecated
 		$this->address = getDolGlobalString('MAIN_INFO_SOCIETE_ADDRESS');
 		$this->zip = getDolGlobalString('MAIN_INFO_SOCIETE_ZIP');
 		$this->town = getDolGlobalString('MAIN_INFO_SOCIETE_TOWN');
@@ -4346,8 +4369,6 @@ class Societe extends CommonObject
 		$this->socialobject = getDolGlobalString('MAIN_INFO_SOCIETE_OBJECT');
 
 		$this->note_private = getDolGlobalString('MAIN_INFO_SOCIETE_NOTE');
-
-		$this->nom = $this->name; // deprecated
 
 		// We define country_id, country_code and country
 		$country_id = $country_code = $country_label = '';
@@ -5180,5 +5201,37 @@ class Societe extends CommonObject
 		$this->partnerships[] = array();
 
 		return 1;
+	}
+
+	/**
+	 *	Return clicable link of object (with eventually picto)
+	 *
+	 *	@param      string	    $option                 Where point the link (0=> main card, 1,2 => shipment, 'nolink'=>No link)
+	 *  @param		array		$arraydata				Array of data
+	 *  @return		string								HTML Code for Kanban thumb.
+	 */
+	public function getKanbanView($option = '', $arraydata = null)
+	{
+		$selected = (empty($arraydata['selected']) ? 0 : $arraydata['selected']);
+
+		$return = '<div class="box-flex-item box-flex-grow-zero">';
+		$return .= '<div class="info-box info-box-sm">';
+		$return .= '<span class="info-box-icon bg-infobox-action">';
+		$return .= img_picto('', $this->picto);
+		$return .= '</span>';
+		$return .= '<div class="info-box-content">';
+		$return .= '<span class="info-box-ref">'.(method_exists($this, 'getNomUrl') ? $this->getNomUrl() : $this->ref).'</span>';
+		$return .= '<input id="cb'.$this->id.'" class="flat checkforselect fright" type="checkbox" name="toselect[]" value="'.$this->id.'"'.($selected ? ' checked="checked"' : '').'>';
+		if (property_exists($this, 'code_client')) {
+			$return .= '<br><span class="info-box-label opacitymedium">'.$this->code_client.'</span>';
+		}
+
+		if (method_exists($this, 'getLibStatut')) {
+			$return .= '<br><div class="info-box-status margintoponly">'.$this->getLibStatut(3).'</div>';
+		}
+		$return .= '</div>';
+		$return .= '</div>';
+		$return .= '</div>';
+		return $return;
 	}
 }

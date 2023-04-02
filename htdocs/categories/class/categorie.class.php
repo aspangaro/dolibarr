@@ -11,6 +11,7 @@
  * Copyright (C) 2015       Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
  * Copyright (C) 2016       Charlie Benke           <charlie@patas-monkey.com>
  * Copyright (C) 2018-2023  Frédéric France         <frederic.france@netlogic.fr>
+ * Copyright (C) 2023		Benjamin Falière		<benjamin.faliere@altairis.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -844,10 +845,12 @@ class Categorie extends CommonObject
 	 * @param	int			$offset		Offset
 	 * @param	string		$sortfield	Sort fields
 	 * @param	string		$sortorder	Sort order ('ASC' or 'DESC');
+	 * @param   array       $filter     Filter array. Example array('field'=>'valueforlike', 'customsql'=>...)
+	 * @param   string      $filtermode Filter mode (AND or OR)
 	 * @return  array|int              	-1 if KO, array of instance of object if OK
 	 * @see containsObject()
 	 */
-	public function getObjectsInCateg($type, $onlyids = 0, $limit = 0, $offset = 0, $sortfield = '', $sortorder = 'ASC')
+	public function getObjectsInCateg($type, $onlyids = 0, $limit = 0, $offset = 0, $sortfield = '', $sortorder = 'ASC', $filter = array(), $filtermode = 'AND')
 	{
 		global $user;
 
@@ -866,10 +869,24 @@ class Categorie extends CommonObject
 		if (($type == 'customer' || $type == 'supplier') && $user->socid > 0) {
 			$sql .= " AND o.rowid = ".((int) $user->socid);
 		}
+		// Manage filter
+		$sqlwhere = array();
+		if (count($filter) > 0) {
+			foreach ($filter as $key => $value) {
+				if ($key == 'o.rowid') {
+					$sqlwhere[] = $key." = ".((int) $value);
+				} elseif ($key == 'customsql') {
+					$sqlwhere[] = $value;
+				}
+			}
+		}
+		if (count($sqlwhere) > 0) {
+			$sql .= " AND (".implode(" ".$filtermode." ", $sqlwhere).")";
+		}
+		$sql .= $this->db->order($sortfield, $sortorder);
 		if ($limit > 0 || $offset > 0) {
 			$sql .= $this->db->plimit($limit + 1, $offset);
 		}
-		$sql .= $this->db->order($sortfield, $sortorder);
 
 		dol_syslog(get_class($this)."::getObjectsInCateg", LOG_DEBUG);
 		$resql = $this->db->query($sql);
@@ -1443,7 +1460,7 @@ class Categorie extends CommonObject
 		$ways = array();
 
 		$parents = $this->get_meres();
-		if (!empty($parents)) {
+		if (is_array($parents)) {
 			foreach ($parents as $parent) {
 				$allways = $parent->get_all_ways();
 				foreach ($allways as $way) {

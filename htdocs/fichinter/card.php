@@ -607,7 +607,7 @@ if (empty($reshook)) {
 		// Extrafields
 		$extrafields->fetch_name_optionals_label($object->table_element_line);
 		$array_options = $extrafields->getOptionalsFromPost($object->table_element_line);
-		$objectline->array_options = $array_options;
+		$objectline->array_options = array_merge($objectline->array_options, $array_options);
 
 		$result = $objectline->update($user);
 		if ($result < 0) {
@@ -1643,7 +1643,7 @@ if ($action == 'create') {
 				}
 
 				// Proposal
-				if ($conf->service->enabled && isModEnabled("propal") && $object->statut > Fichinter::STATUS_DRAFT) {
+				if (isModEnabled("service") && isModEnabled("propal") && $object->statut > Fichinter::STATUS_DRAFT) {
 					$langs->load("propal");
 					if ($object->statut < Fichinter::STATUS_BILLED) {
 						if ($user->rights->propal->creer) {

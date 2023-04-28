@@ -429,7 +429,9 @@ class FormOther
 			if (!is_numeric($showempty)) {
 				$textforempty = $showempty;
 			}
-			$moreforfilter .= '<option class="optiongrey" value="'.($showempty < 0 ? $showempty : -1).'"'.($selected == $showempty ? ' selected' : '').' data-html="'.dol_escape_htmltag($textforempty).'">'.dol_escape_htmltag($textforempty).'</option>'."\n";
+			$moreforfilter .= '<option class="optiongrey" value="'.($showempty < 0 ? $showempty : -1).'"'.($selected == $showempty ? ' selected' : '');
+			//$moreforfilter .= ' data-html="'.dol_escape_htmltag($textforempty).'"';
+			$moreforfilter .= '>'.dol_escape_htmltag($textforempty).'</option>'."\n";
 		}
 
 		if (is_array($tab_categs)) {
@@ -1205,7 +1207,7 @@ class FormOther
 				if (preg_match('/graph/', $box->class) && $conf->browser->layout != 'phone') {
 					$label = $label.' <span class="fa fa-bar-chart"></span>';
 				}
-				$arrayboxtoactivatelabel[$box->id] = $label; // We keep only boxes not shown for user, to show into combo list
+				$arrayboxtoactivatelabel[$box->id] = array('label'=>$label, 'data-html'=>img_picto('', $box->boximg, 'class="pictofixedwidth"').$langs->trans($label)); // We keep only boxes not shown for user, to show into combo list
 			}
 			foreach ($boxidactivatedforuser as $boxid) {
 				if (empty($boxorder)) {
@@ -1224,7 +1226,7 @@ class FormOther
 			$selectboxlist .= '<input type="hidden" name="userid" value="'.$user->id.'">';
 			$selectboxlist .= '<input type="hidden" name="areacode" value="'.$areacode.'">';
 			$selectboxlist .= '<input type="hidden" name="boxorder" value="'.$boxorder.'">';
-			$selectboxlist .= Form::selectarray('boxcombo', $arrayboxtoactivatelabel, -1, $langs->trans("ChooseBoxToAdd").'...', 0, 0, '', 0, 0, 0, 'ASC', 'maxwidth150onsmartphone hideonprint', 0, 'hidden selected', 0, 1);
+			$selectboxlist .= Form::selectarray('boxcombo', $arrayboxtoactivatelabel, -1, $langs->trans("ChooseBoxToAdd").'...', 0, 0, '', 0, 0, 0, 'ASC', 'maxwidth150onsmartphone hideonprint', 0, 'hidden selected', 0, 0);
 			if (empty($conf->use_javascript_ajax)) {
 				$selectboxlist .= ' <input type="submit" class="button" value="'.$langs->trans("AddBox").'">';
 			}
@@ -1289,18 +1291,21 @@ class FormOther
 					containment: \'document\',
 	        		connectWith: \'#boxhalfleft, #boxhalfright\',
 	        		stop: function(event, ui) {
+		        		console.log("We moved box so we call updateBoxOrder with ajax actions");
 	        			updateBoxOrder(1);  /* 1 to avoid message after a move */
 	        		}
 	    		});
 
 	        	jQuery(".boxclose").click(function() {
 	        		var self = this;	// because JQuery can modify this
-	        		var boxid=self.id.substring(8);
-	        		var label=jQuery(\'#boxlabelentry\'+boxid).val();
-	        		console.log("We close box "+boxid);
-	        		jQuery(\'#boxto_\'+boxid).remove();
-	        		if (boxid > 0) jQuery(\'#boxcombo\').append(new Option(label, boxid));
-	        		updateBoxOrder(1);  /* 1 to avoid message after a remove */
+	        		var boxid = self.id.substring(8);
+					if (boxid > 0) {
+		        		var label = jQuery(\'#boxlabelentry\'+boxid).val();
+		        		console.log("We close box "+boxid);
+	    	    		jQuery(\'#boxto_\'+boxid).remove();
+	        			jQuery(\'#boxcombo\').append(new Option(label, boxid));
+	        			updateBoxOrder(1);  /* 1 to avoid message after a remove */
+					}
 	        	});
 
         	});'."\n";

@@ -1,11 +1,12 @@
 <?php
-/* Copyright (C) 2003-2004	Rodolphe Quiedeville		<rodolphe@quiedeville.org>
- * Copyright (C) 2004-2011	Laurent Destailleur			<eldy@users.sourceforge.net>
- * Copyright (C) 2005		Eric Seigne					<eric.seigne@ryxeo.com>
- * Copyright (C) 2005-2012	Regis Houssin				<regis.houssin@capnetworks.com>
- * Copyright (C) 2008		Raphael Bertrand (Resultic)	<raphael.bertrand@resultic.fr>
- * Copyright (C) 2012-2013  Juanjo Menent				<jmenent@2byte.es>
- * Copyright (C) 2014		Teddy Andreotti				<125155@supinfo.com>
+/* Copyright (C) 2003-2004  Rodolphe Quiedeville        <rodolphe@quiedeville.org>
+ * Copyright (C) 2004-2011  Laurent Destailleur         <eldy@users.sourceforge.net>
+ * Copyright (C) 2005       Eric Seigne                 <eric.seigne@ryxeo.com>
+ * Copyright (C) 2005-2012  Regis Houssin               <regis.houssin@capnetworks.com>
+ * Copyright (C) 2008       Raphael Bertrand (Resultic) <raphael.bertrand@resultic.fr>
+ * Copyright (C) 2012-2013  Juanjo Menent               <jmenent@2byte.es>
+ * Copyright (C) 2014       Teddy Andreotti             <125155@supinfo.com>
+ * Copyright (C) 2023       Alexandre Spangaro          <aspangaro@open-dsi.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +38,7 @@ require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formsetup.class.php';
 
 // Load translation files required by the page
-$langs->loadLangs(array('admin', 'errors', 'other', 'bills'));
+$langs->loadLangs(array('admin', 'bills', 'errors', 'other'));
 
 // Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $hookmanager->initHooks(array('situationinvoicesetup', 'globalsetup'));
@@ -47,15 +48,14 @@ if (!$user->admin) {
 	accessforbidden();
 }
 
+$formHiddenInputs = array();
+
 $action = GETPOST('action', 'aZ09');
 $backtopage = GETPOST('backtopage', 'alpha');
 
 $value = GETPOST('value', 'alpha');
 $label = GETPOST('label', 'alpha');
 $modulepart = GETPOST('modulepart', 'aZ09');	// Used by actions_setmoduleoptions.inc.php
-
-$scandir = GETPOST('scan_dir', 'alpha');
-$type = 'invoice';
 
 $form = new Form($db);
 $formSetup = new FormSetup($db);
@@ -65,15 +65,11 @@ $formSetup = new FormSetup($db);
 $formSetup->newItem('INVOICE_USE_SITUATION')
 	->setAsYesNo()
 	->nameText = $langs->trans('UseSituationInvoices');
+$formHiddenInputs['INVOICE_USE_SITUATION'] = array($label, $value);
 
 $item = $formSetup->newItem('INVOICE_USE_SITUATION_CREDIT_NOTE')
 	->setAsYesNo()
 	->nameText = $langs->trans('UseSituationInvoicesCreditNote');
-
-//$item = $formSetup->newItem('INVOICE_USE_RETAINED_WARRANTY')
-//	->setAsYesNo()
-//	->nameText = $langs->trans('Retainedwarranty');
-
 
 $item = $formSetup->newItem('INVOICE_USE_RETAINED_WARRANTY');
 $item->nameText = $langs->trans('AllowedInvoiceForRetainedWarranty');
@@ -83,14 +79,7 @@ $arrayAvailableType = array(
 	Facture::TYPE_STANDARD.'+'.Facture::TYPE_SITUATION => $langs->trans("InvoiceSituation").' + '.$langs->trans("InvoiceStandard"),
 );
 
-if ($action == 'edit') {
-	$item->fieldInputOverride = $form->selectarray('INVOICE_USE_RETAINED_WARRANTY', $arrayAvailableType, $conf->global->INVOICE_USE_RETAINED_WARRANTY, 1);
-} else {
-	$item->fieldOutputOverride= isset($arrayAvailableType[$conf->global->INVOICE_USE_RETAINED_WARRANTY])?$arrayAvailableType[$conf->global->INVOICE_USE_RETAINED_WARRANTY]:'';
-}
-
-//$item = $formSetup->newItem('INVOICE_RETAINED_WARRANTY_LIMITED_TO_SITUATION')->setAsYesNo();
-//$item->nameText = $langs->trans('RetainedwarrantyOnlyForSituation');
+$item->fieldInputOverride = $form->selectarray('INVOICE_USE_RETAINED_WARRANTY', $arrayAvailableType, $conf->global->INVOICE_USE_RETAINED_WARRANTY, 1);
 
 $formSetup->newItem('INVOICE_RETAINED_WARRANTY_LIMITED_TO_FINAL_SITUATION')
 	->setAsYesNo()
@@ -106,8 +95,7 @@ $item->fieldAttr = array(
 	'max' => 100
 );
 
-
-// Conditions paiements
+// Payments conditions
 $item = $formSetup->newItem('INVOICE_SITUATION_DEFAULT_RETAINED_WARRANTY_COND_ID');
 $item->nameText = $langs->trans('PaymentConditionsShortRetainedWarranty');
 $form->load_cache_conditions_paiements();
@@ -123,16 +111,10 @@ $item->fieldInputOverride = $form->getSelectConditionsPaiements($conf->global->I
 
 include DOL_DOCUMENT_ROOT.'/core/actions_setmoduleoptions.inc.php';
 
-
-
 /*
  * View
  */
-
-$dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
-
-$help_yrl = 'EN:Invoice_Configuration|FR:Configuration_module_facture|ES:ConfiguracionFactura';
-
+$help_url = 'EN:Invoice_Configuration|FR:Configuration_module_facture|ES:ConfiguracionFactura';
 llxHeader("", $langs->trans("BillsSetup"), $help_url);
 
 
@@ -145,27 +127,7 @@ print dol_get_fiche_head($head, 'situation', $langs->trans("InvoiceSituation"), 
 
 print '<span class="opacitymedium">'.$langs->trans("InvoiceFirstSituationDesc").'</span><br><br>';
 
-
-/*
- *  Numbering module
- */
-
-if ($action == 'edit') {
-	print $formSetup->generateOutput(true);
-} else {
-	print $formSetup->generateOutput();
-}
-
-if (count($formSetup->items) > 0) {
-	if ($action != 'edit') {
-		print '<div class="tabsAction">';
-		print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?action=edit&token='.newToken().'">'.$langs->trans("Modify").'</a>';
-		print '</div>';
-	}
-} else {
-	print '<br>'.$langs->trans("NothingToSetup");
-}
-
+print $formSetup->generateOutput(true, 0);
 
 print dol_get_fiche_end();
 

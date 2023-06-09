@@ -127,10 +127,11 @@ class FormSetup
 	/**
 	 * generateOutput
 	 *
-	 * @param 	bool 	$editMode 	true will display output on edit mod
-	 * @return 	string				html output
+	 * @param 	bool 	$editMode 			true will display output on edit mod
+	 * @param 	int 	$showCancelButton 	show or not cancel button
+	 * @return 	string						html output
 	 */
-	public function generateOutput($editMode = false)
+	public function generateOutput($editMode = false, $showCancelButton = 1)
 	{
 		global $hookmanager, $action, $langs;
 		require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
@@ -176,8 +177,10 @@ class FormSetup
 				$out .= '<div class="form-setup-button-container center">'; // Todo : remove .center by adding style to form-setup-button-container css class in all themes
 				$out.= $this->htmlOutputMoreButton;
 				$out .= '<input class="button button-save" type="submit" value="' . $this->langs->trans("Save") . '">'; // Todo fix dolibarr style for <button and use <button instead of input
-				$out .= ' &nbsp;&nbsp; ';
-				$out .= '<a class="button button-cancel" type="submit" href="' . $this->formAttributes['action'] . '">'.$langs->trans('Cancel').'</a>';
+				if (!empty($showCancelButton)) {
+					$out .= ' &nbsp;&nbsp; ';
+					$out .= '<a class="button button-cancel" type="submit" href="' . $this->formAttributes['action'] . '">' . $langs->trans('Cancel') . '</a>';
+				}
 				$out .= '</div>';
 			}
 
@@ -243,7 +246,7 @@ class FormSetup
 	 */
 	public function saveConfFromPost($noMessageInUpdate = false)
 	{
-		global $hookmanager;
+		global $hookmanager, $conf;
 
 		$parameters = array();
 		$reshook = $hookmanager->executeHooks('formSetupBeforeSaveConfFromPost', $parameters, $this); // Note that $action and $object may have been modified by some hooks
@@ -264,6 +267,10 @@ class FormSetup
 		$this->db->begin();
 		$error = 0;
 		foreach ($this->items as $item) {
+			if ($item->getType() == 'yesno' && !empty($conf->use_javascript_ajax)) {
+				continue;
+			}
+
 			$res = $item->setValueFromPost();
 			if ($res > 0) {
 				$item->saveConfValue();

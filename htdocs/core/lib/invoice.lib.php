@@ -1,10 +1,11 @@
 <?php
-/* Copyright (C) 2005-2012	Laurent Destailleur	<eldy@users.sourceforge.net>
- * Copyright (C) 2005-2012	Regis Houssin		<regis.houssin@inodbox.com>
- * Copyright (C) 2013		Florian Henry		<florian.henry@open-concept.pro>
- * Copyright (C) 2015       Juanjo Menent		<jmenent@2byte.es>
- * Copyright (C) 2017      	Charlie Benke		<charlie@patas-monkey.com>
- * Copyright (C) 2017       ATM-CONSULTING		<contact@atm-consulting.fr>
+/* Copyright (C) 2005-2012  Laurent Destailleur <eldy@users.sourceforge.net>
+ * Copyright (C) 2005-2012  Regis Houssin       <regis.houssin@inodbox.com>
+ * Copyright (C) 2013       Florian Henry       <florian.henry@open-concept.pro>
+ * Copyright (C) 2015       Juanjo Menent       <jmenent@2byte.es>
+ * Copyright (C) 2017       Charlie Benke       <charlie@patas-monkey.com>
+ * Copyright (C) 2017       ATM-CONSULTING      <contact@atm-consulting.fr>
+ * Copyright (C) 2023       Alexandre Spangaro  <aspangaro@open-dsi.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -229,12 +230,10 @@ function invoice_admin_prepare_head()
 	$head[$h][2] = 'attributeslinesrec';
 	$h++;
 
-	if (!empty($conf->global->INVOICE_USE_SITUATION)) {	// Warning, implementation is seriously bugged and a new one not compatible is expected to become stable
-		$head[$h][0] = DOL_URL_ROOT.'/admin/facture_situation.php';
-		$head[$h][1] = $langs->trans("InvoiceSituation");
-		$head[$h][2] = 'situation';
-		$h++;
-	}
+	$head[$h][0] = DOL_URL_ROOT.'/admin/facture_situation.php';
+	$head[$h][1] = $langs->trans("InvoiceSituation");
+	$head[$h][2] = 'situation';
+	$h++;
 
 	complete_head_from_modules($conf, $langs, null, $head, $h, 'invoice_admin', 'remove');
 

@@ -1797,7 +1797,7 @@ if ($action == 'create' && $usercancreate) {
 		print '<td class="valuefieldcreate">';
 		$filter = '((s.client:IN:1,2,3) AND (s.status:=:1))';
 		print img_picto('', 'company', 'class="pictofixedwidth"').$form->select_company('', 'socid', $filter, 'SelectThirdParty', 1, 0, null, 0, 'minwidth175 maxwidth500 widthcentpercentminusxx');
-		// reload page to retrieve customer informations
+		// reload page to retrieve customer information
 		if (empty($conf->global->RELOAD_PAGE_ON_CUSTOMER_CHANGE_DISABLED)) {
 			print '<script>
 			$(document).ready(function() {

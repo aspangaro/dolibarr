@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2021  Open-Dsi  <support@open-dsi.fr>
+/* Copyright (C) 2021-2023  Open-Dsi    <support@open-dsi.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  */
 
 /**
- * \file        asset/class/assetdepreciationoptions.class.php
+ * \file        htdocs/asset/class/assetdepreciationoptions.class.php
  * \ingroup     asset
  * \brief       This file is a class file for AssetDepreciationOptions
  */

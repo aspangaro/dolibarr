@@ -1,6 +1,6 @@
 <?php
-/* Copyright (C) 2017  Laurent Destailleur <eldy@users.sourceforge.net>
- * Copyright (C) 2018  Alexandre Spangaro  <aspangaro@open-dsi.fr>
+/* Copyright (C) 2017       Laurent Destailleur <eldy@users.sourceforge.net>
+ * Copyright (C) 2018-2023  Alexandre Spangaro  <aspangaro@open-dsi.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  */
 
 /**
- * \file        asset/class/asset.class.php
+ * \file        htdocs/asset/class/asset.class.php
  * \ingroup     asset
  * \brief       This file is a CRUD class file for Asset (Create/Read/Update/Delete)
  */
@@ -162,11 +162,11 @@ class Asset extends CommonObject
 	 */
 	public $oldcopy;
 
-
 	/**
 	 * @var AssetDepreciationOptions	Used for computed fields of depreciation options class.
 	 */
 	public $asset_depreciation_options;
+
 	/**
 	 * @var array	List of depreciation lines for each mode (sort by depreciation date).
 	 */
@@ -376,7 +376,6 @@ class Asset extends CommonObject
 
 		return 1;
 	}
-
 
 	/**
 	 * Load list of objects in memory from the database.

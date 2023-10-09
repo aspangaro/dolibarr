@@ -98,7 +98,7 @@ class AssetAccountancyCodes extends CommonObject
 	}
 
 	/**
-	 *  Load accountancy codes of a asset or a asset model
+	 *  Load accountancy codes of an asset or an asset model
 	 *
 	 * @param	int		$asset_id			Asset ID to set
 	 * @param	int		$asset_model_id		Asset model ID to set

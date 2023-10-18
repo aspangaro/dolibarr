@@ -1,20 +1,20 @@
 <?php
-/* Copyright (C) 2002-2006 Rodolphe Quiedeville <rodolphe@quiedeville.org>
- * Copyright (C) 2002-2003 Jean-Louis Bergamo   <jlb@j1b.org>
- * Copyright (C) 2004-2022 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2004      Eric Seigne          <eric.seigne@ryxeo.com>
- * Copyright (C) 2005-2021 Regis Houssin        <regis.houssin@inodbox.com>
- * Copyright (C) 2005      Lionel Cousteix      <etm_ltd@tiscali.co.uk>
- * Copyright (C) 2011      Herve Prot           <herve.prot@symeos.com>
- * Copyright (C) 2012-2018 Juanjo Menent        <jmenent@2byte.es>
- * Copyright (C) 2013      Florian Henry        <florian.henry@open-concept.pro>
- * Copyright (C) 2013-2016 Alexandre Spangaro   <aspangaro@open-dsi.fr>
- * Copyright (C) 2015-2017 Jean-François Ferry  <jfefe@aternatik.fr>
- * Copyright (C) 2015      Ari Elbaz (elarifr)  <github@accedinfo.com>
- * Copyright (C) 2015-2018 Charlene Benke       <charlie@patas-monkey.com>
- * Copyright (C) 2016      Raphaël Doursenaud   <rdoursenaud@gpcsolutions.fr>
- * Copyright (C) 2018-2023  Frédéric France     <frederic.france@netlogic.fr>
- * Copyright (C) 2018       David Beniamine     <David.Beniamine@Tetras-Libre.fr>
+/* Copyright (C) 2002-2006  Rodolphe Quiedeville    <rodolphe@quiedeville.org>
+ * Copyright (C) 2002-2003  Jean-Louis Bergamo      <jlb@j1b.org>
+ * Copyright (C) 2004-2022  Laurent Destailleur     <eldy@users.sourceforge.net>
+ * Copyright (C) 2004       Eric Seigne             <eric.seigne@ryxeo.com>
+ * Copyright (C) 2005-2021  Regis Houssin           <regis.houssin@inodbox.com>
+ * Copyright (C) 2005       Lionel Cousteix         <etm_ltd@tiscali.co.uk>
+ * Copyright (C) 2011       Herve Prot              <herve.prot@symeos.com>
+ * Copyright (C) 2012-2018  Juanjo Menent           <jmenent@2byte.es>
+ * Copyright (C) 2013       Florian Henry           <florian.henry@open-concept.pro>
+ * Copyright (C) 2013-2023  Alexandre Spangaro      <aspangaro@easya.solutions>
+ * Copyright (C) 2015-2017  Jean-François Ferry     <jfefe@aternatik.fr>
+ * Copyright (C) 2015       Ari Elbaz (elarifr)     <github@accedinfo.com>
+ * Copyright (C) 2015-2018  Charlene Benke          <charlie@patas-monkey.com>
+ * Copyright (C) 2016       Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
+ * Copyright (C) 2018-2023  Frédéric France         <frederic.france@netlogic.fr>
+ * Copyright (C) 2018       David Beniamine         <David.Beniamine@Tetras-Libre.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1504,7 +1504,7 @@ if ($action == 'create' || $action == 'adduserldap') {
 		 * View mode
 		 */
 		if ($action != 'edit') {
-			print dol_get_fiche_head($head, 'user', $title, -1, 'user');
+			print dol_get_fiche_head($head, 'user', $title, -1, 'user', 0, '', '', 0, '', 1);
 
 			$morehtmlref = '<a href="'.DOL_URL_ROOT.'/user/vcard.php?id='.$object->id.'&output=file&file='.urlencode(dol_sanitizeFileName($object->getFullName($langs).'.vcf')).'" class="refid" rel="noopener" rel="noopener">';
 			$morehtmlref .= img_picto($langs->trans("Download").' '.$langs->trans("VCard").' ('.$langs->trans("AddToContacts").')', 'vcard.png', 'class="valignmiddle marginleftonly paddingrightonly"');

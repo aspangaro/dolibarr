@@ -43,6 +43,7 @@ $langs->loadLangs(array("accountancy", "compta"));
 $action = GETPOST('action', 'aZ09');
 $socid = GETPOST('socid', 'int');
 $massaction = GETPOST('massaction', 'alpha');
+$transfer_account = GETPOST('transfer_account', 'int');
 $confirm = GETPOST('confirm', 'alpha');
 $toselect = GETPOST('toselect', 'array');
 $type = GETPOST('type', 'alpha');
@@ -215,6 +216,46 @@ if (GETPOST('cancel', 'alpha')) {
 }
 if (!GETPOST('confirmmassaction', 'alpha') && $massaction != 'preunletteringauto' && $massaction != 'preunletteringmanual' && $massaction != 'predeletebookkeepingwriting') {
 	$massaction = '';
+}
+if (!empty($toselect) && $transfer_account) {
+	$accounting = new AccountingAccount($db);
+
+	$arrayofdifferentselectedvalues = array();
+
+	foreach ($toselect as $lineid) {
+		$accounting_account_id = $transfer_account;
+		$result = 0;
+		if ($accounting_account_id > 0) {
+			$arrayofdifferentselectedvalues[$accounting_account_id] = $accounting_account_id;
+			$result = $accounting->fetch($accounting_account_id, null, 1);
+		}
+		if ($result <= 0) {
+			// setEventMessages(null, $accounting->errors, 'errors');
+			$msg .= '<div><span class="error">' . $langs->trans("ErrorDB") . ' : ' . $langs->trans("Line") . ' ' . $lineid . ' ' . $langs->trans("NotTransferinAccount") . ' : id=' . $accounting_account_id . '</span></div>';
+			$ko++;
+		} elseif (empty($lineid->date_validation)) {
+			$sql = '';
+			// update
+			$sql = "UPDATE " . MAIN_DB_PREFIX . "accounting_bookkeeping";
+			$sql .= " SET numero_compte = '" . $db->escape($accounting->account_number) . "',";
+			$sql .= " label_compte = '" . $db->escape($accounting->account_number) . "'";
+			$sql .= " WHERE rowid = " . ((int) $lineid);
+
+			dol_syslog("/accountancy/bookkeeping/listbyaccount.php", LOG_DEBUG);
+
+			$db->begin();
+
+			if ($db->query($sql)) {
+				//setEventMessages('AccountingAccountTransferedOk', '','mesgs');
+				$db->commit();
+			} else {
+				$db->rollback();
+			}
+		} else {
+			setEventMessages('AccountingAccountTransferedNotPossible', '','error');
+			$db->rollback();
+		}
+	}
 }
 
 $parameters = array('socid'=>$socid);
@@ -641,6 +682,9 @@ print $formconfirm;
 
 // List of mass actions available
 $arrayofmassactions = array();
+if ($user->hasRight('accounting', 'mouvements', 'creer')) {
+	$arrayofmassactions['accounttransfer'] = img_picto('', 'long-arrow-alt-right', 'class="pictofixedwidth"') . $langs->trans('AccountTransfer');
+}
 if (getDolGlobalInt('ACCOUNTING_ENABLE_LETTERING') && $user->hasRight('accounting', 'mouvements', 'creer')) {
 	$arrayofmassactions['letteringauto'] = img_picto('', 'check', 'class="pictofixedwidth"') . $langs->trans('LetteringAuto');
 	$arrayofmassactions['preunletteringauto'] = img_picto('', 'uncheck', 'class="pictofixedwidth"') . $langs->trans('UnletteringAuto');
@@ -732,6 +776,14 @@ if (preg_match('/^asc/i', $sortorder)) {
 // Warning to explain why list of record is not consistent with the other list view (missing a lot of lines)
 if ($type == 'sub') {
 	print info_admin($langs->trans("WarningRecordWithoutSubledgerAreExcluded"));
+}
+
+if ($massaction == 'accounttransfer') {
+	$formquestion[]=array('type' => 'other',
+		'name' => 'accounttransfer',
+		'label' => $langs->trans("AccountTransfer"),
+		'value' => $formaccounting->select_account('', 'transfer_account', 1, array(), 0, 0, 'maxwidth200 maxwidthonsmartphone', 'cachewithshowemptyone'));
+	print $form->formconfirm($_SERVER["PHP_SELF"], $langs->trans("ConfirmTransferAccount"), $langs->trans("ConfirmTransferAccountQuestion", count($toselect)), "confirm_set_transfer_account", $formquestion, 1, 0, 200, 500, 1);
 }
 
 $moreforfilter = '';
@@ -973,6 +1025,7 @@ $sous_total_debit = 0;
 $sous_total_credit = 0;
 $totalarray['val']['totaldebit'] = 0;
 $totalarray['val']['totalcredit'] = 0;
+$totalarray['val']['totalbalance'] = 0;
 
 while ($i < min($num, $limit)) {
 	$line = $object->lines[$i];

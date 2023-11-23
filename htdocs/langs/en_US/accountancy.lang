@@ -430,6 +430,14 @@ Range=Range of accounting account
 Calculated=Calculated
 Formula=Formula
 
+## Transfer account
+AccountTransfer=Account transfer
+ConfirmTransferAccount=Confirmation of accounting account transfer
+ConfirmTransferAccountQuestion=Are you sure you want to transfer the %s selected record(s)?
+NotTransferinAccount=Not transfer in accounting account
+AccountingAccountTransferedOk=You have transferred the accounting accounts for the selected lines
+AccountingAccountTransferedNotPossible=Transfer is not possible because selected lines are validated and can not be modified
+
 ## Reconcile
 LetteringAuto=Reconcile auto
 LetteringManual=Reconcile manual

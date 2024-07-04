@@ -1,11 +1,11 @@
 <?php
-/* Copyright (C) 2006-2016	Laurent Destailleur	<eldy@users.sourceforge.net>
- * Copyright (C) 2012		Regis Houssin		<regis.houssin@inodbox.com>
- * Copyright (C) 2015		Alexandre Spangaro	<aspangaro@open-dsi.fr>
- * Copyright (C) 2016		Juanjo Menent   	<jmenent@2byte.es>
- * Copyright (C) 2019	    Nicolas ZABOURI     <info@inovea-conseil.com>
- * Copyright (C) 2021		Ferran Marcet		<fmarcet@2byte.es>
- * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
+/* Copyright (C) 2006-2016  Laurent Destailleur         <eldy@users.sourceforge.net>
+ * Copyright (C) 2012       Regis Houssin               <regis.houssin@inodbox.com>
+ * Copyright (C) 2015-2024  Alexandre Spangaro          <alexandre@inovea-conseil.com>
+ * Copyright (C) 2016       Juanjo Menent               <jmenent@2byte.es>
+ * Copyright (C) 2019       Nicolas ZABOURI             <info@inovea-conseil.com>
+ * Copyright (C) 2021       Ferran Marcet               <fmarcet@2byte.es>
+ * Copyright (C) 2024       MDW                         <mdeweerd@users.noreply.github.com>
  * Copyright (C) 2024       Frédéric France             <frederic.france@free.fr>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -218,6 +218,13 @@ function account_statement_prepare_head($object, $num)
 	}
 	$head[$h][2] = 'document';
 	$h++;
+
+	if (getDolGlobalString('BANK_ENABLE_ACCOUNTING_RECONCILIATION') && isModEnabled('accounting')) {
+		$head[$h][0] = DOL_URL_ROOT . '/compta/bank/accounting_reconciliation.php?account=' . $object->id . '&num=' . $num;
+		$head[$h][1] = $langs->trans("Reconciliation") . ' ' . $langs->trans("Accountant");
+		$head[$h][2] = 'accountingreconciliation';
+		$h++;
+	}
 
 	complete_head_from_modules($conf, $langs, $object, $head, $h, 'account_statement');
 

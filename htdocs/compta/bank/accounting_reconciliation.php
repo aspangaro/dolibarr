@@ -50,7 +50,7 @@ if ($user->hasRight('banque', 'consolidate') && $action == 'dvprev' && !empty($d
 }
 
 
-$limit = GETPOSTINT('limit') ? GETPOSTINT('limit') : $conf->liste_limit;
+$limit = GETPOSTINT('limit') ? GETPOSTINT('limit') : 3000;
 $sortfield = GETPOST('sortfield', 'aZ09comma');
 $sortorder = GETPOST('sortorder', 'aZ09comma');
 $page = GETPOSTISSET('pageplusone') ? (GETPOSTINT('pageplusone') - 1) : GETPOSTINT('page');
@@ -200,6 +200,7 @@ if ($action == 'confirm_editbankreceipt' && !empty($oldbankreceipt) && !empty($n
  */
 
 $form = new Form($db);
+$banklinestatic = new AccountLine($db);
 
 // Must be before button action
 $param = '';
@@ -261,9 +262,9 @@ $sql .= " WHERE b.num_releve = '".$db->escape($numref)."'";
 $sql .= " AND b.fk_account = ".((int) $object->id);
 $resqlend = $db->query($sql);
 if ($resqlend) {
-    $obj = $db->fetch_object($resqlend);
-    $content[$numref] = $obj->amount;
-    $db->free($resqlend);
+	$obj = $db->fetch_object($resqlend);
+	$content[$numref] = $obj->amount;
+	$db->free($resqlend);
 }
 print '<td class="right"><span class="amount nowraponall">'.price(($balancestart[$numref] + $content[$numref]), 0, $langs, 1, -1, -1, empty($object->currency_code) ? $conf->currency : $object->currency_code).'</span></td>';
 print '</tr>';
@@ -271,11 +272,16 @@ print '</table>';
 print '</div>';
 
 print '<br>';
+
+print load_fiche_titre($langs->trans("UnreconciledBankEntries"), '', '');
+
 print '<div class="div-table-responsive">';
 print '<table class="noborder centpercent">';
 print '<tr class="liste_titre">';
 
-$total = 0;
+$total_debit_not_conciliated = 0;
+$total_credit_not_conciliated = 0;
+$ok_conciliated = 0;
 // list of bank line wasn't conciliated
 $sql = "SELECT b.rowid, b.dateo as do, b.datev as dv, b.amount, b.label, b.rappro as conciliated, b.num_releve, b.num_chq,";
 $sql .= " b.fk_account, b.fk_type, b.fk_bordereau,";
@@ -285,93 +291,205 @@ $sql .= " ".MAIN_DB_PREFIX."bank as b";
 $sql .= " WHERE b.fk_account = ba.rowid";
 $sql .= " AND ba.entity IN (".getEntity('bank_account').")";
 $sql .= " AND b.num_releve IS NULL";
-$sql .= " AND b.fk_account = ".((int) $object->id);
-
-/*
-$sql .= " UNION";
-// List of bank line wasn't transfer in accounting
-$sql .= " SELECT b.rowid, b.dateo as do, b.datev as dv, b.amount, b.label, b.rappro as conciliated, b.num_releve, b.num_chq,";
-$sql .= " b.fk_account, b.fk_type, b.fk_bordereau,";
-$sql .= " ba.rowid as bankid, ba.ref as bankref";
-$sql .= " FROM ".MAIN_DB_PREFIX."bank_account as ba,";
-$sql .= " ".MAIN_DB_PREFIX."bank as b";
-$sql .= " WHERE b.fk_account = ba.rowid";
-$sql .= " AND ba.entity IN (".getEntity('bank_account').")";
-$sql .= " AND b.num_releve IS NULL";
-$sql .= " AND b.fk_account = ".((int) $object->id);
-*/
+$sql .= " AND b.fk_account = " . ((int) $object->id);
+$sql .= " AND b.amount != '0'";
+$sql .= $db->order("b.amount", "ASC");
 
 $resql = $db->query($sql);
 
 if ($resql) {
-    $num = $db->num_rows($resql);
-    $i = 0;
+	$num = $db->num_rows($resql);
+	$i = 0;
 
-    print '<td class="center">'.$langs->trans("Date").'</td>';
-    print '<td class="left">'.$langs->trans("Piece").'</td>';
-    print '<td class="center">'.$langs->trans("Description").'</td>';
-    print '<td class="center">'.$langs->trans("Debit").'</td>';
-    print '<td class="center">'.$langs->trans("Credit").'</td>';
-    print '<td class="center">'.$langs->trans("P").'</td>';
-    print '</tr>';
+	print '<td class="center width20p">'.$langs->trans("Date").'</td>';
+	print '<td class="left width24">'.$langs->trans("Piece").'</td>';
+	print '<td class="width30p">'.$langs->trans("Description").'</td>';
+	print '<td class="center width20p">'.$langs->trans("Debit").'</td>';
+	print '<td class="center width20p">'.$langs->trans("Credit").'</td>';
+	print '<td class="center width100">'.$langs->trans("P").'</td>';
+	print '</tr>';
 
-    while ($i < min($num, $limit)) {
-        $obj = $db->fetch_object($resql);
+	while ($i < min($num, $limit)) {
+		$obj = $db->fetch_object($resql);
 
-        print '<tr class="oddeven">';
-        print '<td class="center">' . dol_print_date($db->jdate($obj->do)) . '&nbsp;</td>';
-        print '<td class="left">' . $obj->rowid . '&nbsp;</td>';
-        print '<td class="left">' . $obj->label . '&nbsp;</td>';
-        if ($obj->amount < 0) {
-            print '<td class="right nowraponall">' . price(price2num(abs($obj->amount), 'MT'), 1, $langs) . '</td>';
-        } else {
-            print '<td class="right nowraponall"></td>';
-        }
-        if ($obj->amount > 0) {
-            print '<td class="right nowraponall">' . price(price2num(abs($obj->amount), 'MT'), 1, $langs) . '</td>';
-        } else {
-            print '<td class="right nowraponall"></td>';
-        }
-        if ($obj->conciliated == 0) {
-            $conciliated = '';
-        } else {
-            $conciliated = 'X';
-        }
-        print '<td class="center">' . $conciliated . '&nbsp;</td>';
-        print "</tr>\n";
+		$banklinestatic->id = $obj->rowid;
+		$banklinestatic->ref = $obj->rowid;
 
-        if ($obj->amount < 0) {
-            $total_debit += price2num(abs($obj->amount), 'MT');
-        }
-        if ($obj->amount > 0) {
-            $total_credit += price2num(abs($obj->amount), 'MT');
-        }
-        $i++;
-    }
+		print '<tr class="oddeven">';
+		print '<td class="center">' . dol_print_date($db->jdate($obj->do)) . '&nbsp;</td>';
+		print '<td class="left">' . $banklinestatic->getNomUrl(1) . '</td>';
+		print '<td class="left">' . $obj->label . '</td>';
+		if ($obj->amount < 0) {
+			print '<td class="right nowraponall">' . price(price2num(abs($obj->amount), 'MT'), 1, $langs) . '</td>';
+		} else {
+			print '<td class="right nowraponall">' . price(price2num('0', 'MT'), 1, $langs) . '</td>';
+		}
+		if ($obj->amount > 0) {
+			print '<td class="right nowraponall">' . price(price2num(abs($obj->amount), 'MT'), 1, $langs) . '</td>';
+		} else {
+			print '<td class="right nowraponall">' . price(price2num('0', 'MT'), 1, $langs) . '</td>';
+		}
+		if ($obj->conciliated == 0) {
+			$conciliated = '';
+		} else {
+			$conciliated = 'X';
+			$ok_conciliated += 1;
+		}
+		print '<td class="center">' . $conciliated . '&nbsp;</td>';
+		print "</tr>\n";
 
-    print '<td colspan="3">'.$langs->trans("Total").'</td>';
-    print '<td class="nowrap right"><span class="amount">'.price(price2num(abs($total_debit), 'MT'), 1, $langs).'</span></td>';
-    print '<td class="nowrap right"><span class="amount">'.price(price2num(abs($total_credit), 'MT'), 1, $langs).'</span></td>';
-    print '<td> </td>';
+		if ($obj->amount < 0) {
+			$total_debit_not_conciliated += price2num(abs($obj->amount), 'MT');
+		}
+		if ($obj->amount > 0) {
+			$total_credit_not_conciliated += price2num(abs($obj->amount), 'MT');
+		}
+		$i++;
+	}
+
+	print '<td colspan="3">'.$langs->trans("Total").'</td>';
+	print '<td class="nowrap right"><span class="amount">'.price(price2num(abs($total_debit_not_conciliated), 'MT'), 1, $langs).'</span></td>';
+	print '<td class="nowrap right"><span class="amount">'.price(price2num(abs($total_credit_not_conciliated), 'MT'), 1, $langs).'</span></td>';
+	print '<td class="liste_titre center width100"><span class="badge marginleftonly" title="'.$langs->trans("BankLineNotReconciled").'">'.($num-$ok_conciliated).'</span>   <span class="badge marginleftonly" title="'.$langs->trans("BankLineReconciled").'">'.$ok_conciliated.'</span></td>';
 }
 
-/*
-if ($bankaccount->canBeConciliated() > 0 && empty($objp->conciliated)) {
-    if ($db->jdate($objp->dv) < ($now - $conf->bank->rappro->warning_delay)) {
-        print ' '.img_warning($langs->trans("ReconciliationLate"));
-    }
-}
-*/
+print '</tr>';
+print '</table>';
+print '</div>';
 
-if ($result < 0) {
-    setEventMessages($result->error, $result->errors, 'errors');
-} else {
-    print $result;
+print '<br>';
+
+print '<div class="div-table-responsive">';
+print '<table class="noborder centpercent">';
+print '<tr class="liste_titre">';
+print '<td class="right">'.$langs->trans("FinalBalanceShownOnBankStatement").'</td>';
+
+print '<td class="right"><span class="amount nowraponall">'.price(($content[$numref] - abs($total_debit_not_conciliated) + abs($total_credit_not_conciliated)), 0, $langs, 1, -1, -1, empty($object->currency_code) ? $conf->currency : $object->currency_code).'</span></td>';
+print '</tr>';
+print '</table>';
+print '</div>';
+
+print '<br>';
+print '<br>';
+
+print load_fiche_titre($langs->trans("BankEntriesNotTransferredToAccounting"), '', '');
+
+print '<div class="div-table-responsive">';
+print '<table class="noborder centpercent">';
+print '<tr class="liste_titre">';
+
+$total_debit_not_transfered = 0;
+$total_credit_not_transfered = 0;
+$ok_conciliated = 0;
+// List of bank line wasn't transfer in accounting
+$sql2 = " SELECT b.rowid, b.dateo as do, b.datev as dv, b.amount, b.label, b.rappro as conciliated, b.num_releve, b.num_chq,";
+$sql2 .= " b.fk_account, b.fk_type, b.fk_bordereau,";
+$sql2 .= " ba.rowid as bankid, ba.ref as bankref";
+$sql2 .= " FROM ".MAIN_DB_PREFIX."bank_account as ba,";
+$sql2 .= " ".MAIN_DB_PREFIX."bank as b";
+$sql2 .= " WHERE b.fk_account = ba.rowid";
+$sql2 .= " AND NOT EXISTS (";
+$sql2 .= "     SELECT fk_doc";
+$sql2 .= "     FROM ".MAIN_DB_PREFIX."accounting_bookkeeping as ab";
+$sql2 .= "     WHERE b.rowid = ab.fk_doc";
+$sql2 .= "     AND ab.doc_type = 'bank'";
+$sql2 .= " )";
+$sql2 .= " AND ba.entity IN (".getEntity('bank_account').")";
+$sql2 .= " AND b.num_releve IS NULL";
+$sql2 .= " AND b.fk_account = " . ((int) $object->id);
+$sql2 .= " AND b.amount != '0'";
+$sql .= $db->order("b.amount", "ASC");
+
+$resql2 = $db->query($sql2);
+
+if ($resql2) {
+	$num = $db->num_rows($resql2);
+	$i = 0;
+
+	print '<td class="center width20p">'.$langs->trans("Date").'</td>';
+	print '<td class="left width24">'.$langs->trans("Piece").'</td>';
+	print '<td class="width30p">'.$langs->trans("Description").'</td>';
+	print '<td class="center width20p">'.$langs->trans("Debit").'</td>';
+	print '<td class="center width20p">'.$langs->trans("Credit").'</td>';
+	print '<td class="center width100">'.$langs->trans("P").'</td>';
+	print '</tr>';
+
+	while ($i < min($num, $limit)) {
+		$obj2 = $db->fetch_object($resql2);
+
+		$banklinestatic->id = $obj2->rowid;
+		$banklinestatic->ref = $obj2->rowid;
+
+		print '<tr class="oddeven">';
+		print '<td class="center">' . dol_print_date($db->jdate($obj2->do)) . '&nbsp;</td>';
+		print '<td class="left">' . $banklinestatic->getNomUrl(1) . '</td>';
+		print '<td class="left">' . $obj2->label . '</td>';
+		if ($obj2->amount < 0) {
+			print '<td class="right nowraponall">' . price(price2num(abs($obj2->amount), 'MT'), 1, $langs) . '</td>';
+		} else {
+			print '<td class="right nowraponall">' . price(price2num('0', 'MT'), 1, $langs) . '</td>';
+		}
+		if ($obj2->amount > 0) {
+			print '<td class="right nowraponall">' . price(price2num(abs($obj2->amount), 'MT'), 1, $langs) . '</td>';
+		} else {
+			print '<td class="right nowraponall">' . price(price2num('0', 'MT'), 1, $langs) . '</td>';
+		}
+		if ($obj2->conciliated == 0) {
+			$conciliated = '';
+		} else {
+			$conciliated = 'X';
+			$ok_conciliated += 1;
+		}
+		print '<td class="center">' . $conciliated . '&nbsp;</td>';
+		print "</tr>\n";
+
+		if ($obj2->amount < 0) {
+			$total_debit_not_transfered += price2num(abs($obj2->amount), 'MT');
+		}
+		if ($obj2->amount > 0) {
+			$total_credit_not_transfered += price2num(abs($obj2->amount), 'MT');
+		}
+		$i++;
+	}
+
+	print '<td colspan="3">'.$langs->trans("Total").'</td>';
+	print '<td class="nowrap right"><span class="amount">'.price(price2num(abs($total_debit_not_transfered), 'MT'), 1, $langs).'</span></td>';
+	print '<td class="nowrap right"><span class="amount">'.price(price2num(abs($total_credit_not_transfered), 'MT'), 1, $langs).'</span></td>';
+	print '<td class="liste_titre center width100"><span class="badge marginleftonly" title="'.$langs->trans("BankLineNotReconciled").'">'.($num-$ok_conciliated).'</span>   <span class="badge marginleftonly" title="'.$langs->trans("BankLineReconciled").'">'.$ok_conciliated.'</span></td>';
 }
 
-print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
-print '<input type="hidden" name="token" value="'.newToken().'">';
-print '<input type="hidden" name="action" value="add">';
+print '</tr>';
+print '</table>';
+print '</div>';
+
+print '<br>';
+
+$balanceaccstart = array();
+$contentacc = array();
+
+print '<div class="div-table-responsive">';
+print '<table class="noborder centpercent">';
+print '<tr class="liste_titre">';
+print '<td class="right">'.$langs->trans("FinalBalanceShownOnAccounting").'</td>';
+
+// Calculate end amount
+$sql2 = "SELECT sum(a.debit), sum(a.credit)";
+$sql2 .= " FROM ".MAIN_DB_PREFIX."accounting_bookkeeping as a";
+$sql2 .= " , ".MAIN_DB_PREFIX."bank_account as b";
+$sql2 .= " LEFT JOIN ".MAIN_DB_PREFIX."accounting_journal as j on b.fk_accountancy_journal = j.rowid";
+$sql2 .= " WHERE b.fk_account = ".((int) $object->id);
+$sql2 .= " AND a.code_journal = j.code";
+$sql2 .= " AND a.numero_compte = b.account_number";
+$resqlacc = $db->query($sql2);
+if ($resqlacc) {
+	$obj = $db->fetch_object($resqlacc);
+	$contentacc[$numref] = $obj->debit - $obj->credit;
+	$db->free($resqlacc);
+}
+print '<td class="right"><span class="amount nowraponall">'.price(($balanceaccstart[$numref] + $contentacc[$numref]), 0, $langs, 1, -1, -1, empty($object->currency_code) ? $conf->currency : $object->currency_code).'</span></td>';
+print '</tr>';
+print '</table>';
+print '</div>';
 
 // End of page
 llxFooter();

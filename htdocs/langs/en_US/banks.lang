@@ -197,3 +197,8 @@ ToCreateRelatedRecordIntoBank=To create missing related bank record
 XNewLinesConciliated=%s new line(s) conciliated
 FinalBalanceShownOnSoftware=Final balance shown on software
 FinalBalanceShownOnBankStatement=Final balance shown on bank statement
+FinalBalanceShownOnAccounting=Final balance shown on accounting
+BankEntriesNotTransferredToAccounting=Bank entries not transferred to accounting
+UnreconciledBankEntries=Unreconciled bank entries
+
+

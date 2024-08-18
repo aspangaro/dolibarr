@@ -1,15 +1,15 @@
 <?php
-/* Copyright (C) 2001-2007	Rodolphe Quiedeville	<rodolphe@quiedeville.org>
- * Copyright (C) 2003		Jean-Louis Bergamo		<jlb@j1b.org>
- * Copyright (C) 2004-2012	Laurent Destailleur		<eldy@users.sourceforge.net>
- * Copyright (C) 2004		Christophe Combelles	<ccomb@free.fr>
- * Copyright (C) 2005-2010	Regis Houssin			<regis.houssin@inodbox.com>
- * Copyright (C) 2013		Florian Henry			<florian.henry@open-concept.pro>
- * Copyright (C) 2015-2016	Marcos García			<marcosgdf@gmail.com>
- * Copyright (C) 2015-2017	Alexandre Spangaro		<aspangaro@open-dsi.fr>
- * Copyright (C) 2016		Ferran Marcet   		<fmarcet@2byte.es>
- * Copyright (C) 2019		JC Prieto				<jcprieto@virtual20.com><prietojc@gmail.com>
- * Copyright (C) 2022-2024  Frédéric France         <frederic.france@free.fr>
+/* Copyright (C) 2001-2007	Rodolphe Quiedeville		<rodolphe@quiedeville.org>
+ * Copyright (C) 2003		Jean-Louis Bergamo			<jlb@j1b.org>
+ * Copyright (C) 2004-2012	Laurent Destailleur			<eldy@users.sourceforge.net>
+ * Copyright (C) 2004		Christophe Combelles		<ccomb@free.fr>
+ * Copyright (C) 2005-2010	Regis Houssin				<regis.houssin@inodbox.com>
+ * Copyright (C) 2013		Florian Henry				<florian.henry@open-concept.pro>
+ * Copyright (C) 2015-2016	Marcos García				<marcosgdf@gmail.com>
+ * Copyright (C) 2015-2024	Alexandre Spangaro			<alexandre@inovea-conseil.com>
+ * Copyright (C) 2016		Ferran Marcet   			<fmarcet@2byte.es>
+ * Copyright (C) 2019		JC Prieto					<jcprieto@virtual20.com><prietojc@gmail.com>
+ * Copyright (C) 2022-2024	Frédéric France				<frederic.france@free.fr>
  * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -138,6 +138,12 @@ class Account extends CommonObject
 	 * @var string
 	 */
 	public $bic;
+
+	/**
+	 * Intermediary BIC/Swift code
+	 * @var string
+	 */
+	public $intermediary_bic;
 
 	/**
 	 * IBAN number (International Bank Account Number). Stored into iban_prefix field into database (TODO Rename field in database)
@@ -343,6 +349,7 @@ class Account extends CommonObject
 		'number' => array('type' => 'varchar(255)', 'label' => 'Number', 'enabled' => 1, 'visible' => -1, 'position' => 55),
 		'cle_rib' => array('type' => 'varchar(5)', 'label' => 'Cle rib', 'enabled' => 1, 'visible' => -1, 'position' => 60),
 		'bic' => array('type' => 'varchar(11)', 'label' => 'Bic', 'enabled' => 1, 'visible' => -1, 'position' => 65),
+		'intermediary_bic' =>array('type'=>'varchar(11)', 'label'=>'Intermediary bic', 'enabled'=>1, 'visible'=>-1, 'position'=>67),
 		'iban_prefix' => array('type' => 'varchar(34)', 'label' => 'Iban prefix', 'enabled' => 1, 'visible' => -1, 'position' => 70),
 		'country_iban' => array('type' => 'varchar(2)', 'label' => 'Country iban', 'enabled' => 1, 'visible' => -1, 'position' => 75),
 		'cle_iban' => array('type' => 'varchar(2)', 'label' => 'Cle iban', 'enabled' => 1, 'visible' => -1, 'position' => 80),
@@ -440,6 +447,8 @@ class Account extends CommonObject
 				$string .= $this->cle_rib.' ';
 			} elseif ($val == 'BIC') {
 				$string .= $this->bic.' ';
+			} elseif ($val == 'IntermediaryBIC') {
+				$string .= $this->intermediary_bic.' ';
 			} elseif ($val == 'IBAN') {
 				$string .= $this->iban.' ';
 			}
@@ -766,6 +775,7 @@ class Account extends CommonObject
 		$sql .= ", number";
 		$sql .= ", cle_rib";
 		$sql .= ", bic";
+		$sql .= ", intermediary_bic";
 		$sql .= ", iban_prefix";
 		$sql .= ", domiciliation";
 		$sql .= ", pti_in_ctti";
@@ -796,6 +806,7 @@ class Account extends CommonObject
 		$sql .= ", '".$this->db->escape($this->number)."'";
 		$sql .= ", '".$this->db->escape($this->cle_rib)."'";
 		$sql .= ", '".$this->db->escape($this->bic)."'";
+		$sql .= ", '".$this->db->escape($this->intermediary_bic)."'";
 		$sql .= ", '".$this->db->escape($this->iban)."'";
 		$sql .= ", '".$this->db->escape($this->address)."'";
 		$sql .= ", ".((int) $this->pti_in_ctti);
@@ -920,6 +931,7 @@ class Account extends CommonObject
 		$sql .= ",number='".$this->db->escape($this->number)."'";
 		$sql .= ",cle_rib='".$this->db->escape($this->cle_rib)."'";
 		$sql .= ",bic='".$this->db->escape($this->bic)."'";
+		$sql .= ",intermediary_bic='".$this->db->escape($this->intermediary_bic)."'";
 		$sql .= ",iban_prefix = '".$this->db->escape($this->iban)."'";
 		$sql .= ",domiciliation='".$this->db->escape($this->address)."'";
 		$sql .= ",pti_in_ctti=".((int) $this->pti_in_ctti);
@@ -1029,6 +1041,7 @@ class Account extends CommonObject
 		$sql .= ",number='".$this->db->escape($this->number)."'";
 		$sql .= ",cle_rib='".$this->db->escape($this->cle_rib)."'";
 		$sql .= ",bic='".$this->db->escape($this->bic)."'";
+		$sql .= ",intermediary_bic='".$this->db->escape($this->intermediary_bic)."'";
 		$sql .= ",iban_prefix = '".$this->db->escape($this->iban)."'";
 		$sql .= ",domiciliation='".$this->db->escape($this->address ? $this->address : $this->domiciliation)."'";
 		$sql .= ",proprio = '".$this->db->escape($this->owner_name ? $this->owner_name : $this->proprio)."'";
@@ -1069,7 +1082,7 @@ class Account extends CommonObject
 		}
 
 		$sql = "SELECT ba.rowid, ba.ref, ba.label, ba.bank, ba.number, ba.courant as type, ba.clos as status, ba.rappro, ba.url,";
-		$sql .= " ba.code_banque, ba.code_guichet, ba.cle_rib, ba.bic, ba.iban_prefix as iban,";
+		$sql .= " ba.code_banque, ba.code_guichet, ba.cle_rib, ba.bic, ba.intermediary_bic, ba.iban_prefix as iban,";
 		$sql .= " ba.domiciliation as address, ba.pti_in_ctti, ba.proprio as owner_name, ba.owner_address, ba.owner_zip, ba.owner_town, ba.owner_country_id, ba.state_id, ba.fk_pays as country_id,";
 		$sql .= " ba.account_number, ba.fk_accountancy_journal, ba.currency_code,";
 		$sql .= " ba.min_allowed, ba.min_desired, ba.comment,";
@@ -1095,57 +1108,58 @@ class Account extends CommonObject
 			if ($this->db->num_rows($result)) {
 				$obj = $this->db->fetch_object($result);
 
-				$this->id            = $obj->rowid;
-				$this->rowid         = $obj->rowid;
-				$this->ref           = $obj->ref;
-				$this->label         = $obj->label;
-				$this->type          = $obj->type;
-				$this->courant       = $obj->type;
-				$this->bank          = $obj->bank;
-				$this->clos          = $obj->status;
-				$this->status = $obj->status;
-				$this->rappro        = $obj->rappro;
-				$this->url           = $obj->url;
+				$this->id				= $obj->rowid;
+				$this->rowid			= $obj->rowid;
+				$this->ref				= $obj->ref;
+				$this->label			= $obj->label;
+				$this->type				= $obj->type;
+				$this->courant			= $obj->type;
+				$this->bank				= $obj->bank;
+				$this->clos				= $obj->status;
+				$this->status			= $obj->status;
+				$this->rappro			= $obj->rappro;
+				$this->url				= $obj->url;
 
-				$this->code_banque   = $obj->code_banque;
-				$this->code_guichet  = $obj->code_guichet;
-				$this->number        = $obj->number;
-				$this->cle_rib       = $obj->cle_rib;
-				$this->bic           = $obj->bic;
-				$this->iban          = $obj->iban;
-				$this->domiciliation = $obj->address;
-				$this->address       = $obj->address;
-				$this->pti_in_ctti   = $obj->pti_in_ctti;
-				$this->proprio       = $obj->owner_name;
-				$this->owner_name    = $obj->owner_name;
-				$this->owner_address = $obj->owner_address;
-				$this->owner_zip     = $obj->owner_zip;
-				$this->owner_town    = $obj->owner_town;
-				$this->owner_country_id = $obj->owner_country_id;
+				$this->code_banque		= $obj->code_banque;
+				$this->code_guichet		= $obj->code_guichet;
+				$this->number			= $obj->number;
+				$this->cle_rib			= $obj->cle_rib;
+				$this->bic				= $obj->bic;
+				$this->intermediary_bic	= $obj->intermediary_bic;
+				$this->iban				= $obj->iban;
+				$this->domiciliation	= $obj->address;
+				$this->address			= $obj->address;
+				$this->pti_in_ctti		= $obj->pti_in_ctti;
+				$this->proprio			= $obj->owner_name;
+				$this->owner_name		= $obj->owner_name;
+				$this->owner_address	= $obj->owner_address;
+				$this->owner_zip		= $obj->owner_zip;
+				$this->owner_town		= $obj->owner_town;
+				$this->owner_country_id	= $obj->owner_country_id;
 
-				$this->state_id        = $obj->state_id;
-				$this->state_code      = $obj->state_code;
-				$this->state           = $obj->state;
+				$this->state_id			= $obj->state_id;
+				$this->state_code		= $obj->state_code;
+				$this->state			= $obj->state;
 
-				$this->country_id    = $obj->country_id;
-				$this->country_code  = $obj->country_code;
-				$this->country       = $obj->country;
+				$this->country_id		= $obj->country_id;
+				$this->country_code		= $obj->country_code;
+				$this->country			= $obj->country;
 
-				$this->account_number = $obj->account_number;
+				$this->account_number	= $obj->account_number;
 				$this->fk_accountancy_journal = $obj->fk_accountancy_journal;
 				$this->accountancy_journal = $obj->accountancy_journal;
 
-				$this->currency_code  = $obj->currency_code;
+				$this->currency_code	= $obj->currency_code;
 				$this->account_currency_code = $obj->currency_code;
-				$this->min_allowed    = $obj->min_allowed;
-				$this->min_desired    = $obj->min_desired;
-				$this->comment        = $obj->comment;
+				$this->min_allowed		= $obj->min_allowed;
+				$this->min_desired		= $obj->min_desired;
+				$this->comment			= $obj->comment;
 
-				$this->date_creation  = $this->db->jdate($obj->date_creation);
+				$this->date_creation	= $this->db->jdate($obj->date_creation);
 				$this->date_modification = $this->db->jdate($obj->date_modification);
 
-				$this->ics           = $obj->ics;
-				$this->ics_transfer  = $obj->ics_transfer;
+				$this->ics				= $obj->ics;
+				$this->ics_transfer		= $obj->ics_transfer;
 
 				// Retrieve all extrafield
 				// fetch optionals attributes and labels
@@ -1492,8 +1506,16 @@ class Account extends CommonObject
 		global $langs;
 		$langs->loadLangs(['banks', 'compta']);
 		include_once DOL_DOCUMENT_ROOT.'/core/lib/bank.lib.php';
+		include_once DOL_DOCUMENT_ROOT.'/core/class/html.formbank.class.php';
 
 		$datas = array();
+
+		$ibankey = $this->getIBANLabel($this);
+		$bickey = "BICNumber";
+		if ($this->getCountryCode() == 'IN') {
+			$bickey = "SWIFT";
+		}
+		$intermediary_bickey = "IntermediaryBICNumber";
 
 		$nofetch = !empty($params['nofetch']);
 		$pictos = img_picto('', $this->picto).' <u class="paddingrightnow">'.$langs->trans("BankAccount").'</u>';
@@ -1504,7 +1526,8 @@ class Account extends CommonObject
 		$datas['label'] = '<br><b>'.$langs->trans('Label').':</b> '.$this->label;
 		$datas['accountnumber'] = '<br><b>'.$langs->trans('AccountNumber').':</b> '.$this->number;
 		$datas['iban'] = '<br><b>'.$langs->trans('IBAN').':</b> '.getIbanHumanReadable($this);
-		$datas['bic'] = '<br><b>'.$langs->trans('BIC').':</b> '.$this->bic;
+		$datas['bic'] = '<br><b>'.$langs->trans($bickey).':</b> '.$this->bic;
+		$datas['intermediary_bic'] = '<br><b>'.$langs->trans($intermediary_bickey).':</b> '.$this->intermediary_bic;
 		$datas['accountcurrency'] = '<br><b>'.$langs->trans("AccountCurrency").':</b> '.$this->currency_code;
 
 		if (isModEnabled('accounting')) {
@@ -1637,10 +1660,16 @@ class Account extends CommonObject
 			$this->error = 'IBANNotValid';
 		}
 		// Call function to check Swift/BIC.
-		// A non valid BIC/Swift is a problem if: it is not empty or always a problem if WITHDRAWAL_WITHOUT_BIC is not set).
+		// A non-valid BIC/Swift is a problem if: it is not empty or always a problem if WITHDRAWAL_WITHOUT_BIC is not set).
 		if (!checkSwiftForAccount($this) && (!empty($this->bic) || !getDolGlobalInt('WITHDRAWAL_WITHOUT_BIC'))) {
 			$error++;
 			$this->error = 'SwiftNotValid';
+		}
+
+		// Call function to check intermediary Swift/BIC.
+		if (!checkIntermediarySwiftForAccount($this) && (!empty($this->intermediary_bic) || !getDolGlobalInt('WITHDRAWAL_WITHOUT_INTERMEDIARY_BIC'))) {
+			$error++;
+			$this->error_message = 'IntermediarySwiftNotValid';
 		}
 
 		if (! $error) {
@@ -1773,13 +1802,13 @@ class Account extends CommonObject
 				'ES', // Spain
 				'FI', // Finland
 				'FR', // France
-				'GB', // United Kingdom
+				'GB', // United Kingdom - Now, not in EEC but Iban mandatory
 				'GR', // Greece
 				'HR', // Croatia
 				'NL', // Holland
 				'HU', // Hungary
 				'IE', // Ireland
-				'IM', // Isle of Man - Included in UK
+				'IM', // Isle of Man - Included in UK - Now, not in EEC but Iban mandatory
 				'IT', // Italy
 				'LT', // Lithuania
 				'LU', // Luxembourg
@@ -1821,7 +1850,7 @@ class Account extends CommonObject
 	 * - BankAccountNumberKey
 	 * - DeskCode
 	 *
-	 * Some countries show less or more bank account properties to the user
+	 * Some countries show fewer or more bank account properties to the user
 	 *
 	 * @param  int     $includeibanbic         1=Return also key for IBAN and BIC
 	 * @return array                           Array of fields to show
@@ -1849,6 +1878,7 @@ class Account extends CommonObject
 		if ($includeibanbic) {
 			$fieldarray[] = 'IBAN';
 			$fieldarray[] = 'BIC';
+			$fieldarray[] = 'IntermediaryBIC';
 		}
 		//}
 
@@ -1910,29 +1940,30 @@ class Account extends CommonObject
 	public function initAsSpecimen()
 	{
 		// Example of IBAN FR7630001007941234567890185
-		$this->specimen        = 1;
-		$this->ref             = 'MBA';
-		$this->label           = 'My Big Company Bank account';
-		$this->courant         = Account::TYPE_CURRENT;
-		$this->clos            = Account::STATUS_OPEN;
-		$this->type            = Account::TYPE_CURRENT;
-		$this->status          = Account::STATUS_OPEN;
-		$this->code_banque     = '30001';
-		$this->code_guichet    = '00794';
-		$this->number          = '12345678901';
-		$this->cle_rib         = '85';
-		$this->bic             = 'AA12';
-		$this->iban            = 'FR7630001007941234567890185';
+		$this->specimen			= 1;
+		$this->ref				= 'MBA';
+		$this->label			= 'My Big Company Bank account';
+		$this->courant			= Account::TYPE_CURRENT;
+		$this->clos				= Account::STATUS_OPEN;
+		$this->type				= Account::TYPE_CURRENT;
+		$this->status			= Account::STATUS_OPEN;
+		$this->code_banque		= '30001';
+		$this->code_guichet		= '00794';
+		$this->number			= '12345678901';
+		$this->cle_rib			= '85';
+		$this->bic				= 'AA12';
+		$this->intermediary_bic	= 'AA13';
+		$this->iban				= 'FR7630001007941234567890185';
 
-		$this->bank            = 'MyBank';
-		$this->address         = 'Rue de Paris';
-		$this->proprio         = 'Owner';
-		$this->owner_name      = 'Owner';
-		$this->owner_address   = 'Owner address';
-		$this->owner_zip       = 'Owner zip';
-		$this->owner_town      = 'Owner town';
-		$this->owner_country_id = 'Owner country_id';
-		$this->country_id      = 1;
+		$this->bank				= 'MyBank';
+		$this->address			= 'Rue de Paris';
+		$this->proprio			= 'Owner';
+		$this->owner_name		= 'Owner';
+		$this->owner_address	= 'Owner address';
+		$this->owner_zip		= 'Owner zip';
+		$this->owner_town		= 'Owner town';
+		$this->owner_country_id	= 'Owner country_id';
+		$this->country_id		= 1;
 
 		return 1;
 	}

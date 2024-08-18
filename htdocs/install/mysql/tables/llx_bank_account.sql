@@ -1,8 +1,8 @@
 -- =============================================================================
--- Copyright (C) 2000-2004  Rodolphe Quiedeville    <rodolphe@quiedeville.org>
--- Copyright (C) 2004-2014  Laurent Destailleur     <eldy@users.sourceforge.net>
--- Copyright (C) 2005-2012  Regis Houssin           <regis.houssin@inodbox.com>
--- Copyright (C) 2014-2023  Alexandre Spangaro      <aspangaro@easya.solutions>
+-- Copyright (C) 2000-2004  Rodolphe Quiedeville		<rodolphe@quiedeville.org>
+-- Copyright (C) 2004-2014  Laurent Destailleur			<eldy@users.sourceforge.net>
+-- Copyright (C) 2005-2012  Regis Houssin				<regis.houssin@inodbox.com>
+-- Copyright (C) 2014-2024	Alexandre Spangaro			<alexandre@inovea-conseil.com>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ create table llx_bank_account
   number					varchar(255),
   cle_rib					varchar(5),
   bic						varchar(11),                -- 11 according to ISO 9362
-  bic_intermediate          varchar(11),                -- 11 according to ISO 9362. Same as bic but for intermediate bank
+  intermediary_bic          varchar(11),                -- 11 according to ISO 9362. Same as bic but for intermediary bank
   iban_prefix				varchar(34),				-- full iban. 34 according to ISO 13616
   country_iban				varchar(2),					-- deprecated
   cle_iban					varchar(2),

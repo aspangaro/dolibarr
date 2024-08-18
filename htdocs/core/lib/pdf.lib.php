@@ -1,20 +1,21 @@
 <?php
-/* Copyright (C) 2006-2017	Laurent Destailleur 	<eldy@users.sourceforge.net>
- * Copyright (C) 2006		Rodolphe Quiedeville	<rodolphe@quiedeville.org>
- * Copyright (C) 2007		Patrick Raguin      	<patrick.raguin@gmail.com>
- * Copyright (C) 2010-2012	Regis Houssin       	<regis.houssin@inodbox.com>
- * Copyright (C) 2010-2017	Juanjo Menent       	<jmenent@2byte.es>
- * Copyright (C) 2012		Christophe Battarel		<christophe.battarel@altairis.fr>
- * Copyright (C) 2012       Cédric Salvador         <csalvador@gpcsolutions.fr>
- * Copyright (C) 2012-2015  Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
- * Copyright (C) 2014		Cedric GROSS			<c.gross@kreiz-it.fr>
- * Copyright (C) 2014		Teddy Andreotti			<125155@supinfo.com>
- * Copyright (C) 2015-2016  Marcos García           <marcosgdf@gmail.com>
- * Copyright (C) 2019       Lenin Rivas           	<lenin.rivas@servcom-it.com>
- * Copyright (C) 2020       Nicolas ZABOURI         <info@inovea-conseil.com>
- * Copyright (C) 2021-2022	Anthony Berton       	<anthony.berton@bb2a.fr>
- * Copyright (C) 2023-2024  Frédéric France         <frederic.france@free.fr>
+/* Copyright (C) 2006-2017	Laurent Destailleur			<eldy@users.sourceforge.net>
+ * Copyright (C) 2006		Rodolphe Quiedeville		<rodolphe@quiedeville.org>
+ * Copyright (C) 2007		Patrick Raguin				<patrick.raguin@gmail.com>
+ * Copyright (C) 2010-2012	Regis Houssin				<regis.houssin@inodbox.com>
+ * Copyright (C) 2010-2017	Juanjo Menent				<jmenent@2byte.es>
+ * Copyright (C) 2012		Christophe Battarel			<christophe.battarel@altairis.fr>
+ * Copyright (C) 2012		Cédric Salvador				<csalvador@gpcsolutions.fr>
+ * Copyright (C) 2012-2015	Raphaël Doursenaud			<rdoursenaud@gpcsolutions.fr>
+ * Copyright (C) 2014		Cedric GROSS				<c.gross@kreiz-it.fr>
+ * Copyright (C) 2014		Teddy Andreotti				<125155@supinfo.com>
+ * Copyright (C) 2015-2016	Marcos García				<marcosgdf@gmail.com>
+ * Copyright (C) 2019		Lenin Rivas					<lenin.rivas@servcom-it.com>
+ * Copyright (C) 2020		Nicolas ZABOURI				<info@inovea-conseil.com>
+ * Copyright (C) 2021-2022	Anthony Berton				<anthony.berton@bb2a.fr>
+ * Copyright (C) 2023-2024	Frédéric France				<frederic.france@free.fr>
  * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
+ * Copyright (C) 2024		Alexandre Spangaro			<alexandre@inovea-conseil.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -859,11 +860,12 @@ function pdf_bank(&$pdf, $outputlangs, $curx, $cury, $account, $onlynumber = 0, 
 
 	$outputlangs->load("banks");
 
-	// Use correct name of bank id according to country
+	// Use the correct name of bank id according to country
 	$bickey = "BICNumber";
 	if ($account->getCountryCode() == 'IN') {
 		$bickey = "SWIFT";
 	}
+	$intermediary_bickey = "IntermediaryBICNumber";
 
 	// Get format of bank account according to its country
 	$usedetailedbban = $account->useDetailedBBAN();
@@ -910,7 +912,7 @@ function pdf_bank(&$pdf, $outputlangs, $curx, $cury, $account, $onlynumber = 0, 
 					// Key
 					$tmplength = 15;
 					$content = $account->cle_rib;
-				} elseif ($val == 'IBAN' || $val == 'BIC') {
+				} elseif ($val == 'IBAN' || $val == 'BIC' || $val == 'IntermediaryBIC') {
 					// Key
 					$tmplength = 0;
 					$content = '';
@@ -996,6 +998,13 @@ function pdf_bank(&$pdf, $outputlangs, $curx, $cury, $account, $onlynumber = 0, 
 		$pdf->SetFont('', 'B', $default_font_size - 3);
 		$pdf->SetXY($curx, $cury);
 		$pdf->MultiCell(100, 3, $outputlangs->transnoentities($bickey).': '.$outputlangs->convToOutputCharset($account->bic), 0, 'L', 0);
+		$cury += 3;
+	}
+
+	if (!empty($account->intermediary_bic)) {
+		$pdf->SetFont('', 'B', $default_font_size - 3);
+		$pdf->SetXY($curx, $cury);
+		$pdf->MultiCell(100, 3, $outputlangs->transnoentities($intermediary_bickey).': '.$outputlangs->convToOutputCharset($account->intermediary_bic), 0, 'L', 0);
 	}
 
 	return $pdf->getY();

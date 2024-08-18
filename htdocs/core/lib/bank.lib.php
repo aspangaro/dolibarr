@@ -1,10 +1,10 @@
 <?php
-/* Copyright (C) 2006-2016	Laurent Destailleur	<eldy@users.sourceforge.net>
- * Copyright (C) 2012		Regis Houssin		<regis.houssin@inodbox.com>
- * Copyright (C) 2015		Alexandre Spangaro	<aspangaro@open-dsi.fr>
- * Copyright (C) 2016		Juanjo Menent   	<jmenent@2byte.es>
- * Copyright (C) 2019	    Nicolas ZABOURI     <info@inovea-conseil.com>
- * Copyright (C) 2021		Ferran Marcet		<fmarcet@2byte.es>
+/* Copyright (C) 2006-2016	Laurent Destailleur			<eldy@users.sourceforge.net>
+ * Copyright (C) 2012		Regis Houssin				<regis.houssin@inodbox.com>
+ * Copyright (C) 2015-2024	Alexandre Spangaro			<alexandre@inovea-conseil.com>
+ * Copyright (C) 2016		Juanjo Menent				<jmenent@2byte.es>
+ * Copyright (C) 2019	    Nicolas ZABOURI				<info@inovea-conseil.com>
+ * Copyright (C) 2021		Ferran Marcet				<fmarcet@2byte.es>
  * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
  * Copyright (C) 2024       Frédéric France             <frederic.france@free.fr>
  *
@@ -278,8 +278,8 @@ function various_payment_prepare_head($object)
  *      Check SWIFT information for a bank account
  *
  *      @param  ?Account	$account    A bank account (used to get BIC/SWIFT)
- *      @param	?string		$swift		Swift value (used to get BIC/SWIFT, param $account non used if provided)
- *      @return boolean                 True if information are valid, false otherwise
+ *      @param	?string		$swift		Swift value (used to get BIC/SWIFT, param $account non-used if provided)
+ *      @return boolean                 True if informations are valid, false otherwise
  */
 function checkSwiftForAccount(Account $account = null, $swift = null)
 {
@@ -289,6 +289,27 @@ function checkSwiftForAccount(Account $account = null, $swift = null)
 		$swift = $account->bic;
 	}
 	if (preg_match("/^([a-zA-Z]){4}([a-zA-Z]){2}([0-9a-zA-Z]){2}([0-9a-zA-Z]{3})?$/", $swift)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/**
+ *      Check Intermediary SWIFT informations for a bank account
+ *
+ *      @param  Account     $account				A bank account (used to get intermediary BIC/SWIFT)
+ *      @param	string		$intermediary_swift		Intermediary Swift value (used to get intermediary BIC/SWIFT, param $account non-used if provided)
+ *      @return boolean								True if informations are valid, false otherwise
+ */
+function checkIntermediarySwiftForAccount(Account $account = null, $intermediary_swift = null)
+{
+	if ($account == null && $intermediary_swift == null) {
+		return false;
+	} elseif ($intermediary_swift == null) {
+		$intermediary_swift = $account->intermediary_bic;
+	}
+	if (preg_match("/^([a-zA-Z]){4}([a-zA-Z]){2}([0-9a-zA-Z]){2}([0-9a-zA-Z]{3})?$/", $intermediary_swift)) {
 		return true;
 	} else {
 		return false;

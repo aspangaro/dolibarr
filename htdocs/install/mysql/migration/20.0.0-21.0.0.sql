@@ -104,3 +104,7 @@ create table llx_paymentexpensereport_expensereport
   multicurrency_tx		double(24,8) DEFAULT 1,
   multicurrency_amount	double(24,8) DEFAULT 0
 )ENGINE=innodb;
+
+ALTER TABLE llx_bank_account CHANGE COLUMN bic_intermediate intermediary_bic varchar(11);
+ALTER TABLE llx_societe_rib CHANGE COLUMN bic_intermediate intermediary_bic varchar(11);
+ALTER TABLE llx_user_rib CHANGE COLUMN bic_intermediate intermediary_bic varchar(11);

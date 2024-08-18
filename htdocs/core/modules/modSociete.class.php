@@ -1,11 +1,11 @@
 <?php
-/* Copyright (C) 2003-2005 Rodolphe Quiedeville <rodolphe@quiedeville.org>
- * Copyright (C) 2004-2013 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2004      Sebastien Di Cintio  <sdicintio@ressource-toi.org>
- * Copyright (C) 2004      Benoit Mortier       <benoit.mortier@opensides.be>
- * Copyright (C) 2005-2013 Regis Houssin        <regis.houssin@inodbox.com>
- * Copyright (C) 2012-2014 Juanjo Menent        <jmenent@2byte.es>
- * Copyright (C) 2022      Ferran Marcet        <fmarcet@2byte.es>
+/* Copyright (C) 2003-2005	Rodolphe Quiedeville		<rodolphe@quiedeville.org>
+ * Copyright (C) 2004-2013	Laurent Destailleur			<eldy@users.sourceforge.net>
+ * Copyright (C) 2004		Sebastien Di Cintio			<sdicintio@ressource-toi.org>
+ * Copyright (C) 2004		Benoit Mortier				<benoit.mortier@opensides.be>
+ * Copyright (C) 2005-2013	Regis Houssin				<regis.houssin@inodbox.com>
+ * Copyright (C) 2012-2014	Juanjo Menent				<jmenent@2byte.es>
+ * Copyright (C) 2022		Ferran Marcet				<fmarcet@2byte.es>
  * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -870,6 +870,7 @@ class modSociete extends DolibarrModules
 			'sr.number' => "BankAccountNumber",
 			'sr.cle_rib' => "BankAccountNumberKey",
 			'sr.bic' => "BIC",
+			'sr.intermediary_bic' => "Intermediary BIC",
 			'sr.iban_prefix' => "IBAN",
 			'sr.domiciliation' => "BankAccountDomiciliation",
 			'sr.proprio' => "BankAccountOwner",
@@ -902,6 +903,7 @@ class modSociete extends DolibarrModules
 			'sr.number' => 'account number eg. "3333333333"',
 			'sr.cle_rib' => 'account checksum/control digits (if used) eg. "22"',
 			'sr.bic' => 'bank identifier eg. "USHINGMMXXX"',
+			'sr.intermediary_bic' => 'bank intermediary identifier eg. "USHING2MMXX"',
 			'sr.iban_prefix' => 'complete account IBAN eg. "GB78CPBK08925068637123"',
 			'sr.domiciliation' => 'bank branch address eg. "PARIS"',
 			'sr.proprio' => 'name on the bank account',

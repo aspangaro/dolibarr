@@ -1,13 +1,13 @@
 <?php
-/* Copyright (C) 2002-2003	Rodolphe Quiedeville	<rodolphe@quiedeville.org>
- * Copyright (C) 2003		Jean-Louis Bergamo		<jlb@j1b.org>
- * Copyright (C) 2004-2016	Laurent Destailleur		<eldy@users.sourceforge.net>
- * Copyright (C) 2005-2009	Regis Houssin			<regis.houssin@inodbox.com>
- * Copyright (C) 2014-2017	Alexandre Spangaro		<aspangaro@open-dsi.fr>
- * Copyright (C) 2015		Jean-François Ferry		<jfefe@aternatik.fr>
- * Copyright (C) 2016		Marcos García			<marcosgdf@gmail.com>
- * Copyright (C) 2018-2024  Frédéric France         <frederic.france@free.fr>
- * Copyright (C) 2022       Charlene Benke          <charlene@patas-monkey.com>
+/* Copyright (C) 2002-2003	Rodolphe Quiedeville		<rodolphe@quiedeville.org>
+ * Copyright (C) 2003		Jean-Louis Bergamo			<jlb@j1b.org>
+ * Copyright (C) 2004-2016	Laurent Destailleur			<eldy@users.sourceforge.net>
+ * Copyright (C) 2005-2009	Regis Houssin				<regis.houssin@inodbox.com>
+ * Copyright (C) 2014-2024	Alexandre Spangaro			<alexandre@inovea-conseil.com>
+ * Copyright (C) 2015		Jean-François Ferry			<jfefe@aternatik.fr>
+ * Copyright (C) 2016		Marcos García				<marcosgdf@gmail.com>
+ * Copyright (C) 2018-2024	Frédéric France				<frederic.france@free.fr>
+ * Copyright (C) 2022		Charlene Benke				<charlene@patas-monkey.com>
  * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -141,6 +141,7 @@ if (empty($reshook)) {
 		$object->number = trim(GETPOST("number"));
 		$object->cle_rib = trim(GETPOST("cle_rib"));
 		$object->bic = trim(GETPOST("bic"));
+		$object->intermediary_bic = trim(GETPOST("intermediary_bic"));
 		$object->iban = trim(GETPOST("iban"));
 		$object->pti_in_ctti = empty(GETPOST("pti_in_ctti")) ? 0 : 1;
 
@@ -260,6 +261,7 @@ if (empty($reshook)) {
 		$object->number = trim(GETPOST("number"));
 		$object->cle_rib = trim(GETPOST("cle_rib"));
 		$object->bic = trim(GETPOST("bic"));
+		$object->intermediary_bic = trim(GETPOST("intermediary_bic"));
 		$object->iban = trim(GETPOST("iban"));
 		$object->pti_in_ctti = empty(GETPOST("pti_in_ctti")) ? 0 : 1;
 
@@ -558,6 +560,7 @@ if ($action == 'create') {
 		if ($object->getCountryCode() == 'IN') {
 			$bickey = "SWIFT";
 		}
+		$intermediary_bickey = "IntermediaryBICNumber";
 
 		// IBAN
 		print '<tr><td>'.$langs->trans($ibankey).'</td>';
@@ -567,7 +570,11 @@ if ($action == 'create') {
 		print '<tr><td>'.$langs->trans($bickey).'</td>';
 		print '<td><input maxlength="11" type="text" class="flat minwidth150" name="bic" value="'.(GETPOSTISSET('bic') ? GETPOST('bic', 'alpha') : $object->bic).'"></td></tr>';
 
-		// Show fields of bank account
+		// Intermediary BIC
+		print '<tr><td>'.$langs->trans($intermediary_bickey).'</td>';
+		print '<td><input maxlength="11" type="text" class="flat minwidth150" name="intermediary_bic" value="'.(GETPOSTISSET('intermediary_bic') ?GETPOST('intermediary_bic', 'alpha') : $object->intermediary_bic).'"></td></tr>';
+
+		// Show fields of the bank account
 		$sizecss = '';
 		foreach ($object->getFieldsToShow() as $val) {
 			$content = '';
@@ -794,6 +801,7 @@ if ($action == 'create') {
 			if ($object->getCountryCode() == 'IN') {
 				$bickey = "SWIFT";
 			}
+			$intermediary_bickey = "IntermediaryBICNumber";
 
 			// IBAN
 			print '<tr><td>'.$langs->trans($ibankey).'</td>';
@@ -819,9 +827,21 @@ if ($action == 'create') {
 			}
 			print '</td></tr>';
 
+			// Intermediary BIC
+			print '<tr><td>'.$langs->trans($intermediary_bickey).'</td>';
+			print '<td>'.$object->intermediary_bic.'&nbsp;';
+			if (!empty($object->intermediary_bic)) {
+				if (!checkIntermediarySwiftForAccount($object)) {
+					print img_picto($langs->trans("IntermediarySwiftNotValid"), 'warning');
+				} else {
+					print img_picto($langs->trans("IntermediarySwiftValid"), 'info');
+				}
+			}
+			print '</td></tr>';
+
 			// TODO Add a link "Show more..." for all other information.
 
-			// Show fields of bank account
+			// Show fields of the bank account
 			foreach ($object->getFieldsToShow() as $val) {
 				$content = '';
 				if ($val == 'BankCode') {
@@ -1137,6 +1157,7 @@ if ($action == 'create') {
 			if ($object->getCountryCode() == 'IN') {
 				$bickey = "SWIFT";
 			}
+			$intermediary_bickey = "IntermediaryBICNumber";
 
 			// IBAN
 			print '<tr><td>';
@@ -1152,8 +1173,17 @@ if ($action == 'create') {
 			print '</td>';
 			print '<td><input class="minwidth150 maxwidth200onsmartphone" maxlength="11" type="text" class="flat" name="bic" value="'.(GETPOSTISSET('bic') ? GETPOST('bic', 'alphanohtml') : $object->bic).'"></td></tr>';
 
-			// Show fields of bank account
+			// Intermediary BIC
+			print '<tr><td>';
+			$tooltip = $langs->trans("Example").': LIABLT2XXXX';
+			print $form->textwithpicto($langs->trans($intermediary_bickey), $tooltip);
+			print '</td>';
+			print '<td><input class="minwidth150 maxwidth200onsmartphone" maxlength="11" type="text" class="flat" name="intermediary_bic" value="'.(GETPOSTISSET('intermediary_bic') ? GETPOST('intermediary_bic',  'alphanohtml') : $object->intermediary_bic).'"></td></tr>';
+
+			// Show fields of the bank account
 			foreach ($object->getFieldsToShow() as $val) {
+				$css = '';
+				$name = '';
 				$content = '';
 				if ($val == 'BankCode') {
 					$name = 'code_banque';

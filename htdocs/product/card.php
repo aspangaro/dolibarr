@@ -1,26 +1,26 @@
 <?php
-/* Copyright (C) 2001-2007	Rodolphe Quiedeville <rodolphe@quiedeville.org>
- * Copyright (C) 2004-2016	Laurent Destailleur	 <eldy@users.sourceforge.net>
- * Copyright (C) 2005		Eric Seigne		     <eric.seigne@ryxeo.com>
- * Copyright (C) 2005-2015	Regis Houssin		 <regis.houssin@capnetworks.com>
- * Copyright (C) 2006		Andre Cianfarani	 <acianfa@free.fr>
- * Copyright (C) 2006		Auguria SARL		 <info@auguria.org>
- * Copyright (C) 2010-2015	Juanjo Menent		 <jmenent@2byte.es>
- * Copyright (C) 2013-2016	Marcos García		 <marcosgdf@gmail.com>
- * Copyright (C) 2012-2013	Cédric Salvador		 <csalvador@gpcsolutions.fr>
- * Copyright (C) 2011-2023	Alexandre Spangaro	 <aspangaro@open-dsi.fr>
- * Copyright (C) 2014		Cédric Gross		 <c.gross@kreiz-it.fr>
- * Copyright (C) 2014-2015	Ferran Marcet		 <fmarcet@2byte.es>
- * Copyright (C) 2015		Jean-François Ferry	 <jfefe@aternatik.fr>
- * Copyright (C) 2015		Raphaël Doursenaud	 <rdoursenaud@gpcsolutions.fr>
- * Copyright (C) 2016-2022	Charlene Benke		 <charlene@patas-monkey.com>
- * Copyright (C) 2016		Meziane Sof		     <virtualsof@yahoo.fr>
- * Copyright (C) 2017		Josep Lluís Amador	 <joseplluis@lliuretic.cat>
- * Copyright (C) 2019-2024  Frédéric France      <frederic.france@free.fr>
- * Copyright (C) 2019-2020  Thibault FOUCART     <support@ptibogxiv.net>
- * Copyright (C) 2020  		Pierre Ardoin     	 <mapiolca@me.com>
- * Copyright (C) 2022  		Vincent de Grandpré  <vincent@de-grandpre.quebec>
- * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
+/* Copyright (C) 2001-2007  Rodolphe Quiedeville    <rodolphe@quiedeville.org>
+ * Copyright (C) 2004-2016  Laurent Destailleur     <eldy@users.sourceforge.net>
+ * Copyright (C) 2005       Eric Seigne             <eric.seigne@ryxeo.com>
+ * Copyright (C) 2005-2015  Regis Houssin           <regis.houssin@capnetworks.com>
+ * Copyright (C) 2006       Andre Cianfarani        <acianfa@free.fr>
+ * Copyright (C) 2006       Auguria SARL            <info@auguria.org>
+ * Copyright (C) 2010-2015  Juanjo Menent           <jmenent@2byte.es>
+ * Copyright (C) 2013-2016  Marcos García           <marcosgdf@gmail.com>
+ * Copyright (C) 2012-2013  Cédric Salvador         <csalvador@gpcsolutions.fr>
+ * Copyright (C) 2011-2023  Alexandre Spangaro      <alexandre@inovea-conseil.com>
+ * Copyright (C) 2014       Cédric Gross            <c.gross@kreiz-it.fr>
+ * Copyright (C) 2014-2015  Ferran Marcet           <fmarcet@2byte.es>
+ * Copyright (C) 2015       Jean-François Ferry     <jfefe@aternatik.fr>
+ * Copyright (C) 2015       Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
+ * Copyright (C) 2016-2022  Charlene Benke          <charlene@patas-monkey.com>
+ * Copyright (C) 2016       Meziane Sof             <virtualsof@yahoo.fr>
+ * Copyright (C) 2017       Josep Lluís Amador      <joseplluis@lliuretic.cat>
+ * Copyright (C) 2019-2024  Frédéric France         <frederic.france@free.fr>
+ * Copyright (C) 2019-2020  Thibault FOUCART        <support@ptibogxiv.net>
+ * Copyright (C) 2020       Pierre Ardoin           <mapiolca@me.com>
+ * Copyright (C) 2022       Vincent de Grandpré     <vincent@de-grandpre.quebec>
+ * Copyright (C) 2024       MDW                     <mdeweerd@users.noreply.github.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -187,6 +187,9 @@ if (!empty($canvas)) {
 $fieldvalue = (!empty($id) ? $id : (!empty($ref) ? $ref : ''));
 $fieldtype = (!empty($id) ? 'rowid' : 'ref');
 
+// Initialize a technical object to manage hooks of page. Note that conf->hooks_modules contains an array of hook context
+$hookmanager->initHooks(array('productcard', 'globalcard'));
+
 if ($object->id > 0) {
 	if ($object->type == $object::TYPE_PRODUCT) {
 		restrictedArea($user, 'produit', $object->id, 'product&product', '', '');
@@ -198,11 +201,8 @@ if ($object->id > 0) {
 	restrictedArea($user, 'produit|service', 0, 'product&product', '', '', $fieldtype);
 }
 
-// Initialize a technical object to manage hooks of page. Note that conf->hooks_modules contains an array of hook context
-$hookmanager->initHooks(array('productcard', 'globalcard'));
-
 // Permissions
-$usercanread   = (($object->type == Product::TYPE_PRODUCT && $user->hasRight('produit', 'read')) || ($object->type == Product::TYPE_SERVICE && $user->hasRight('service', 'lire')));
+$usercanread   = (($object->type == Product::TYPE_PRODUCT && $user->hasRight('produit', 'lire')) || ($object->type == Product::TYPE_SERVICE && $user->hasRight('service', 'lire')));
 $usercancreate = (($object->type == Product::TYPE_PRODUCT && $user->hasRight('produit', 'creer')) || ($object->type == Product::TYPE_SERVICE && $user->hasRight('service', 'creer')));
 $usercandelete = (($object->type == Product::TYPE_PRODUCT && $user->hasRight('produit', 'supprimer')) || ($object->type == Product::TYPE_SERVICE && $user->hasRight('service', 'supprimer')));
 
@@ -431,14 +431,14 @@ if (empty($reshook)) {
 	include DOL_DOCUMENT_ROOT.'/core/actions_printing.inc.php';
 
 	// Barcode type
-	if ($action == 'setfk_barcode_type' && $createbarcode) {
+	if ($action == 'setfk_barcode_type' && $usercancreate) {
 		$result = $object->setValueFrom('fk_barcode_type', GETPOST('fk_barcode_type'), '', null, 'text', '', $user, 'PRODUCT_MODIFY');
 		header("Location: ".$_SERVER['PHP_SELF']."?id=".$object->id);
 		exit;
 	}
 
 	// Barcode value
-	if ($action == 'setbarcode' && $createbarcode) {
+	if ($action == 'setbarcode' && $usercancreate) {
 		$result = $object->check_barcode(GETPOST('barcode'), GETPOST('barcode_type_code'));
 
 		if ($result >= 0) {
@@ -463,7 +463,7 @@ if (empty($reshook)) {
 	}
 
 	// Quick edit for extrafields
-	if ($action == 'update_extras') {
+	if ($action == 'update_extras' && $usercancreate) {
 		$object->oldcopy = dol_clone($object, 2);
 
 		// Fill array 'array_options' with data from update form
@@ -1055,9 +1055,12 @@ if (empty($reshook)) {
 	}
 
 
-	// Add product into object
-	if ($object->id > 0 && $action == 'addin') {
+	// Add product into object (when PRODUCT_ADD_FORM_ADD_TO is set)
+	if ($object->id > 0 && $action == 'addin') {	// Test on permission not required here. it is done later according to object.
 		$thirpdartyid = 0;
+		$permissiontoaddline = false;
+
+		// Get object and test permission
 		if (GETPOST('propalid') > 0) {
 			$propal = new Propal($db);
 			$result = $propal->fetch(GETPOST('propalid'));
@@ -1066,6 +1069,7 @@ if (empty($reshook)) {
 				exit;
 			}
 			$thirpdartyid = $propal->socid;
+			$permissiontoaddline = $user->hasRight('propal', 'creer');
 		} elseif (GETPOST('commandeid') > 0) {
 			$commande = new Commande($db);
 			$result = $commande->fetch(GETPOST('commandeid'));
@@ -1074,6 +1078,7 @@ if (empty($reshook)) {
 				exit;
 			}
 			$thirpdartyid = $commande->socid;
+			$permissiontoaddline = $user->hasRight('commande', 'creer');
 		} elseif (GETPOST('factureid') > 0) {
 			$facture = new Facture($db);
 			$result = $facture->fetch(GETPOST('factureid'));
@@ -1082,6 +1087,7 @@ if (empty($reshook)) {
 				exit;
 			}
 			$thirpdartyid = $facture->socid;
+			$permissiontoaddline = $user->hasRight('facture', 'creer');
 		}
 
 		if ($thirpdartyid > 0) {
@@ -1136,13 +1142,13 @@ if (empty($reshook)) {
 			// de ceux du produit par default (par example si pays different entre vendeur et acheteur).
 			if ($tmpvat != $tmpprodvat) {
 				if ($price_base_type != 'HT') {
-					$pu_ht = price2num($pu_ttc / (1 + ($tmpvat / 100)), 'MU');
+					$pu_ht = price2num($pu_ttc / (1 + ((float) $tmpvat / 100)), 'MU');
 				} else {
-					$pu_ttc = price2num($pu_ht * (1 + ($tmpvat / 100)), 'MU');
+					$pu_ttc = price2num($pu_ht * (1 + ((float) $tmpvat / 100)), 'MU');
 				}
 			}
 
-			if (GETPOST('propalid') > 0) {
+			if (GETPOST('propalid') > 0 && $permissiontoaddline) {
 				// Define cost price for margin calculation
 				$buyprice = 0;
 				if (($result = $propal->defineBuyPrice($pu_ht, price2num(GETPOST('remise_percent'), '', 2), $object->id)) < 0) {
@@ -1182,7 +1188,7 @@ if (empty($reshook)) {
 				}
 
 				setEventMessages($langs->trans("ErrorUnknown").": $result", null, 'errors');
-			} elseif (GETPOST('commandeid') > 0) {
+			} elseif (GETPOST('commandeid') > 0 && $permissiontoaddline) {
 				// Define cost price for margin calculation
 				$buyprice = 0;
 				if (($result = $commande->defineBuyPrice($pu_ht, price2num(GETPOST('remise_percent'), '', 2), $object->id)) < 0) {
@@ -1222,7 +1228,9 @@ if (empty($reshook)) {
 					header("Location: ".DOL_URL_ROOT."/commande/card.php?id=".urlencode((string) ($commande->id)));
 					exit;
 				}
-			} elseif (GETPOST('factureid') > 0) {
+
+				setEventMessages($langs->trans("ErrorUnknown").": $result", null, 'errors');
+			} elseif (GETPOST('factureid') > 0 && $permissiontoaddline) {
 				// Define cost price for margin calculation
 				$buyprice = 0;
 				if (($result = $facture->defineBuyPrice($pu_ht, price2num(GETPOST('remise_percent'), '', 2), $object->id)) < 0) {
@@ -1267,6 +1275,8 @@ if (empty($reshook)) {
 					header("Location: ".DOL_URL_ROOT."/compta/facture/card.php?facid=".$facture->id);
 					exit;
 				}
+
+				setEventMessages($langs->trans("ErrorUnknown").": $result", null, 'errors');
 			}
 		} else {
 			$action = "";
@@ -1427,7 +1437,7 @@ if (is_object($objcanvas) && $objcanvas->displayCanvasExists($canvasdisplayactio
 			}
 
 			// Label
-			print '<tr><td class="fieldrequired">'.$langs->trans("Label").'</td><td><input name="label" class="minwidth300 maxwidth400onsmartphone" maxlength="255" value="'.dol_escape_htmltag(GETPOST('label', $label_security_check)).'"></td></tr>';
+			print '<tr><td class="fieldrequired">'.$langs->trans("Label").'</td><td><input id="label" name="label" class="minwidth300 maxwidth400onsmartphone" maxlength="255" value="'.dol_escape_htmltag(GETPOST('label', $label_security_check)).'"></td></tr>';
 
 			// On sell
 			print '<tr><td class="fieldrequired">'.$langs->trans("Status").' ('.$langs->trans("Sell").')</td><td>';
@@ -1456,6 +1466,8 @@ if (is_object($objcanvas) && $objcanvas->displayCanvasExists($canvasdisplayactio
 					$tooltip .= '<br>'.$langs->trans("GenericMaskCodes3");
 					$tooltip .= '<br>'.$langs->trans("GenericMaskCodes4a", $langs->transnoentities("Batch"), $langs->transnoentities("Batch"));
 					$tooltip .= '<br>'.$langs->trans("GenericMaskCodes5");
+					//$tooltip .= '<br>'.$langs->trans("GenericMaskCodes5b");
+
 					if ((getDolGlobalString('PRODUCTBATCH_LOT_ADDON') == 'mod_lot_advanced')
 						|| (getDolGlobalString('PRODUCTBATCH_SN_ADDON') == 'mod_sn_advanced')) {
 						print '<tr><td id="mask_option">'.$langs->trans("ManageLotMask").'</td>';
@@ -1593,13 +1605,16 @@ if (is_object($objcanvas) && $objcanvas->displayCanvasExists($canvasdisplayactio
 				print '<tr><td>'.$langs->trans("Duration").'</td><td>';
 				print img_picto('', 'clock', 'class="pictofixedwidth"');
 				print '<input name="duration_value" size="4" value="'.GETPOSTINT('duration_value').'">';
-				print $formproduct->selectMeasuringUnits("duration_unit", "time", (GETPOSTISSET('duration_value') ? GETPOST('duration_value', 'alpha') : 'h'), 0, 1);
+				print $formproduct->selectMeasuringUnits("duration_unit", "time", (GETPOSTISSET('duration_unit') ? GETPOST('duration_unit', 'alpha') : 'h'), 0, 1);
 
 				// Mandatory period
 				print ' &nbsp; &nbsp; &nbsp; ';
 				print '<input type="checkbox" id="mandatoryperiod" name="mandatoryperiod"'.($object->mandatory_period == 1 ? ' checked="checked"' : '').'>';
 				print '<label for="mandatoryperiod">';
 				$htmltooltip = $langs->trans("mandatoryHelper");
+				if (!getDolGlobalString('SERVICE_STRICT_MANDATORY_PERIOD')) {
+					$htmltooltip .= '<br>'.$langs->trans("mandatoryHelper2");
+				}
 				print $form->textwithpicto($langs->trans("mandatoryperiod"), $htmltooltip, 1, 0);
 				print '</label>';
 
@@ -1955,7 +1970,7 @@ if (is_object($objcanvas) && $objcanvas->displayCanvasExists($canvasdisplayactio
 			$head = product_prepare_head($object);
 			$titre = $langs->trans("CardProduct".$object->type);
 			$picto = ($object->type == Product::TYPE_SERVICE ? 'service' : 'product');
-			print dol_get_fiche_head($head, 'card', $titre, 0, $picto);
+			print dol_get_fiche_head($head, 'card', $titre, 0, $picto, 0, '', '', 0, '', 1);
 
 			// Call Hook tabContentEditProduct
 			$parameters = array();
@@ -2053,6 +2068,8 @@ if (is_object($objcanvas) && $objcanvas->displayCanvasExists($canvasdisplayactio
 							$tooltip .= '<br>'.$langs->trans("GenericMaskCodes3");
 							$tooltip .= '<br>'.$langs->trans("GenericMaskCodes4a", $langs->transnoentities("Batch"), $langs->transnoentities("Batch"));
 							$tooltip .= '<br>'.$langs->trans("GenericMaskCodes5");
+							//$tooltip .= '<br>'.$langs->trans("GenericMaskCodes5b");
+
 							print '<tr><td id="mask_option">'.$langs->trans("ManageLotMask").'</td>';
 							$mask = '';
 							if ($object->status_batch == '1' && getDolGlobalString('PRODUCTBATCH_LOT_USE_PRODUCT_MASKS') && getDolGlobalString('PRODUCTBATCH_LOT_ADDON') == 'mod_lot_advanced') {
@@ -2156,7 +2173,7 @@ if (is_object($objcanvas) && $objcanvas->displayCanvasExists($canvasdisplayactio
 				// Description (used in invoice, propal...)
 				print '<tr><td class="tdtop">'.$langs->trans("Description").'</td><td>';
 
-				// We use dolibarr_details as type of DolEditor here, because we must not accept images as description is included into PDF and not accepted by TCPDF.
+				// We use dolibarr_details as type of DolEditor here, because we must not accept images, as description is included into PDF and external links are not accepted by TCPDF.
 				$doleditor = new DolEditor('desc', GETPOSTISSET('desc') ? GETPOST('desc', 'restricthtml') : $object->description, '', 160, 'dolibarr_details', '', false, true, getDolGlobalInt('FCKEDITOR_ENABLE_DETAILS'), ROWS_4, '90%');
 				$doleditor->Create();
 
@@ -2217,6 +2234,9 @@ if (is_object($objcanvas) && $objcanvas->displayCanvasExists($canvasdisplayactio
 					print '<input type="checkbox" id="mandatoryperiod" name="mandatoryperiod"'.($object->mandatory_period == 1 ? ' checked="checked"' : '').'>';
 					print '<label for="mandatoryperiod">';
 					$htmltooltip = $langs->trans("mandatoryHelper");
+					if (!getDolGlobalString('SERVICE_STRICT_MANDATORY_PERIOD')) {
+						$htmltooltip .= '<br>'.$langs->trans("mandatoryHelper2");
+					}
 					print $form->textwithpicto($langs->trans("mandatoryperiod"), $htmltooltip, 1, 0);
 					print '</label>';
 
@@ -2675,7 +2695,8 @@ if (is_object($objcanvas) && $objcanvas->displayCanvasExists($canvasdisplayactio
 				}
 
 				// Description
-				print '<tr><td class="tdtop">'.$langs->trans("Description").'</td><td class="wordbreakimp wrapimp">'.(dol_textishtml($object->description) ? $object->description : dol_nl2br($object->description, 1, true)).'</td></tr>';
+				print '<tr><td class="tdtop">'.$langs->trans("Description").'</td>';
+				print '<td class="wordbreakimp wrapimp"><div class="longmessagecut">'.(dol_textishtml($object->description) ? $object->description : dol_nl2br($object->description, 1, true)).'</div></td></tr>';
 
 				// Public URL
 				if (!getDolGlobalString('PRODUCT_DISABLE_PUBLIC_URL')) {
@@ -2741,6 +2762,9 @@ if (is_object($objcanvas) && $objcanvas->displayCanvasExists($canvasdisplayactio
 						print ' &nbsp; &nbsp; &nbsp; ';
 					}
 					$htmltooltip = $langs->trans("mandatoryHelper");
+					if (!getDolGlobalString('SERVICE_STRICT_MANDATORY_PERIOD')) {
+						$htmltooltip .= '<br>'.$langs->trans("mandatoryHelper2");
+					}
 					print '<input type="checkbox" class="" name="mandatoryperiod"'.($object->mandatory_period == 1 ? ' checked="checked"' : '').' disabled>';
 					print $form->textwithpicto($langs->trans("mandatoryperiod"), $htmltooltip, 1, 0);
 
@@ -2842,7 +2866,7 @@ if (is_object($objcanvas) && $objcanvas->displayCanvasExists($canvasdisplayactio
 					print '<tr><td>'.$langs->trans("CustomCode").'</td><td>'.$object->customcode.'</td></tr>';
 
 					// Origin country code
-					print '<tr><td>'.$langs->trans("Origin").'</td><td>'.getCountry($object->country_id, 0, $db);
+					print '<tr><td>'.$langs->trans("Origin").'</td><td>'.getCountry($object->country_id, '', $db);
 					if (!empty($object->state_id)) {
 						print ' - '.getState($object->state_id, '0', $db);
 					}
@@ -2965,11 +2989,11 @@ if ($action != 'create' && $action != 'edit') {
 	$reshook = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
 	if (empty($reshook)) {
 		if ($usercancreate) {
-			if (!isset($object->no_button_edit) || $object->no_button_edit != 1) {
+			if (!isset($hookmanager->resArray['no_button_edit']) || $hookmanager->resArray['no_button_edit'] != 1) {
 				print dolGetButtonAction('', $langs->trans('Modify'), 'default', $_SERVER["PHP_SELF"].'?action=edit&token='.newToken().'&id='.$object->id, '', $usercancreate);
 			}
 
-			if (!isset($object->no_button_copy) || $object->no_button_copy != 1) {
+			if (!isset($hookmanager->resArray['no_button_copy']) || $hookmanager->resArray['no_button_copy'] != 1) {
 				if (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile)) {
 					$cloneProductUrl = '';
 					$cloneButtonId = 'action-clone';
@@ -2980,11 +3004,13 @@ if ($action != 'create' && $action != 'edit') {
 		$object_is_used = $object->isObjectUsed($object->id);
 
 		if ($usercandelete) {
-			if (empty($object_is_used) && (!isset($object->no_button_delete) || $object->no_button_delete != 1)) {
-				if (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile)) {
-					print dolGetButtonAction($langs->trans('Delete'), '', 'delete', '#', 'action-delete', true);
-				} else {
-					print dolGetButtonAction('', $langs->trans('Delete'), 'delete', $_SERVER["PHP_SELF"].'?action=delete&token='.newToken().'&id='.$object->id, '');
+			if (empty($object_is_used)) {
+				if (!isset($hookmanager->resArray['no_button_delete']) || $hookmanager->resArray['no_button_delete'] != 1) {
+					if (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile)) {
+						print dolGetButtonAction($langs->trans('Delete'), '', 'delete', '#', 'action-delete', true);
+					} else {
+						print dolGetButtonAction('', $langs->trans('Delete'), 'delete', $_SERVER["PHP_SELF"].'?action=delete&token='.newToken().'&id='.$object->id, '');
+					}
 				}
 			} else {
 				print dolGetButtonAction($langs->trans("ProductIsUsed"), $langs->trans('Delete'), 'delete', '#', '', false);
@@ -3071,7 +3097,7 @@ if (getDolGlobalString('PRODUCT_ADD_FORM_ADD_TO') && $object->id && ($action == 
 		}
 	}
 
-	//If any text is going to be printed, then we show the table
+	// If any text is going to be printed, then we show the table
 	if (!empty($html)) {
 		print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'">';
 		print '<input type="hidden" name="token" value="'.newToken().'">';
@@ -3087,7 +3113,7 @@ if (getDolGlobalString('PRODUCT_ADD_FORM_ADD_TO') && $object->id && ($action == 
 		$html .= '<input type="text" class="flat" name="remise_percent" size="1" value="0">';
 		$html .= '</td></tr>';
 
-		print '<table width="100%" class="border">';
+		print '<table class="centpercent border">';
 		print $html;
 		print '</table>';
 

@@ -253,6 +253,29 @@ print load_fiche_titre($title, $morehtmlright, '');
 print '<div class="div-table-responsive">';
 print '<table class="noborder centpercent">';
 print '<tr class="liste_titre">';
+
+print '<td class="right">'.$langs->trans("StartBalanceShownOnSoftware").'</td>';
+
+// Calculate start amount
+$sql = "SELECT sum(b.amount) as amount";
+$sql .= " FROM ".MAIN_DB_PREFIX."bank as b";
+$sql .= " WHERE b.num_releve < '".$db->escape($numref)."'";
+$sql .= " AND b.num_releve <> ''";
+$sql .= " AND b.fk_account = ".((int) $object->id);
+$resqlstart = $db->query($sql);
+if ($resqlstart) {
+	$obj = $db->fetch_object($resqlstart);
+	$balancestart[$numref] = $obj->amount;
+	$db->free($resqlstart);
+}
+print '<td class="right"><span class="amount">'.price($balancestart[$numref], 0, $langs, 1, -1, -1, empty($object->currency_code) ? $conf->currency : $object->currency_code).'</span></td>';
+print '</tr>';
+print '</table>';
+print '<br>';
+
+print '<table class="noborder centpercent">';
+print '<tr class="liste_titre">';
+
 print '<td class="right">'.$langs->trans("FinalBalanceShownOnSoftware").'</td>';
 
 // Calculate end amount

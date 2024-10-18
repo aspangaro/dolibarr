@@ -1092,12 +1092,12 @@ if ($action == 'edit') {
 						if (($dnstype == 'SPF' && stripos($info['txt'], 'v=spf') !== false)
 							|| ($dnstype == 'DMARC' && stripos($info['txt'], 'v=dmarc') !== false)) {
 							$foundforemail++;
-							$text .= ($text ? '<br>' : '').$langs->trans("ActualMailDNSRecordFound", $dnstype, implode(', ', $listofemails), $info['txt']);
+							$text .= ($text ? '<br>' : '').'- '.$langs->trans("ActualMailDNSRecordFound", '<b>'.$dnstype.'</b>', '<b>'.implode(', ', $listofemails).'</b>', '<span class="opacitylow">'.$info['txt'].'</span>');
 						}
 					}
 				}
 				if (!$foundforemail) {
-					$text .= ($text ? '<br>' : '').$langs->trans("ActualMailDNSRecordFound", $dnstype, implode(', ', $listofemails), '<span class="opacitymedium">'.$langs->transnoentitiesnoconv("None").'</span>');
+					$text .= ($text ? '<br>' : '').'- '.$langs->trans("ActualMailDNSRecordFound", '<b>'.$dnstype.'</b>', '<b>'.implode(', ', $listofemails).'</b>', '<span class="opacitymedium">'.$langs->transnoentitiesnoconv("None").'</span>');
 				}
 			}
 		}
@@ -1156,7 +1156,7 @@ if ($action == 'edit') {
 		$formmail->withtopicreadonly = 0;
 		$formmail->withfile = 2;
 
-		$formmail->withlayout = 1;		// Note: MAIN_EMAIL_USE_LAYOUT must be set
+		$formmail->withlayout = 'emailing';		// Note: MAIN_EMAIL_USE_LAYOUT must be set
 		$formmail->withaiprompt = ($action == 'testhtml' ? 'html' : 'text');	// Note: Module AI must be enabled
 
 		$formmail->withbody = (GETPOSTISSET('message') ? GETPOST('message', 'restricthtml') : ($action == 'testhtml' ? $langs->transnoentities("PredefinedMailTestHtml") : $langs->transnoentities("PredefinedMailTest")));

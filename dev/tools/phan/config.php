@@ -266,7 +266,7 @@ return [
 		'linkedObjectBlock' => '\CommonObject[]', // See htdocs/core/class/html.form.class.php
 		'mainmenu' => 'string',
 		'menumanager' => '\MenuManager',
-		'mysoc' => '\Societe',
+		'mysoc' => '?\Societe',
 		'nblines' => '\int',
 		'objectoffield' => '\CommonObject',
 		'objsoc' => '\Societe',
@@ -419,7 +419,7 @@ return [
 		'PhanPluginConstantVariableBool',		// a lot of false positive, in most cases, we want to keep the code as it is
 		// 'PhanPluginUnknownArrayPropertyType',	// this option costs more time to be supported than it solves time
 		'PhanTypeArraySuspiciousNullable',		// this option costs more time to be supported than it solves time
-		'PhanTypeInvalidDimOffset',				// this option costs more time to be supported than it solves time
+		// 'PhanTypeInvalidDimOffset',			// Helps identify missing array indexes in types or reference to unset indexes
 		'PhanTypeObjectUnsetDeclaredProperty',
 		'PhanTypePossiblyInvalidDimOffset',			// a lot of false positive, in most cases, we want to keep the code as it is
 		// 'PhanPluginUnknownArrayFunctionReturnType',	// a lot of false positive, in most cases, we want to keep the code as it is
@@ -450,6 +450,7 @@ return [
 		// 'PhanPluginUnknownArrayMethodReturnType',	// Too many troubles to manage. Is enabled in config_extended only.
 		// 'PhanUndeclaredGlobalVariable',			// Helps identify variables that are not set/defined - add '@phan-var-force TYPE $varname' in tpl or includes to help type the variable
 		// 'PhanPluginUnknownObjectMethodCall',	// False positive for some class. Is enabled in config_extended only.
+		'PhanTypeSuspiciousNonTraversableForeach',  // Reports on `foreach ($object as $key => $value)` which works without php notices, so we ignore it because this is intentional in the code.
 	],
 	// You can put relative paths to internal stubs in this config option.
 	// Phan will continue using its detailed type annotations,

@@ -143,6 +143,7 @@ if ($id > 0) {
 $passwordismodified = false;
 $ldap = null;
 
+
 /*
  * Actions
  */
@@ -299,7 +300,7 @@ if (empty($reshook)) {
 			$object->fk_user = GETPOSTINT("fk_user") > 0 ? GETPOSTINT("fk_user") : 0;
 			$object->fk_user_expense_validator = GETPOSTINT("fk_user_expense_validator") > 0 ? GETPOSTINT("fk_user_expense_validator") : 0;
 			$object->fk_user_holiday_validator = GETPOSTINT("fk_user_holiday_validator") > 0 ? GETPOSTINT("fk_user_holiday_validator") : 0;
-			$object->employee = GETPOST('employee', 'alphanohtml');
+			$object->employee = GETPOSTINT('employee');
 
 			$object->thm = GETPOST("thm", 'alphanohtml') != '' ? GETPOST("thm", 'alphanohtml') : '';
 			$object->thm = price2num($object->thm);
@@ -609,6 +610,7 @@ if (empty($reshook)) {
 						$dir = $conf->user->dir_output.'/'.get_exdir(0, 0, 0, 1, $object, 'user').'/photos';
 
 						dol_mkdir($dir);
+						$mesgs = null;
 
 						if (@is_dir($dir)) {
 							$newfile = $dir.'/'.dol_sanitizeFileName($_FILES['photo']['name']);
@@ -804,7 +806,7 @@ if ($object->id > 0) {
 	$person_name = !empty($object->firstname) ? $object->lastname.", ".$object->firstname : $object->lastname;
 	$title = $person_name." - ".$langs->trans('Card');
 } else {
-	if (GETPOST('employee', 'alphanohtml')) {
+	if (GETPOSTINT('employee')) {
 		$title = $langs->trans("NewEmployee");
 	} else {
 		$title = $langs->trans("NewUser");
@@ -1440,7 +1442,7 @@ if ($action == 'create' || $action == 'adduserldap') {
 		// Check if user has rights
 		if (!getDolGlobalString('MULTICOMPANY_TRANSVERSE_MODE')) {
 			$object->loadRights();
-			if (empty($object->nb_rights) && $object->statut != 0 && empty($object->admin)) {
+			if (empty($object->nb_rights) && $object->status != 0 && empty($object->admin)) {
 				setEventMessages($langs->trans('UserHasNoPermissions'), null, 'warnings');
 			}
 		}
@@ -1532,12 +1534,12 @@ if ($action == 'create' || $action == 'adduserldap') {
 		if ($action != 'edit') {
 			print dol_get_fiche_head($head, 'user', $title, -1, 'user');
 
-			$morehtmlref = '<a href="'.DOL_URL_ROOT.'/user/vcard.php?id='.$object->id.'&output=file&file='.urlencode(dol_sanitizeFileName($object->getFullName($langs).'.vcf')).'" class="refid" rel="noopener" rel="noopener">';
+			$morehtmlref = '<a href="'.DOL_URL_ROOT.'/user/vcard.php?id='.$object->id.'&output=file&file='.urlencode(dol_sanitizeFileName($object->getFullName($langs).'.vcf')).'" class="refid valignmiddle" rel="noopener">';
 			$morehtmlref .= img_picto($langs->trans("Download").' '.$langs->trans("VCard").' ('.$langs->trans("AddToContacts").')', 'vcard.png', 'class="valignmiddle marginleftonly paddingrightonly"');
 			$morehtmlref .= '</a>';
 
 			$urltovirtualcard = '/user/virtualcard.php?id='.((int) $object->id);
-			$morehtmlref .= dolButtonToOpenUrlInDialogPopup('publicvirtualcard', $langs->transnoentitiesnoconv("PublicVirtualCardUrl").' - '.$object->getFullName($langs), img_picto($langs->trans("PublicVirtualCardUrl"), 'card', 'class="valignmiddle marginleftonly paddingrightonly"'), $urltovirtualcard, '', 'nohover');
+			$morehtmlref .= dolButtonToOpenUrlInDialogPopup('publicvirtualcard', $langs->transnoentitiesnoconv("PublicVirtualCardUrl").' - '.$object->getFullName($langs), img_picto($langs->trans("PublicVirtualCardUrl"), 'card', 'class="valignmiddle marginleftonly paddingrightonly"'), $urltovirtualcard, '', 'valignmiddle nohover');
 
 			dol_banner_tab($object, 'id', $linkback, $user->hasRight("user", "user", "read") || $user->admin, 'rowid', 'ref', $morehtmlref);
 
@@ -1743,7 +1745,7 @@ if ($action == 'create' || $action == 'adduserldap') {
 
 			// Color user
 			if (isModEnabled('agenda')) {
-				print '<tr><td class="titlefield">'.$langs->trans("ColorUser").'</td>';
+				print '<tr><td class="titlefieldmax45">'.$langs->trans("ColorUser").'</td>';
 				print '<td>';
 				print $formother->showColor($object->color, '');
 				print '</td>';
@@ -1752,8 +1754,8 @@ if ($action == 'create' || $action == 'adduserldap') {
 
 			// Categories
 			if (isModEnabled('category') && $user->hasRight("categorie", "read")) {
-				print '<tr><td class="titlefield">'.$langs->trans("Categories").'</td>';
-				print '<td colspan="3">';
+				print '<tr><td>'.$langs->trans("Categories").'</td>';
+				print '<td>';
 				print $form->showCategories($object->id, Categorie::TYPE_USER, 1);
 				print '</td></tr>';
 			}
@@ -1762,7 +1764,7 @@ if ($action == 'create' || $action == 'adduserldap') {
 			if (getDolGlobalInt('MAIN_MULTILANGS')) {
 				$langs->load("languages");
 				require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
-				print '<tr><td class="titlefield">';
+				print '<tr><td>';
 				print $form->textwithpicto($langs->trans("DefaultLang"), $langs->trans("WarningNotLangOfInterface", $langs->transnoentitiesnoconv("UserGUISetup")));
 				print '</td><td>';
 				//$s=picto_from_langcode($object->default_lang);
@@ -1859,16 +1861,16 @@ if ($action == 'create' || $action == 'adduserldap') {
 
 			print '<br>';
 			print '<div class="div-table-responsive-no-min">';
-			print '<table class="border tableforfield centpercent">';
+			print '<table class="noborder tableforfield centpercent">';
 
-			print '<tr class="liste_titre"><td class="liste_titre">';
-			print img_picto('', 'security', 'class="paddingleft pictofixedwidth"').$langs->trans("Credentials");
-			print '</td>';
-			print '<td class="liste_titre"></td>';
+			print '<tr class="liste_titre"><th class="liste_titre">';
+			print img_picto('', 'security', 'class="paddingleft pictofixedwidth"').$langs->trans("Security");
+			print '</th>';
+			print '<th class="liste_titre"></th>';
 			print '</tr>';
 
 			// Date login validity
-			print '<tr class="nooddeven"><td class="titlefield">'.$langs->trans("RangeOfLoginValidity").'</td>';
+			print '<tr class="nooddeven"><td class="titlefieldmax45">'.$langs->trans("RangeOfLoginValidity").'</td>';
 			print '<td>';
 			if ($object->datestartvalidity) {
 				print '<span class="opacitymedium">'.$langs->trans("FromDate").'</span> ';
@@ -1883,7 +1885,7 @@ if ($action == 'create' || $action == 'adduserldap') {
 
 			// Alternative email for OAUth2 login
 			if (!empty($object->email_oauth2) && preg_match('/googleoauth/', $dolibarr_main_authentication)) {
-				print '<tr class="nooddeven"><td class="titlefield">'.$langs->trans("AlternativeEmailForOAuth2").'</td>';
+				print '<tr class="nooddeven"><td class="titlefieldmiddle">'.$langs->trans("AlternativeEmailForOAuth2").'</td>';
 				print '<td>';
 				print dol_print_email($object->email_oauth2);
 				print '</td>';
@@ -1938,7 +1940,7 @@ if ($action == 'create' || $action == 'adduserldap') {
 			}
 
 			if (dol_string_nohtmltag($valuetoshow)) {	// If there is a real visible content to show
-				print '<tr class="nooddeven"><td class="titlefield">'.$langs->trans("Password").'</td>';
+				print '<tr class="nooddeven"><td class="titlefieldmiddle">'.$langs->trans("Password").'</td>';
 				print '<td class="wordbreak">';
 				print $valuetoshow;
 				print "</td>";
@@ -2964,7 +2966,15 @@ if ($action == 'create' || $action == 'adduserldap') {
 			$genallowed = $user->hasRight("user", "user", "read");
 			$delallowed = $user->hasRight("user", "user", "write");
 
-			print $formfile->showdocuments('user', $filename, $filedir, $urlsource, $genallowed, $delallowed, $object->model_pdf, 1, 0, 0, 28, 0, '', 0, '', !is_object($soc) || empty($soc->default_lang) ? '' : $soc->default_lang);
+
+			if ($object->socid) {
+				$societe = new Societe($db);
+				$societe->fetch($object->socid);
+			} else {
+				$societe = null;
+			}
+
+			print $formfile->showdocuments('user', $filename, $filedir, $urlsource, $genallowed, $delallowed, $object->model_pdf, 1, 0, 0, 28, 0, '', 0, '', !is_object($societe) || empty($societe->default_lang) ? '' : $societe->default_lang);
 			$somethingshown = $formfile->numoffiles;
 
 			// Show links to link elements

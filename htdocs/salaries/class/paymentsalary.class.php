@@ -80,13 +80,14 @@ class PaymentSalary extends CommonObject
 	public $datep = '';
 
 	/**
-	 * @deprecated
+	 * @deprecated Use $amount
 	 * @see $amount
+	 * @var float|string
 	 */
 	public $total;
 
 	/**
-	 * @var float			Total amount of payment
+	 * @var float	Total amount of payment
 	 */
 	public $amount;
 
@@ -102,7 +103,7 @@ class PaymentSalary extends CommonObject
 
 	/**
 	 * @var string
-	 * @deprecated
+	 * @deprecated Use $num_payment
 	 */
 	public $num_paiement;
 
@@ -295,7 +296,7 @@ class PaymentSalary extends CommonObject
 						//$deposits=$tmpsalary->getSumDepositsUsed();
 						$deposits = 0;
 						$alreadypayed = price2num($paiement + $creditnotes + $deposits, 'MT');
-						$remaintopay = price2num($tmpsalary->amount - $paiement - $creditnotes - $deposits, 'MT');
+						$remaintopay = price2num((float) $tmpsalary->amount - $paiement - $creditnotes - $deposits, 'MT');
 						if ($remaintopay == 0) {
 							$result = $tmpsalary->setPaid($user);
 						} else {
@@ -952,9 +953,9 @@ class PaymentSalary extends CommonObject
 
 	/**
 	 * getTooltipContentArray
-	 *
-	 * @param array $params params to construct tooltip data
-	 * @return array
+	 * @param array<string,mixed> $params params to construct tooltip data
+	 * @since v18
+	 * @return array{picto?:string,ref?:string,refsupplier?:string,label?:string,date?:string,date_echeance?:string,amountht?:string,total_ht?:string,totaltva?:string,amountlt1?:string,amountlt2?:string,amountrevenustamp?:string,totalttc?:string}|array{optimize:string}
 	 */
 	public function getTooltipContentArray($params)
 	{

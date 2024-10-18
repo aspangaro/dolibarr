@@ -7,8 +7,8 @@
  * Copyright (C) 2014		Marcos García		<marcosgdf@gmail.com>
  * Copyright (C) 2015		Bahfir Abbes		<bafbes@gmail.com>
  * Copyright (C) 2016-2017	Ferran Marcet		<fmarcet@2byte.es>
- * Copyright (C) 2019-2023  Frédéric France     <frederic.france@netlogic.fr>
- * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
+ * Copyright (C) 2019-2024	Frédéric France     <frederic.france@free.fr>
+ * Copyright (C) 2024		MDW					<mdeweerd@users.noreply.github.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,9 @@
  */
 class FormFile
 {
+	/**
+	 * @var DoliDB
+	 */
 	private $db;
 
 	/**
@@ -43,8 +46,14 @@ class FormFile
 	 */
 	public $error;
 
+	/**
+	 * @var int
+	 */
 	public $numoffiles;
-	public $infofiles; // Used to return information by function getDocumentsLink
+	/**
+	 * @var array{nboffiles:int,extensions:array<string,int>,files:string[]} Used to return information by function getDocumentsLink
+	 */
+	public $infofiles;
 
 
 	/**
@@ -123,7 +132,7 @@ class FormFile
 				$title = $langs->trans("AttachANewFile");
 			}
 			if ($title != 'none') {
-				$out .= load_fiche_titre($title, null, null);
+				$out .= load_fiche_titre($title, '', '');
 			}
 
 			if (empty($usewithoutform)) {		// Try to avoid this and set instead the form by the caller.
@@ -167,7 +176,9 @@ class FormFile
 			$out .= ' ';
 			if ($sectionid) {	// Show overwrite if exists for ECM module only
 				$langs->load('link');
-				$out .= '<span class="nowraponsmartphone"><input style="margin-right: 2px;" type="checkbox" id="overwritefile" name="overwritefile" value="1"><label for="overwritefile">'.$langs->trans("OverwriteIfExists").'</label></span>';
+				$out .= '<span class="nowraponsmartphone"><input style="margin-right: 2px;" type="checkbox" id="overwritefile" name="overwritefile" value="1">';
+				$out .= '<label for="overwritefile" class="opacitylow paddingright">'.$langs->trans("OverwriteIfExists").'</label>';
+				$out .= '</span>';
 			}
 			$out .= '<input type="submit" class="button small reposition" name="sendit" value="'.$langs->trans("Upload").'"';
 			$out .= (!getDolGlobalString('MAIN_UPLOAD_DOC') || empty($perm) ? ' disabled' : '');
@@ -183,7 +194,7 @@ class FormFile
 					$menudolibarrsetupmax = $langs->transnoentitiesnoconv("Home").' - '.$langs->transnoentitiesnoconv("Setup").' - '.$langs->transnoentitiesnoconv("Security");
 					$langs->load('other');
 					$out .= ' ';
-					$out .= info_admin($langs->trans("ThisLimitIsDefinedInSetupAt", $menudolibarrsetupmax, $max, $maxphptoshowparam, $maxphptoshow), 1);
+					$out .= info_admin($langs->trans("ThisLimitIsDefinedInSetupAt", $menudolibarrsetupmax, $max, $maxphptoshowparam, $maxphptoshow), 1, 0, '1', 'classfortooltip');
 				}
 			} else {
 				$out .= ' ('.$langs->trans("UploadDisabled").')';
@@ -222,7 +233,7 @@ class FormFile
 				$out .= "\n".'<!-- Start form link new url --><div class="formlinknewurl">'."\n";
 				$langs->load('link');
 				$title = $langs->trans("LinkANewFile");
-				$out .= load_fiche_titre($title, null, null);
+				$out .= load_fiche_titre($title, '', '');
 
 				if (empty($usewithoutform)) {
 					$out .= '<form name="'.$htmlname.'_link" id="'.$htmlname.'_link" action="'.$url.'" method="POST">'."\n";
@@ -911,7 +922,7 @@ class FormFile
 
 					// Show file size
 					$size = (!empty($file['size']) ? $file['size'] : dol_filesize($filedir."/".$file["name"]));
-					$out .= '<td class="nowraponall right">'.dol_print_size($size, 1, 1).'</td>';
+					$out .= '<td class="nowraponall right" title="'.dolPrintHTML($size.' '.$langs->trans("Bytes")).'">'.dol_print_size($size, 1, 1).'</td>';
 
 					// Show file date
 					$date = (!empty($file['date']) ? $file['date'] : dol_filemtime($filedir."/".$file["name"]));
@@ -1114,8 +1125,8 @@ class FormFile
 
 				$this->infofiles['nboffiles']++;
 				$this->infofiles['files'][] = $file['fullname'];
-				$ext = pathinfo($file["name"], PATHINFO_EXTENSION);
-				if (empty($this->infofiles[$ext])) {
+				$ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+				if (empty($this->infofiles['extensions'][$ext])) {
 					$this->infofiles['extensions'][$ext] = 1;
 				} else {
 					$this->infofiles['extensions'][$ext]++;
@@ -1398,7 +1409,7 @@ class FormFile
 
 
 					// File name
-					print '<td class="minwith200 tdoverflowmax500" title="'.dolPrintHTMLForAttribute($file['name']).'">';
+					print '<td class="minwidth200 tdoverflowmax500" title="'.dolPrintHTMLForAttribute($file['name']).'">';
 
 					// Show file name with link to download
 					//print "XX".$file['name'];	//$file['name'] must be utf8
@@ -2247,7 +2258,7 @@ class FormFile
 				$out .= '</a>';
 			} else {
 				if ($ruleforpicto < 0) {
-					$out .= img_picto('', 'generic', '', false, 0, 0, '', 'paddingright pictofixedwidth');
+					$out .= img_picto('', 'generic', '', 0, 0, 0, '', 'paddingright pictofixedwidth');
 				}
 			}
 		}

@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2024       Alexandre Spangaro  <alexandre@inovea-conseil.com>
+/* Copyright (C) 2024		Alexandre Spangaro			<alexandre@inovea-conseil.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -516,13 +516,12 @@ $accountingjournalstatic->fetch(0, $object->accountancy_journal);
     $solde = $totalc - $totald;
     if ($solde < 0) {
         print '<td class="nowrap right"><span class="amount">'.price(price2num(abs($solde), 'MT'), 1, $langs).'</span></td>';
-        print '<td></td>';
-        print '<td></td>';
+        print '<td>&nbsp;</td>';
     } else {
-        print '<td></td>';
+        print '<td>&nbsp;</td>';
         print '<td class="nowrap right"><span class="amount">'.price(price2num(abs($solde), 'MT'), 1, $langs).'</span></td>';
-        print '<td></td>';
     }
+	print '<td>&nbsp;</td>';
     print "</tr>";
     print "</table>";
 

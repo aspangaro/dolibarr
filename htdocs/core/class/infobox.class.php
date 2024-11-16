@@ -218,7 +218,7 @@ class InfoBox
 	 *  Save order of boxes for area and user
 	 *
 	 *  @param	DoliDB	$dbs			Database handler
-	 *  @param	int		$zone       	Name of area (0 for Homepage, ...)
+	 *  @param	int		$zone       	Key of area (0 for Homepage, ...)
 	 *  @param  string  $boxorder   	List of boxes with correct order 'A:123,456,...-B:789,321...'
 	 *  @param  int     $userid     	Id of user
 	 *  @return int                   	Return integer <0 if KO, 0=Nothing done, > 0 if OK
@@ -231,7 +231,7 @@ class InfoBox
 
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 
-		dol_syslog(get_class()."::saveboxorder zone=".$zone." userid=".$userid);
+		dol_syslog(self::class."::saveboxorder zone=".$zone." userid=".$userid);
 
 		if (!$userid || $userid == 0) {
 			return 0;
@@ -258,7 +258,7 @@ class InfoBox
 		$sql .= " AND fk_user = ".((int) $userid);
 		$sql .= " AND position = ".((int) $zone);
 
-		dol_syslog(get_class()."::saveboxorder", LOG_DEBUG);
+		dol_syslog(self::class."::saveboxorder", LOG_DEBUG);
 		$result = $dbs->query($sql);
 		if ($result) {
 			$colonnes = explode('-', $boxorder);
@@ -266,7 +266,7 @@ class InfoBox
 				$part = explode(':', $collist);
 				$colonne = $part[0];
 				$list = $part[1];
-				dol_syslog(get_class()."::saveboxorder column=".$colonne.' list='.$list);
+				dol_syslog(self::class."::saveboxorder column=".$colonne.' list='.$list);
 
 				$i = 0;
 				$listarray = explode(',', $list);

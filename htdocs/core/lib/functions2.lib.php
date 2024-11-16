@@ -1369,7 +1369,7 @@ function get_next_value($db, $mask, $table, $field, $where = '', $objsoc = '', $
 			if ($bentityon) { // only if entity enable
 				$maskrefclient_sql .= " AND entity IN (".getEntity($sharetable).")";
 			} elseif (!empty($forceentity)) {
-				$sql .= " AND entity IN (".$db->sanitize($forceentity).")";
+				$maskrefclient_sql .= " AND entity IN (".$db->sanitize($forceentity).")";
 			}
 			if ($where) {
 				$maskrefclient_sql .= $where; //use the same optional where as general mask
@@ -1832,7 +1832,7 @@ function dol_set_user_param($db, $conf, &$user, $tab)
 /**
  *	Returns formatted reduction
  *
- *	@param	int			$reduction		Reduction percentage
+ *	@param	int|float	$reduction		Reduction percentage
  *	@param	Translate	$langs			Output language
  *	@return	string						Formatted reduction
  */
@@ -2491,12 +2491,12 @@ function colorAgressiveness($hex, $ratio = -50, $brightness = 0)
 			}
 		}
 		if ($brightness > 0) {
-			$color = ($color * (100 + abs($brightness)) / 100);
+			$color = (int) ($color * (100 + abs($brightness)) / 100);
 		} else {
-			$color = ($color * (100 - abs($brightness)) / 100);
+			$color = (int) ($color * (100 - abs($brightness)) / 100);
 		}
 
-		$color   = max(0, min(255, $color)); // Adjust color to stay into valid range
+		$color   = max(0, min(255, (int) $color)); // Adjust color to stay into valid range
 		$return .= str_pad(dechex($color), 2, '0', STR_PAD_LEFT); // Make two char hex code
 	}
 
@@ -2596,6 +2596,7 @@ function colorHexToRgb($hex, $alpha = false, $returnArray = false)
  */
 function colorHexToHsl($hex, $alpha = false, $returnArray = false)
 {
+	$hex = colorArrayToHex(colorStringToArray($hex));
 	$hex = str_replace('#', '', $hex);
 	$red = hexdec(substr($hex, 0, 2)) / 255;
 	$green = hexdec(substr($hex, 2, 2)) / 255;

@@ -33,7 +33,7 @@
  *  \brief      File of class to generate document from standard template
  */
 
-require_once DOL_DOCUMENT_ROOT . '/asset/core/modules/asset/modules_asset.php';
+require_once DOL_DOCUMENT_ROOT . '/core/modules/asset/modules_asset.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
@@ -882,7 +882,7 @@ class pdf_standard_asset extends ModelePDFAsset
 		// }
 
 		if (getDolGlobalString('PDF_SHOW_PROJECT_TITLE')) {
-			$object->fetch_projet();
+			$object->fetchProject();
 			if (!empty($object->project->ref)) {
 				$posy += 3;
 				$pdf->SetXY($posx, $posy);
@@ -892,7 +892,7 @@ class pdf_standard_asset extends ModelePDFAsset
 		}
 
 		if (getDolGlobalString('PDF_SHOW_PROJECT')) {
-			$object->fetch_projet();
+			$object->fetchProject();
 			if (!empty($object->project->ref)) {
 				$outputlangs->load("projects");
 				$posy += 3;

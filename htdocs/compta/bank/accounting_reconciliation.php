@@ -642,7 +642,7 @@ print '</div>';
 
 print '<hr>';
 
-print '(1) '.load_fiche_titre($langs->trans("UnreconciledBankEntries"), '', '');
+print load_fiche_titre('(1) '.$langs->trans("UnreconciledBankEntries"), '', '');
 
 print '<div class="div-table-responsive">';
 print '<table class="noborder centpercent">';
@@ -651,6 +651,14 @@ print '<tr class="liste_titre">';
 $total_debit_not_conciliated = 0;
 $total_credit_not_conciliated = 0;
 $ok_conciliated = 0;
+
+$dateStatementYear = substr($numref, 0, 4);
+$dateStatementMonth = substr($numref, 4, 2);
+
+$dateStatementMax = new DateTime();
+$dateStatementMax->setDate($dateStatementYear, $dateStatementMonth, 1);
+$dateStatementMax->modify('last day of this month');
+
 // list of bank line wasn't conciliated
 $sql = "SELECT b.rowid, b.dateo as do, b.datev as dv, b.amount, b.label, b.rappro as conciliated, b.num_releve, b.num_chq,";
 $sql .= " b.fk_account, b.fk_type, b.fk_bordereau,";
@@ -662,6 +670,7 @@ $sql .= " AND ba.entity IN (".getEntity('bank_account').")";
 $sql .= " AND b.num_releve IS NULL";
 $sql .= " AND b.fk_account = " . ((int) $object->id);
 $sql .= " AND b.amount != '0'";
+$sql .= " AND b.dateo <= '".$dateStatementMax->format('Y-m-d')."'";
 $sql .= $db->order("b.amount", "ASC");
 
 $resql = $db->query($sql);
@@ -729,7 +738,7 @@ print '</div>';
 print '<br>';
 print '<br>';
 
-print '(2) '.load_fiche_titre($langs->trans("BankEntriesNotTransferredToAccounting"), '', '');
+print load_fiche_titre('(2) '.$langs->trans("BankEntriesNotTransferredToAccounting"), '', '');
 
 print '<div class="div-table-responsive">';
 print '<table class="noborder centpercent">';

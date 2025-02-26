@@ -82,7 +82,8 @@ function accounting_prepare_head(AccountingAccount $object)
  *	@param	string		$backtopage	Back to page
  *	@return	array<array{0:string,1:string,2:string}>	Array of tabs to show
  */
-function accountingtransaction_prepare_head(BookKeeping $object, string $mode = '', string $type = '', string $backtopage = '') {
+function accountingtransaction_prepare_head(BookKeeping $object, string $mode = '', string $type = '', string $backtopage = '')
+{
 	global $db, $langs, $conf;
 
 	$h = 0;

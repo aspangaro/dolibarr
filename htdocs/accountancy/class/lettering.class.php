@@ -1,8 +1,8 @@
 <?php
-/* Copyright (C) 2004-2005  Rodolphe Quiedeville    <rodolphe@quiedeville.org>
- * Copyright (C) 2013       Olivier Geffroy         <jeff@jeffinfo.com>
- * Copyright (C) 2013-2024  Alexandre Spangaro      <alexandre@inovea-conseil.com>
- * Copyright (C) 2018-2024  Frédéric France         <frederic.france@free.fr>
+/* Copyright (C) 2004-2005	Rodolphe Quiedeville	<rodolphe@quiedeville.org>
+ * Copyright (C) 2013		Olivier Geffroy			<jeff@jeffinfo.com>
+ * Copyright (C) 2013-2025	Alexandre Spangaro		<alexandre@inovea-conseil.com>
+ * Copyright (C) 2018-2024	Frédéric France			<frederic.france@free.fr>
  * Copyright (C) 2024-2025	MDW						<mdeweerd@users.noreply.github.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -249,6 +249,66 @@ class Lettering extends BookKeeping
 						$sql .= " INNER JOIN ".MAIN_DB_PREFIX."accounting_bookkeeping as bk ON(  bk.fk_doc = fac.rowid AND fac.rowid IN (".$this->db->sanitize(implode(',', $ids_fact))."))";
 						$sql .= " WHERE code_journal IN (SELECT code FROM ".MAIN_DB_PREFIX."accounting_journal WHERE nature=2 AND entity=".$conf->entity.") ";
 						$sql .= " AND fac.entity IN (".getEntity('invoice', 0).")"; // We don't share object for accountancy
+						$sql .= " AND ( ";
+						if ($object->code_compta_client != "") {
+							$sql .= "  bk.subledger_account = '".$this->db->escape($object->code_compta_client)."'  ";
+						}
+						if ($object->code_compta_client != "" && $object->code_compta_fournisseur != "") {
+							$sql .= "  OR  ";
+						}
+						if ($object->code_compta_fournisseur != "") {
+							$sql .= "   bk.subledger_account = '".$this->db->escape($object->code_compta_fournisseur)."' ";
+						}
+						$sql .= " )  ";
+
+						$resql2 = $this->db->query($sql);
+						if ($resql2) {
+							while ($obj2 = $this->db->fetch_object($resql2)) {
+								$ids[$obj2->rowid] = $obj2->rowid;
+							}
+							$this->db->free($resql2);
+						} else {
+							$this->errors[] = $this->db->lasterror;
+							return -1;
+						}
+					}
+				} elseif ($obj->type == 'payment_expensereport') {
+					$sql = 'SELECT DISTINCT bk.rowid, exp.ref, exp.ref, pay.fk_bank, exp.rowid as fact_id';
+					$sql .= " FROM ".MAIN_DB_PREFIX."expensereport as exp ";
+					$sql .= " INNER JOIN ".MAIN_DB_PREFIX."paymentexpensereport_expensereport as payexpexp ON payexpexp.fk_expensereport = exp.rowid";
+					$sql .= " INNER JOIN ".MAIN_DB_PREFIX."payment_expensereport as payexp ON payexpexp.fk_paiement = payexp.rowid";
+					$sql .= " INNER JOIN ".MAIN_DB_PREFIX."accounting_bookkeeping as bk ON (bk.fk_doc = payexp.fk_bank AND bk.code_journal='".$this->db->escape($obj->code_journal)."')";
+					$sql .= " WHERE payexpexp.fk_paiement = '".$this->db->escape($obj->url_id)."' ";
+					$sql .= " AND bk.code_journal IN (SELECT code FROM ".MAIN_DB_PREFIX."accounting_journal WHERE nature=4 AND entity=".$conf->entity.") ";
+					$sql .= " AND exp.entity IN (".getEntity('expensereport', 0).")"; // We don't share object for accountancy
+					$sql .= " AND ( ";
+					if ($object->code_compta_client != "") {
+						$sql .= "  bk.subledger_account = '".$this->db->escape($object->code_compta_client)."'  ";
+					}
+					if ($object->code_compta_client != "" && $object->code_compta_fournisseur != "") {
+						$sql .= "  OR  ";
+					}
+					if ($object->code_compta_fournisseur != "") {
+						$sql .= "   bk.subledger_account = '".$this->db->escape($object->code_compta_fournisseur)."' ";
+					}
+					$sql .= " )";
+
+					$resql2 = $this->db->query($sql);
+					if ($resql2) {
+						while ($obj2 = $this->db->fetch_object($resql2)) {
+							$ids[$obj2->rowid] = $obj2->rowid;
+							$ids_fact[] = $obj2->fact_id;
+						}
+					} else {
+						$this->errors[] = $this->db->lasterror;
+						return -1;
+					}
+					if (count($ids_fact)) {
+						$sql = 'SELECT bk.rowid, exp.ref, exp.ref ';
+						$sql .= " FROM ".MAIN_DB_PREFIX."expensereport as exp ";
+						$sql .= " INNER JOIN ".MAIN_DB_PREFIX."accounting_bookkeeping as bk ON(  bk.fk_doc = exp.rowid AND exp.rowid IN (".$this->db->sanitize(implode(',', $ids_fact))."))";
+						$sql .= " WHERE code_journal IN (SELECT code FROM ".MAIN_DB_PREFIX."accounting_journal WHERE nature=5 AND entity=".$conf->entity.") ";
+						$sql .= " AND exp.entity IN (".getEntity('expensereport', 0).")"; // We don't share object for accountancy
 						$sql .= " AND ( ";
 						if ($object->code_compta_client != "") {
 							$sql .= "  bk.subledger_account = '".$this->db->escape($object->code_compta_client)."'  ";

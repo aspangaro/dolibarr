@@ -1312,7 +1312,7 @@ function get_left_menu_thridparties($mainmenu, &$newmenu, $usemenuhider = 1, $le
 		// Categories
 		if (isModEnabled('category')) {
 			$langs->load("categories");
-			if (!getDolGlobalString('SOCIETE_DISABLE_PROSPECTS') || !getDolGlobalString('SOCIETE_DISABLE_CUSTOMERS')) {
+			if ((!getDolGlobalString('SOCIETE_DISABLE_PROSPECTS') || !getDolGlobalString('SOCIETE_DISABLE_CUSTOMERS')) && !getDolGlobalString('CATEGORIE_DISABLE_CUSTOMER')) {
 				// Categories prospects/customers
 				$menutoshow = $langs->trans("CustomersProspectsCategoriesShort");
 				if (getDolGlobalString('SOCIETE_DISABLE_PROSPECTS')) {
@@ -1324,7 +1324,7 @@ function get_left_menu_thridparties($mainmenu, &$newmenu, $usemenuhider = 1, $le
 				$newmenu->add("/categories/index.php?leftmenu=cat&amp;type=2", $menutoshow, 1, $user->hasRight('categorie', 'lire'), '', $mainmenu, 'cat');
 			}
 			// Categories suppliers
-			if (isModEnabled('supplier_proposal') || isModEnabled('supplier_order') || isModEnabled('supplier_invoice')) {
+			if (isModEnabled('supplier_proposal') || isModEnabled('supplier_order') || isModEnabled('supplier_invoice') && !getDolGlobalString('CATEGORIE_DISABLE_SUPPLIER')) {
 				$newmenu->add("/categories/index.php?leftmenu=catfournish&amp;type=1", $langs->trans("SuppliersCategoriesShort"), 1, $user->hasRight('categorie', 'lire'));
 			}
 		}
@@ -1347,7 +1347,7 @@ function get_left_menu_thridparties($mainmenu, &$newmenu, $usemenuhider = 1, $le
 		//$newmenu->add("/contact/list.php?userid=$user->id", $langs->trans("MyContacts"), 1, $user->hasRight('societe',  'contact', 'lire'));
 
 		// Categories
-		if (isModEnabled('category')) {
+		if (isModEnabled('category') && !getDolGlobalString('CATEGORIE_DISABLE_CONTACT')) {
 			$langs->load("categories");
 			// Categories Contact
 			$newmenu->add("/categories/index.php?leftmenu=catcontact&amp;type=4", $langs->trans("ContactCategoriesShort"), 1, $user->hasRight('categorie', 'lire'), '', $mainmenu, 'cat');
@@ -2084,8 +2084,12 @@ function get_left_menu_bank($mainmenu, &$newmenu, $usemenuhider = 1, $leftmenu =
 
 		if (isModEnabled('category')) {
 			$langs->load("categories");
-			$newmenu->add("/categories/index.php?type=5", $langs->trans("Rubriques"), 1, $user->hasRight('categorie', 'creer'), '', $mainmenu, 'tags');
-			$newmenu->add("/categories/index.php?type=8", $langs->trans("RubriquesTransactions"), 1, $user->hasRight('banque', 'configurer'), '', $mainmenu, 'tags');
+			if (!getDolGlobalString('CATEGORIE_DISABLE_BANKACCOUNT')) {
+				$newmenu->add("/categories/index.php?type=5", $langs->trans("Rubriques"), 1, $user->hasRight('categorie', 'creer'), '', $mainmenu, 'tags');
+			}
+			if (!getDolGlobalString('CATEGORIE_DISABLE_BANKLINE')) {
+				$newmenu->add("/categories/index.php?type=8", $langs->trans("RubriquesTransactions"), 1, $user->hasRight('banque', 'configurer'), '', $mainmenu, 'tags');
+			}
 		}
 
 		// Direct debit order
@@ -2171,7 +2175,7 @@ function get_left_menu_products($mainmenu, &$newmenu, $usemenuhider = 1, $leftme
 			}
 
 			// Categories
-			if (isModEnabled('category')) {
+			if (isModEnabled('category') && !getDolGlobalString('CATEGORIE_DISABLE_PRODUCT')) {
 				$langs->load("categories");
 				$newmenu->add("/categories/index.php?leftmenu=cat&amp;type=0", $langs->trans("Categories"), 1, $user->hasRight('categorie', 'lire'), '', $mainmenu, 'cat');
 				//if ($usemenuhider || empty($leftmenu) || $leftmenu=="cat") $newmenu->add("/categories/list.php", $langs->trans("List"), 1, $user->hasRight('categorie',  'lire'));
@@ -2579,7 +2583,7 @@ function get_left_menu_members($mainmenu, &$newmenu, $usemenuhider = 1, $leftmen
 
 			$newmenu->add("/adherents/cartes/carte.php?leftmenu=export", $langs->trans("MembersCards"), 1, $user->hasRight('adherent', 'export'));
 
-			if (isModEnabled('category')) {
+			if (isModEnabled('category') && !getDolGlobalString('CATEGORIE_DISABLE_MEMBER')) {
 				$langs->load("categories");
 				$newmenu->add("/categories/index.php?leftmenu=cat&amp;type=3", $langs->trans("Categories"), 1, $user->hasRight('categorie', 'read'), '', $mainmenu, 'cat');
 			}

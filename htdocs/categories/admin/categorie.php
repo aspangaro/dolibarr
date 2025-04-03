@@ -1,8 +1,9 @@
 <?php
-/* Copyright (C) 2008-2011	Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2013 		Florian Henry  		<florian.henry@open-concept.pro>
- * Copyright (C) 2015 		Juanjo Menent		<jmenent@2byte.es>
- * Copyright (C) 2024       Frédéric France         <frederic.france@free.fr>
+/* Copyright (C) 2008-2011	Laurent Destailleur		<eldy@users.sourceforge.net>
+ * Copyright (C) 2013		Florian Henry			<florian.henry@open-concept.pro>
+ * Copyright (C) 2015		Juanjo Menent			<jmenent@2byte.es>
+ * Copyright (C) 2024		Frédéric France         <frederic.france@free.fr>
+ * Copyright (C) 2025		Alexandre Spangaro		<alexandre@inovea-conseil.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,8 +94,8 @@ print dol_get_fiche_head($head, 'setup', $langs->trans("Categories"), -1, 'categ
 print '<table class="noborder centpercent">';
 print '<tr class="liste_titre">';
 print '<td>'.$langs->trans("Description").'</td>';
-print '<td align="center" width="20">&nbsp;</td>';
-print '<td align="center" width="100">'.$langs->trans("Value").'</td>'."\n";
+print '<td class="center" width="20">&nbsp;</td>';
+print '<td class="center" width="100">'.$langs->trans("Value").'</td>'."\n";
 print '</tr>';
 
 $form = new Form($db);
@@ -103,9 +104,9 @@ $form = new Form($db);
 
 print '<tr class="oddeven">';
 print '<td>'.$langs->trans("CategorieRecursiv").'</td>';
-print '<td align="center" width="20">'.$form->textwithpicto('', $langs->trans("CategorieRecursivHelp"), 1, 'help').'</td>';
+print '<td class="center" width="20">'.$form->textwithpicto('', $langs->trans("CategorieRecursivHelp"), 1, 'help').'</td>';
 
-print '<td align="center" width="100">';
+print '<td class="center" width="100">';
 if ($conf->use_javascript_ajax) {
 	print ajax_constantonoff('CATEGORIE_RECURSIV_ADD');
 } else {
@@ -113,6 +114,126 @@ if ($conf->use_javascript_ajax) {
 		print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_CATEGORIE_RECURSIV_ADD&token='.newToken().'">'.img_picto($langs->trans("Disabled"), 'off').'</a>';
 	} else {
 		print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_CATEGORIE_RECURSIV_ADD&token='.newToken().'">'.img_picto($langs->trans("Enabled"), 'on').'</a>';
+	}
+}
+print '</td></tr>';
+
+print '</table>';
+print '</br>';
+
+print '<table class="noborder centpercent">';
+print '<tr class="liste_titre">';
+print '<td>'.$langs->trans("Description").'</td>';
+print '<td class="center" width="100">'.$langs->trans("Value").'</td>'."\n";
+print '</tr>';
+
+// Type 0 - Product
+print '<tr class="oddeven">';
+print '<td>'.$langs->trans("DisableCategoryOn", "ProductsCategoryShort").'</td>';
+print '<td class="center" width="100">';
+if ($conf->use_javascript_ajax) {
+	print ajax_constantonoff('CATEGORIE_DISABLE_PRODUCT', array(), $conf->entity, 0, 0, 1, 0, 0, 0, '_red');
+} else {
+	if (!getDolGlobalString('CATEGORIE_DISABLE_PRODUCT')) {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_CATEGORIE_DISABLE_PRODUCT&token='.newToken().'">'.img_picto($langs->trans("Disabled"), 'off').'</a>';
+	} else {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_CATEGORIE_DISABLE_PRODUCT&token='.newToken().'">'.img_picto($langs->trans("Enabled"), 'on').'</a>';
+	}
+}
+print '</td></tr>';
+
+// Type 1 - Supplier
+print '<tr class="oddeven">';
+print '<td>'.$langs->trans("DisableCategoryOn", "SuppliersCategoriesShort").'</td>';
+
+print '<td class="center" width="100">';
+if ($conf->use_javascript_ajax) {
+	print ajax_constantonoff('CATEGORIE_DISABLE_SUPPLIER', array(), $conf->entity, 0, 0, 1, 0, 0, 0, '_red');
+} else {
+	if (!getDolGlobalString('CATEGORIE_DISABLE_SUPPLIER')) {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_CATEGORIE_DISABLE_SUPPLIER&token='.newToken().'">'.img_picto($langs->trans("Disabled"), 'off').'</a>';
+	} else {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_CATEGORIE_DISABLE_SUPPLIER&token='.newToken().'">'.img_picto($langs->trans("Enabled"), 'on').'</a>';
+	}
+}
+print '</td></tr>';
+
+// Type 2 - Customer
+print '<tr class="oddeven">';
+print '<td>'.$langs->trans("DisableCategoryOn", "CustomersProspectsCategoriesShort").'</td>';
+
+print '<td class="center" width="100">';
+if ($conf->use_javascript_ajax) {
+	print ajax_constantonoff('CATEGORIE_DISABLE_CUSTOMER', array(), $conf->entity, 0, 0, 1, 0, 0, 0, '_red');
+} else {
+	if (!getDolGlobalString('CATEGORIE_DISABLE_CUSTOMER')) {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_CATEGORIE_DISABLE_CUSTOMER&token='.newToken().'">'.img_picto($langs->trans("Disabled"), 'off').'</a>';
+	} else {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_CATEGORIE_DISABLE_CUSTOMER&token='.newToken().'">'.img_picto($langs->trans("Enabled"), 'on').'</a>';
+	}
+}
+print '</td></tr>';
+
+// Type 4 - Contact
+print '<tr class="oddeven">';
+print '<td>'.$langs->trans("DisableCategoryOn", "ContactCategoriesShort").'</td>';
+
+print '<td class="center" width="100">';
+if ($conf->use_javascript_ajax) {
+	print ajax_constantonoff('CATEGORIE_DISABLE_CONTACT', array(), $conf->entity, 0, 0, 1, 0, 0, 0, '_red');
+} else {
+	if (!getDolGlobalString('CATEGORIE_DISABLE_CONTACT')) {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_CATEGORIE_DISABLE_CONTACT&token='.newToken().'">'.img_picto($langs->trans("Disabled"), 'off').'</a>';
+	} else {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_CATEGORIE_DISABLE_CONTACT&token='.newToken().'">'.img_picto($langs->trans("Enabled"), 'on').'</a>';
+	}
+}
+print '</td></tr>';
+
+// Type 3 - Member
+print '<tr class="oddeven">';
+print '<td>'.$langs->trans("DisableCategoryOn", "MembersCategoriesShort").'</td>';
+
+print '<td class="center" width="100">';
+if ($conf->use_javascript_ajax) {
+	print ajax_constantonoff('CATEGORIE_DISABLE_MEMBER', array(), $conf->entity, 0, 0, 1, 0, 0, 0, '_red');
+} else {
+	if (!getDolGlobalString('CATEGORIE_DISABLE_MEMBER')) {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_CATEGORIE_DISABLE_MEMBER&token='.newToken().'">'.img_picto($langs->trans("Disabled"), 'off').'</a>';
+	} else {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_CATEGORIE_DISABLE_MEMBER&token='.newToken().'">'.img_picto($langs->trans("Enabled"), 'on').'</a>';
+	}
+}
+print '</td></tr>';
+
+// Type 5 - Bank account
+print '<tr class="oddeven">';
+print '<td>'.$langs->trans("DisableCategoryOn", "AccountsCategoriesShort").'</td>';
+
+print '<td class="center" width="100">';
+if ($conf->use_javascript_ajax) {
+	print ajax_constantonoff('CATEGORIE_DISABLE_BANKACCOUNT', array(), $conf->entity, 0, 0, 1, 0, 0, 0, '_red');
+} else {
+	if (!getDolGlobalString('CATEGORIE_DISABLE_BANKACCOUNT')) {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_CATEGORIE_DISABLE_BANKACCOUNT&token='.newToken().'">'.img_picto($langs->trans("Disabled"), 'off').'</a>';
+	} else {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_CATEGORIE_DISABLE_BANKACCOUNT&token='.newToken().'">'.img_picto($langs->trans("Enabled"), 'on').'</a>';
+	}
+}
+print '</td></tr>';
+
+// Type 8 - Bank line
+print '<tr class="oddeven">';
+print '<td>'.$langs->trans("DisableCategoryOn", "AccountLinesCategoriesShort").'</td>';
+
+print '<td class="center" width="100">';
+if ($conf->use_javascript_ajax) {
+	print ajax_constantonoff('CATEGORIE_DISABLE_BANKLINE', array(), $conf->entity, 0, 0, 1, 0, 0, 0, '_red');
+} else {
+	if (!getDolGlobalString('CATEGORIE_DISABLE_BANKLINE')) {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_CATEGORIE_DISABLE_BANKLINE&token='.newToken().'">'.img_picto($langs->trans("Disabled"), 'off').'</a>';
+	} else {
+		print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_CATEGORIE_DISABLE_BANKLINE&token='.newToken().'">'.img_picto($langs->trans("Enabled"), 'on').'</a>';
 	}
 }
 print '</td></tr>';

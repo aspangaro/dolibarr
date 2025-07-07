@@ -1,11 +1,11 @@
 <?php
-/* Copyright (C) 2013-2014  Olivier Geffroy      <jeff@jeffinfo.com>
- * Copyright (C) 2013-2024  Alexandre Spangaro   <aspangaro@easya.solutions>
- * Copyright (C) 2013-2021  Florian Henry        <florian.henry@open-concept.pro>
- * Copyright (C) 2014       Juanjo Menent        <jmenent@2byte.es>
- * Copyright (C) 2015       Ari Elbaz (elarifr)  <github@accedinfo.com>
- * Copyright (C) 2018-2024  Frédéric France      <frederic.france@free.fr>
- * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
+/* Copyright (C) 2013-2014  Olivier Geffroy			<jeff@jeffinfo.com>
+ * Copyright (C) 2013-2024	Alexandre Spangaro		<alexandre@inovea-conseil.com>
+ * Copyright (C) 2013-2021	Florian Henry			<florian.henry@open-concept.pro>
+ * Copyright (C) 2014		Juanjo Menent			<jmenent@2byte.es>
+ * Copyright (C) 2015		Ari Elbaz (elarifr)		<github@accedinfo.com>
+ * Copyright (C) 2018-2024	Frédéric France			<frederic.france@free.fr>
+ * Copyright (C) 2024		MDW						<mdeweerd@users.noreply.github.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,6 +101,7 @@ class AccountingAccount extends CommonObject
 
 	/**
 	 * @var int ID category account
+	 * @deprecated No more used (move into llx_accounting_category_account)
 	 */
 	public $account_category;
 
@@ -181,10 +182,8 @@ class AccountingAccount extends CommonObject
 		global $conf;
 
 		if ($rowid || $account_number) {
-			$sql  = "SELECT a.rowid as rowid, a.datec, a.tms, a.fk_pcg_version, a.pcg_type, a.account_number, a.account_parent, a.label, a.labelshort, a.fk_accounting_category, a.fk_user_author, a.fk_user_modif, a.active, a.reconcilable";
-			$sql .= ", ca.label as category_label";
+			$sql  = "SELECT a.rowid as rowid, a.datec, a.tms, a.fk_pcg_version, a.pcg_type, a.account_number, a.account_parent, a.label, a.labelshort, a.fk_user_author, a.fk_user_modif, a.active, a.reconcilable";
 			$sql .= " FROM ".$this->db->prefix().$this->table_element." as a";
-			$sql .= " LEFT JOIN ".$this->db->prefix()."c_accounting_category as ca ON a.fk_accounting_category = ca.rowid";
 			$sql .= " WHERE";
 			if ($rowid) {
 				$sql .= " a.rowid = ".(int) $rowid;
@@ -219,8 +218,6 @@ class AccountingAccount extends CommonObject
 					$this->account_parent = $obj->account_parent;
 					$this->label = $obj->label;
 					$this->labelshort = $obj->labelshort;
-					$this->account_category = $obj->fk_accounting_category;
-					$this->account_category_label = $obj->category_label;
 					$this->fk_user_author = $obj->fk_user_author;
 					$this->fk_user_modif = $obj->fk_user_modif;
 					$this->active = $obj->active;
@@ -285,7 +282,6 @@ class AccountingAccount extends CommonObject
 		$sql .= ", account_parent";
 		$sql .= ", label";
 		$sql .= ", labelshort";
-		$sql .= ", fk_accounting_category";
 		$sql .= ", fk_user_author";
 		$sql .= ", active";
 		$sql .= ", reconcilable";
@@ -298,7 +294,6 @@ class AccountingAccount extends CommonObject
 		$sql .= ", ".(empty($this->account_parent) ? 0 : (int) $this->account_parent);
 		$sql .= ", ".(empty($this->label) ? "''" : "'".$this->db->escape($this->label)."'");
 		$sql .= ", ".(empty($this->labelshort) ? "''" : "'".$this->db->escape($this->labelshort)."'");
-		$sql .= ", ".(empty($this->account_category) ? 0 : (int) $this->account_category);
 		$sql .= ", ".((int) $user->id);
 		$sql .= ", ".(int) $this->active;
 		$sql .= ", ".(int) $this->reconcilable;
@@ -363,7 +358,6 @@ class AccountingAccount extends CommonObject
 		$sql .= " , account_parent = " . (int) $this->account_parent;
 		$sql .= " , label = " . ($this->label ? "'" . $this->db->escape($this->label) . "'" : "''");
 		$sql .= " , labelshort = " . ($this->labelshort ? "'" . $this->db->escape($this->labelshort) . "'" : "''");
-		$sql .= " , fk_accounting_category = " . (empty($this->account_category) ? 0 : (int) $this->account_category);
 		$sql .= " , fk_user_modif = " . ((int) $user->id);
 		$sql .= " , active = " . (int) $this->active;
 		$sql .= " , reconcilable = " . (int) $this->reconcilable;

@@ -31,7 +31,7 @@ create table llx_accounting_account
   account_parent            integer DEFAULT 0,                -- Hierarchic parent.
   label                     varchar(255) NOT NULL,
   labelshort				varchar(255) DEFAULT NULL,
-  fk_accounting_category    integer      DEFAULT 0,			  -- ID of personalized group for report
+  fk_accounting_category    integer      DEFAULT 0,			  -- Deprecated since v23. See llx_accounting_category_account. ID of personalized group for report
   fk_user_author            integer      DEFAULT NULL,
   fk_user_modif             integer      DEFAULT NULL,
   active                    tinyint      DEFAULT 1  NOT NULL,

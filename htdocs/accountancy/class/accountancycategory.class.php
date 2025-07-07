@@ -864,19 +864,25 @@ class AccountancyCategory // extends CommonObject
 		if (!empty($cat_id)) {
 			$sql = "SELECT t.rowid, t.account_number, t.label as account_label";
 			$sql .= " FROM ".$this->db->prefix()."accounting_account as t";
-			$sql .= " WHERE t.fk_accounting_category = ".((int) $cat_id);
+			$sql .= " INNER JOIN ".$this->db->prefix()."accounting_category_account as cca ON cca.fk_accounting_account = t.rowid";
+			$sql .= " WHERE cca.fk_accounting_category = ".((int) $cat_id);
+			$sql .= " AND t.entity = ".$conf->entity;
+			$sql .= " AND t.active = 1";
+			$sql .= " AND t.fk_pcg_version = '".$this->db->escape($pcgvercode)."'";
+			$sql .= " ORDER BY t.account_number";
+		} elseif (!empty($predefinedgroupwhere)) {
+			$sql = "SELECT t.rowid, t.account_number, t.label as account_label";
+			$sql .= " FROM ".$this->db->prefix()."accounting_account as t";
+			$sql .= " WHERE ".$predefinedgroupwhere;
 			$sql .= " AND t.entity = ".$conf->entity;
 			$sql .= " AND t.active = 1";
 			$sql .= " AND t.fk_pcg_version = '".$this->db->escape($pcgvercode)."'";
 			$sql .= " ORDER BY t.account_number";
 		} else {
-			$sql = "SELECT t.rowid, t.account_number, t.label as account_label";
-			$sql .= " FROM ".$this->db->prefix()."accounting_account as t";
-			$sql .= " WHERE ".$predefinedgroupwhere;
-			$sql .= " AND t.entity = ".$conf->entity;
-			$sql .= ' AND t.active = 1';
-			$sql .= " AND t.fk_pcg_version = '".$this->db->escape($pcgvercode)."'";
-			$sql .= " ORDER BY t.account_number";
+			// No criteria provided
+			$this->error = "No category id or predefined group where provided";
+			dol_syslog(__METHOD__." ".$this->error, LOG_ERR);
+			return -1;
 		}
 
 		$resql = $this->db->query($sql);

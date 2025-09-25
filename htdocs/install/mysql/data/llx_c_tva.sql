@@ -1,14 +1,15 @@
--- Copyright (C) 2001-2004 Rodolphe Quiedeville <rodolphe@quiedeville.org>
--- Copyright (C) 2003      Jean-Louis Bergamo   <jlb@j1b.org>
--- Copyright (C) 2004-2011 Laurent Destailleur  <eldy@users.sourceforge.net>
--- Copyright (C) 2004      Benoit Mortier       <benoit.mortier@opensides.be>
--- Copyright (C) 2004      Guillaume Delecourt  <guillaume.delecourt@opensides.be>
--- Copyright (C) 2005-2025 Regis Houssin        <regis.houssin@inodbox.com>
--- Copyright (C) 2007 	   Patrick Raguin       <patrick.raguin@gmail.com>
--- Copyright (C) 2010-2016 Juanjo Menent        <jmenent@2byte.es>
--- Copyright (C) 2012      Sebastian Neuwert    <sebastian.neuwert@modula71.de>
--- Copyright (C) 2012	   Ricardo Schluter		<info@ripasch.nl>
--- Copyright (C) 2022	   Miro Sertić   		<miro.sertic0606@gmail.com>
+-- Copyright (C) 2001-2004	Rodolphe Quiedeville	<rodolphe@quiedeville.org>
+-- Copyright (C) 2003		Jean-Louis Bergamo		<jlb@j1b.org>
+-- Copyright (C) 2004-2011	Laurent Destailleur		<eldy@users.sourceforge.net>
+-- Copyright (C) 2004		Benoit Mortier			<benoit.mortier@opensides.be>
+-- Copyright (C) 2004		Guillaume Delecourt		<guillaume.delecourt@opensides.be>
+-- Copyright (C) 2005-2025	Regis Houssin			<regis.houssin@inodbox.com>
+-- Copyright (C) 2007		Patrick Raguin			<patrick.raguin@gmail.com>
+-- Copyright (C) 2010-2016	Juanjo Menent			<jmenent@2byte.es>
+-- Copyright (C) 2012		Sebastian Neuwert		<sebastian.neuwert@modula71.de>
+-- Copyright (C) 2012		Ricardo Schluter		<info@ripasch.nl>
+-- Copyright (C) 2022		Miro Sertić				<miro.sertic0606@gmail.com>
+-- Copyright (C) 2025		Alexandre Spangaro		<alexandre@inovea-conseil.com>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -125,11 +126,12 @@ insert into llx_c_tva(fk_pays,taux,recuperableonly,note,active,entity) values (8
 insert into llx_c_tva(fk_pays,taux,recuperableonly,note,active,entity) values (80,   '25','0','VAT rate - standard',1,__ENTITY__);
 
 -- FRANCE (id country=1)
-insert into llx_c_tva(fk_pays,taux,recuperableonly,note,active,entity) values (1,   '0','0','VAT rate 0 ou non applicable',1,__ENTITY__);
-insert into llx_c_tva(fk_pays,taux,recuperableonly,note,active,entity) values (1,  '20','0','VAT rate - standard (France hors DOM-TOM)',1,__ENTITY__);
-insert into llx_c_tva(fk_pays,taux,recuperableonly,note,active,entity) values (1,  '10','0','VAT rate - reduced',1,__ENTITY__);
-insert into llx_c_tva(fk_pays,taux,recuperableonly,note,active,entity) values (1, '5.5','0','VAT rate - reduced (France hors DOM-TOM)',1,__ENTITY__);
-insert into llx_c_tva(fk_pays,taux,recuperableonly,note,active,entity) values (1, '2.1','0','VAT rate - super-reduced',1,__ENTITY__);
+insert into llx_c_tva(fk_pays,taux,code,recuperableonly,note,active,entity) values (1,   '0','E','0','TVA 0% - taux exonéré',1,__ENTITY__);
+insert into llx_c_tva(fk_pays,taux,code,recuperableonly,note,active,entity) values (1,   '0','O','0','TVA 0% - taux auto-liquidation',1,__ENTITY__);
+insert into llx_c_tva(fk_pays,taux,code,recuperableonly,note,active,entity) values (1,  '20','S','0','TVA 20% - taux standard',1,__ENTITY__);
+insert into llx_c_tva(fk_pays,taux,code,recuperableonly,note,active,entity) values (1,  '10','R','0','TVA 10% - taux réduit',1,__ENTITY__);
+insert into llx_c_tva(fk_pays,taux,code,recuperableonly,note,active,entity) values (1, '5.5','I','0','TVA 5.5% - taux intermédiaire',1,__ENTITY__);
+insert into llx_c_tva(fk_pays,taux,code,recuperableonly,note,active,entity) values (1, '2.1','P','0','TVA 2.1% - taux particulier',1,__ENTITY__);
 insert into llx_c_tva(fk_pays,taux,code,recuperableonly,note,active,entity)                                                   values (1, '8.5', '85',         '0', 'VAT rate - standard (DOM sauf Guyane et Saint-Martin)',0,__ENTITY__);
 insert into llx_c_tva(fk_pays,taux,code,recuperableonly,note,active,entity)                                                   values (1, '8.5', '85NPR',      '1', 'VAT rate - standard (DOM sauf Guyane et Saint-Martin), non perçu par le vendeur mais récupérable par acheteur',0,__ENTITY__);
 insert into llx_c_tva(fk_pays,taux,code,recuperableonly,localtax1,localtax1_type,note,active,entity)                          values (1, '8.5', '85NPROM',    '1', 2, 3, 'VAT rate - standard (DOM sauf Guyane et Saint-Martin), NPR, Octroi de Mer',0,__ENTITY__);

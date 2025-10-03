@@ -1,6 +1,6 @@
 <?php
-/* Copyright (C) 2017-2021  Alexandre Spangaro      <aspangaro@open-dsi.fr>
- * Copyright (C) 2018-2025  Frédéric France         <frederic.france@free.fr>
+/* Copyright (C) 2017-2025	Alexandre Spangaro		<alexandre@inovea-conseil.com>
+ * Copyright (C) 2018-2025	Frédéric France			<frederic.france@free.fr>
  * Copyright (C) 2024-2025	MDW						<mdeweerd@users.noreply.github.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -201,7 +201,22 @@ class PaymentVarious extends CommonObject
 	 * @var array<string,array{type:string,label:string,enabled:int<0,2>|string,position:int,notnull?:int,visible:int<-6,6>|string,alwayseditable?:int<0,1>,noteditable?:int<0,1>,default?:string,index?:int,foreignkey?:string,searchall?:int<0,1>,isameasure?:int<0,1>,css?:string,csslist?:string,help?:string,showoncombobox?:int<0,4>,disabled?:int<0,1>,arrayofkeyval?:array<int|string,string>,autofocusoncreate?:int<0,1>,comment?:string,copytoclipboard?:int<1,2>,validate?:int<0,1>,showonheader?:int<0,1>}>  Array with all fields and their property. Do not use it as a static var. It may be modified by constructor.
 	 */
 	public $fields = array(
-		// TODO: fill this array
+		'rowid' => array('type' => 'integer', 'label' => 'TechnicalID', 'enabled' => 1, 'visible' => -1, 'notnull' => 1, 'position' => 10),
+		'ref' => array('type' => 'varchar(12)', 'label' => 'Ref', 'enabled' => 1, 'visible' => -1, 'notnull' => 1, 'showoncombobox' => 1, 'position' => 25),
+		'entity' => array('type' => 'integer', 'label' => 'Entity', 'default' => '1', 'enabled' => 1, 'visible' => -2, 'notnull' => 1, 'position' => 20, 'index' => 1),
+		'label' => array('type' => 'varchar(30)', 'label' => 'Label', 'enabled' => 1, 'visible' => -1, 'notnull' => 1, 'position' => 30),
+		'datep' => array('type' => 'date', 'label' => 'DatePayment', 'enabled' => 1, 'visible' => 1, 'position' => 20),
+		'datev' => array('type' => 'date', 'label' => 'DateValue', 'enabled' => 1, 'visible' => 1, 'position' => 20),
+		'sens' => array('type' => 'integer', 'label' => 'Sens', 'enabled' => 1, 'visible' => 1, 'position' => 20),
+		'amount' => array('type' => 'double(24,8)', 'label' => 'Amount', 'enabled' => 1, 'visible' => -1, 'position' => 100, 'isameasure' => 1),
+		'type_payment'=> array('type' => 'integer', 'label' => 'PaymentMode', 'enabled' => 1, 'visible' => -1, 'position' => 195),
+		'accountancy_code' => array('type' => 'varchar(32)', 'label' => 'AccountAccounting', 'enabled' => 1, 'visible' => -1, 'position' => 130),
+		'subledger_account' => array('type' => 'varchar(32)', 'label' => 'SubledgerAccount', 'enabled' => 1, 'visible' => -1, 'position' => 130),
+		'fk_projet' => array('type' => 'integer:Project:projet/class/project.class.php:1:(fk_statut:=:1)', 'label' => 'Project', 'enabled' => 1, 'visible' => -1, 'position' => 175),
+		'fk_account' => array('type' => 'integer:Bank:compta/bank/class/account.class.php:1:(fk_statut:=:1)', 'label' => 'BankAccount', 'enabled' => 1, 'visible' => -1, 'position' => 180),
+		'fk_user_author' => array('type' => 'integer:User:user/class/user.class.php', 'label' => 'UserAuthor', 'enabled' => 1, 'visible' => -1, 'position' => 160),
+		'fk_user_modif' => array('type' => 'integer:User:user/class/user.class.php', 'label' => 'UserModif', 'enabled' => 1, 'visible' => -2, 'notnull' => -1, 'position' => 165),
+		'import_key' => array('type' => 'varchar(14)', 'label' => 'ImportId', 'enabled' => 1, 'visible' => -2, 'position' => 180)
 	);
 	// END MODULEBUILDER PROPERTIES
 

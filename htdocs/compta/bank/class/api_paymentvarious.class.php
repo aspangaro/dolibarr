@@ -29,6 +29,19 @@ require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/paymentvarious.class.php';
 class PaymentVariousApi extends DolibarrApi
 {
 	/**
+	 * array $FIELDS Mandatory fields, checked when creating an object
+	 */
+	public static $FIELDS = array(
+		'datep',
+		'label',
+		'amount',
+		'fk_account',
+		'type_payment',
+		'accountancy_code',
+		'sens'
+	);
+
+	/**
 	 * Constructor
 	 */
 	public function __construct()
@@ -178,7 +191,7 @@ class PaymentVariousApi extends DolibarrApi
 		}
 		$pv = new PaymentVarious($this->db);
 		if ($pv->fetch((int) $id) <= 0) {
-			throw new RestException(404, 'PaymentVarious not found');
+			throw new RestException(404, 'Various payment not found');
 		}
 		if ($pv->delete(DolibarrApiAccess::$user) < 0) {
 			throw new RestException(500, $pv->error ?: 'Delete failed');
@@ -207,7 +220,7 @@ class PaymentVariousApi extends DolibarrApi
 		}
 		$validated = array();
 
-		foreach (PaymentVarious::$fields as $field => $type) {
+		foreach (PaymentVarious::$FIELDS as $field => $type) {
 			if (!array_key_exists($field, $data)) {
 				throw new RestException(400, "$field field missing");
 			}

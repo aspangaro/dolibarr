@@ -127,9 +127,16 @@ class MouvementStock extends CommonObject
 	public $line_id_oject_origin;
 
 	/**
-	 * @var string inventory code
+	 * @var string 	Movement code
+	 * @deprecated
+	 * @see $movement_code
 	 */
 	public $inventorycode;
+
+	/**
+	 * @var string 	Movement code
+	 */
+	public $movementcode;
 
 	/**
 	 * @var string batch reference
@@ -171,7 +178,7 @@ class MouvementStock extends CommonObject
 		'fk_origin' => array('type' => 'integer', 'label' => 'Fk origin', 'enabled' => 1, 'visible' => -1, 'position' => 60),
 		'origintype' => array('type' => 'varchar(32)', 'label' => 'Origintype', 'enabled' => 1, 'visible' => -1, 'position' => 65),
 		'model_pdf' => array('type' => 'varchar(255)', 'label' => 'Model pdf', 'enabled' => 1, 'visible' => 0, 'position' => 70),
-		'fk_projet' => array('type' => 'integer:Project:projet/class/project.class.php:1:(fk_statut:=:1)', 'label' => 'Project', 'enabled' => '$conf->project->enabled', 'visible' => -1, 'notnull' => 1, 'position' => 75),
+		'fk_projet' => array('type' => 'integer:Project:projet/class/project.class.php:1:(fk_statut:=:1)', 'label' => 'Project', 'enabled' => 'isModEnabled("project")', 'visible' => -1, 'notnull' => 1, 'position' => 75),
 		'inventorycode' => array('type' => 'varchar(128)', 'label' => 'InventoryCode', 'enabled' => 1, 'visible' => -1, 'position' => 80),
 		'batch' => array('type' => 'varchar(30)', 'label' => 'Batch', 'enabled' => 1, 'visible' => -1, 'position' => 85),
 		'eatby' => array('type' => 'date', 'label' => 'Eatby', 'enabled' => 1, 'visible' => -1, 'position' => 90),
@@ -272,6 +279,8 @@ class MouvementStock extends CommonObject
 		}
 		$now = (!empty($datem) ? $datem : dol_now());
 
+		//print "livraison fk_product=".$fk_product." entrepot_id=".$entrepot_id; exit;
+
 		// Check parameters
 		if (!($fk_product > 0)) {
 			return 0;
@@ -324,7 +333,8 @@ class MouvementStock extends CommonObject
 		if (getDolGlobalInt('PRODUIT_SOUSPRODUITS')) {
 			$productChildrenNb = $product->hasFatherOrChild(1);
 		}
-		if (($product->type != Product::TYPE_SERVICE || getDolGlobalString('STOCK_SUPPORTS_SERVICES')) && ($productChildrenNb == 0 || getDolGlobalInt('PRODUIT_SOUSPRODUITS_ALSO_ENABLE_PARENT_STOCK_MOVE'))) {
+
+		if ($product->isStockManaged() && ($productChildrenNb == 0 || getDolGlobalInt('PRODUIT_SOUSPRODUITS_ALSO_ENABLE_PARENT_STOCK_MOVE'))) { // For kit parent, we disable stock move, except if option PRODUIT_SOUSPRODUITS_ALSO_ENABLE_PARENT_STOCK_MOVE is set. For this option on, code must be completed to finish implementation, for example to have kit supported in shipments.
 			$movestock = 1;
 		}
 
@@ -719,7 +729,7 @@ class MouvementStock extends CommonObject
 		$sql .= " t.label,";
 		$sql .= " t.fk_origin as origin_id,";
 		$sql .= " t.origintype as origin_type,";
-		$sql .= " t.inventorycode,";
+		$sql .= " t.inventorycode as movementcode,";
 		$sql .= " t.batch,";
 		$sql .= " t.eatby,";
 		$sql .= " t.sellby,";
@@ -749,7 +759,8 @@ class MouvementStock extends CommonObject
 				$this->origintype = $obj->origin_type;	// For backward compatibility
 				$this->origin_id = $obj->origin_id;
 				$this->origin_type = $obj->origin_type;
-				$this->inventorycode = $obj->inventorycode;
+				$this->inventorycode = $obj->movementcode;	// For backward compatibility
+				$this->movementcode = $obj->movementcode;
 				$this->batch = $obj->batch;
 				$this->eatby = $this->db->jdate($obj->eatby);
 				$this->sellby = $this->db->jdate($obj->sellby);
@@ -853,8 +864,6 @@ class MouvementStock extends CommonObject
 	 */
 	public function livraison($user, $fk_product, $entrepot_id, $qty, $price = 0, $label = '', $datem = '', $eatby = '', $sellby = '', $batch = '', $id_product_batch = 0, $inventorycode = '', $donotcleanemptylines = 0)
 	{
-		global $conf;
-
 		$skip_batch = !isModEnabled('productbatch');
 
 		return $this->_create($user, $fk_product, $entrepot_id, (0 - $qty), 2, $price, $label, $inventorycode, $datem, $eatby, $sellby, $batch, $skip_batch, $id_product_batch, 0, $donotcleanemptylines);
@@ -881,8 +890,6 @@ class MouvementStock extends CommonObject
 	 */
 	public function reception($user, $fk_product, $entrepot_id, $qty, $price = 0, $label = '', $eatby = '', $sellby = '', $batch = '', $datem = '', $id_product_batch = 0, $inventorycode = '', $donotcleanemptylines = 0, $disablestockchangeforsubproduct = 0)
 	{
-		global $conf;
-
 		$skip_batch = !isModEnabled('productbatch');
 
 		return $this->_create($user, $fk_product, $entrepot_id, $qty, 3, $price, $label, $inventorycode, $datem, $eatby, $sellby, $batch, $skip_batch, $id_product_batch, $disablestockchangeforsubproduct, $donotcleanemptylines);

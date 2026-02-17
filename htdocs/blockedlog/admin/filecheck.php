@@ -39,12 +39,13 @@ require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/geturl.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/blockedlog/lib/blockedlog.lib.php';
 
 $langs->load("admin");
 
 $mode = GETPOST('mode', 'aZ09');
 
-if (!$user->admin) {
+if (!$user->admin && !$user->hasRight('bockedlog', 'read')) {
 	accessforbidden();
 }
 
@@ -67,7 +68,7 @@ if (isModEnabled('blockedlog')) {
 	$s = str_replace('{s}', DOL_URL_ROOT.'/blockedlog/admin/blockedlog_list.php', $s);
 	print '<br>'.$s;
 }
-print'</div><br><br>';
+print'</div><br>';
 
 // Version
 print '<div class="div-table-responsive-no-min">';
@@ -78,7 +79,7 @@ $htmltooltip .= $langs->trans("VersionLastInstall").': '.getDolGlobalString('MAI
 $htmltooltip .= $langs->trans("VersionLastUpgrade").': '.getDolGlobalString('MAIN_VERSION_LAST_UPGRADE').'<br>'."\n";
 
 print '<tr class="oddeven nohover"><td width="300">'.$langs->trans("VersionProgram").'</td><td>';
-print '<span class="valignmiddle">'.DOL_VERSION.'</span>';
+print '<span class="badge-text badge-secondary valignmiddle">'.DOL_VERSION.'</span>';
 // If current version differs from last upgrade
 if (!getDolGlobalString('MAIN_VERSION_LAST_UPGRADE')) {
 	// Compare version with last install database version (upgrades never occurred)
@@ -95,7 +96,29 @@ print ' '.$form->textwithpicto('', $htmltooltip);
 print '</td></tr>'."\n";
 print '</table>';
 print '</div>';
-print '<br>';
+
+// Version
+$versionbadge = '<span class="badge-text badge-secondary">'.DOL_VERSION.'</span>';
+
+$infotoshow = '';
+if ($mysoc->country_code == 'FR') {
+	$islne = isALNEQualifiedVersion(1, 1);
+	if ($islne) {
+		if (preg_match('/\-/', DOL_VERSION)) {
+			// This is an alpha or beta version
+			$infotoshow = $langs->trans("LNECandidateVersionForCertificationFR", $versionbadge);
+		} else {
+			$infotoshow = $langs->trans("LNECertifiedVersionFR", $versionbadge);
+		}
+	} else {
+		$infotoshow = $langs->trans("NotCertifiedVersionFR", $versionbadge);
+	}
+}
+if ($infotoshow) {
+	print info_admin($infotoshow, 0, 0, 'info');
+}
+
+print '<br><br>';
 
 
 // Modified or missing files
@@ -233,6 +256,12 @@ if (empty($error) && !empty($xml)) {
 	$file_list = array();
 	$out = '';
 
+	$algo = (string) $xml['algo'];		// When file is <checksum_list attrib="val" algo="xxx">...</checksum_list>, the first tag is root of the $xml
+	if (empty($algo)) {
+		//$algo = 'md5';		// For v22-
+		$algo = 'sha256';		// For v23+
+	}
+
 	// Forced constants
 	if (is_object($xml->dolibarr_constants[0]) || $mode == 'unalterable') {
 		$out .= load_fiche_titre($langs->trans("ForcedConstants"));
@@ -349,6 +378,7 @@ if (empty($error) && !empty($xml)) {
 		$onlymodifiedorremoved = 0;
 	}
 
+
 	// Scan htdocs
 	if (is_object($listoffilestoanalyze)) {
 		// @phan-suppress-next-line PhanTypeArraySuspicious
@@ -361,15 +391,15 @@ if (empty($error) && !empty($xml)) {
 
 		// Fill file_list with files in signature, new files, modified files
 		getFilesUpdated($file_list, $listoffilestoanalyze, '', DOL_DOCUMENT_ROOT, $checksumconcat); // Fill array $file_list
-		'@phan-var-force array{insignature:string[],missing?:array<array{filename:string,expectedmd5:string,expectedsize:string}>,updated:array<array{filename:string,expectedmd5:string,expectedsize:string,md5:string}>} $file_list';
+		'@phan-var-force array{insignature:string[],missing?:array<array{filename:string,expectedhash:string,expectedsize:string,algo:string}>,updated:array<array{filename:string,expectedhash:string,expectedsize:string,hash:string,algo:string}>} $file_list';
 
 		// Complete with list of new files into $file_list['added']
-		if ($onlymodifiedorremoved) {
+		if (empty($onlymodifiedorremoved)) {
 			foreach ($scanfiles as $valfile) {
 				$tmprelativefilename = preg_replace('/^'.preg_quote(DOL_DOCUMENT_ROOT, '/').'/', '', $valfile['fullname']);
 				if (!in_array($tmprelativefilename, $file_list['insignature'])) {
-					$md5newfile = @md5_file($valfile['fullname']); // Can fails if we don't have permission to open/read file
-					$file_list['added'][] = array('filename' => $tmprelativefilename, 'md5' => $md5newfile);
+					$hashnewfile = @hash_file($algo, $valfile['fullname']); // Can fails if we don't have permission to open/read file
+					$file_list['added'][] = array('filename' => $tmprelativefilename, 'hash' => $hashnewfile, 'algo' => $algo);
 				}
 			}
 		}
@@ -398,7 +428,7 @@ if (empty($error) && !empty($xml)) {
 					$out .= dol_print_size((int) $file['expectedsize']);
 				}
 				$out .= '</td>'."\n";
-				$out .= '<td class="center">'.dol_escape_htmltag($file['expectedmd5']).'</td>'."\n";
+				$out .= '<td class="center">'.dol_escape_htmltag($file['expectedhash']).'</td>'."\n";
 				$out .= "</tr>\n";
 			}
 		} else {
@@ -432,8 +462,8 @@ if (empty($error) && !empty($xml)) {
 				$out .= '<tr class="oddeven">';
 				$out .= '<td>'.$i.'</td>'."\n";
 				$out .= '<td>'.dol_escape_htmltag($file['filename']).'</td>'."\n";
-				$out .= '<td class="center">'.dol_escape_htmltag($file['expectedmd5']).'</td>'."\n";
-				$out .= '<td class="center">'.dol_escape_htmltag($file['md5']).'</td>'."\n";
+				$out .= '<td class="center" title="'.dol_escape_htmltag($file['expectedhash']).'">'.dol_escape_htmltag(dol_trunc($file['expectedhash'], 16)).'</td>'."\n";
+				$out .= '<td class="center" title="'.dol_escape_htmltag($file['hash']).'">'.dol_escape_htmltag(dol_trunc($file['hash'], 16)).'</td>'."\n";
 				$out .= '<td class="right">';
 				if ($file['expectedsize']) {
 					$out .= dol_print_size((int) $file['expectedsize']);
@@ -490,8 +520,8 @@ if (empty($error) && !empty($xml)) {
 						$out .= ' '.$form->textwithpicto('', $htmltext, 1, 'help', '', 0, 2, 'helprm'.$i);
 					}
 					$out .= '</td>'."\n";
-					$out .= '<td class="center">'.dol_escape_htmltag((string) $file['expectedmd5']).'</td>'."\n";  // @phan-suppress-current-line PhanTypeInvalidDimOffset
-					$out .= '<td class="center">'.dol_escape_htmltag($file['md5']).'</td>'."\n";
+					$out .= '<td class="center" title="'.dol_escape_htmltag((string) $file['expectedhash']).'">'.dol_escape_htmltag(dol_trunc((string) $file['expectedhash'], 16)).'</td>'."\n";  // @phan-suppress-current-line PhanTypeInvalidDimOffset
+					$out .= '<td class="center" title="'.dol_escape_htmltag((string) $file['hash']).'">'.dol_escape_htmltag(dol_trunc($file['hash'], 16)).'</td>'."\n";
 					$size = dol_filesize(DOL_DOCUMENT_ROOT.'/'.$file['filename']);
 					$totalsize += $size;
 					$out .= '<td class="right">'.dol_print_size($size).'</td>'."\n";
@@ -522,17 +552,17 @@ if (empty($error) && !empty($xml)) {
 
 	// Scan scripts
 	/*
-	if (is_object($xml->dolibarr_script_dir[0])) {
+	if (is_object($xml->dolibarr_scripts_dir[0])) {
 		$file_list = array();
 		$ret = getFilesUpdated($file_list, $xml->dolibarr_htdocs_dir[0], '', ???, $checksumconcat);		// Fill array $file_list
-		'@phan-var-force array{insignature:string[],missing?:array<array{filename:string,expectedmd5:string,expectedsize:string}>,updated:array<array{filename:string,expectedmd5:string,expectedsize:string,md5:string}>} $file_list';
+		'@phan-var-force array{insignature:string[],missing?:array<array{filename:string,expectedhash:string,expectedsize:string,algo:string}>,updated:array<array{filename:string,expectedhash:string,expectedsize:string,hash:string,algo:string}>} $file_list';
 	}*/
 
 
 	// Section Globalchecksum
 	asort($checksumconcat); // Sort list of checksum
 
-	$checksumget = md5(implode(',', $checksumconcat));
+	$checksumget = hash($algo, implode(',', $checksumconcat));
 
 	if ($mode == 'unalterable') {
 		$nameofsection = 'dolibarr_unalterable_files_checksum';
@@ -585,7 +615,16 @@ if (empty($error) && !empty($xml)) {
 		$outforlistoffiles .= '<textarea id="listofunalterablefiles" class="hideobject quatrevingtpercent" rows="12">';
 		$i = 0;
 		foreach ($listoffilestoanalyze as $dirtoanalyze) {
-			foreach ($dirtoanalyze->md5file as $filetoanalyze) {
+			$entry = array();
+			if (!empty($dirtoanalyze->md5file)) {
+				$entry = $dirtoanalyze->md5file;
+				$algo = 'md5';
+			} elseif (!empty($dirtoanalyze->sha256file)) {
+				$entry = $dirtoanalyze->sha256file;
+				$algo = 'sha256';
+			}
+
+			foreach ($entry as $filetoanalyze) {
 				if ($i) {
 					$outforlistoffiles .= "\n";
 				}
@@ -605,8 +644,8 @@ if (empty($error) && !empty($xml)) {
 	print '<div class="div-table-responsive-no-min">';
 	print '<table class="noborder">';
 	print '<tr class="liste_titre">';
-	print '<td>'.$langs->trans("ExpectedChecksum").'</td>';
-	print '<td>'.$langs->trans("CurrentChecksum").'</td>';
+	print '<td>'.$langs->trans("ExpectedChecksum").' <span class="opacitymedium">('.$algo.')</span></td>';
+	print '<td>'.$langs->trans("CurrentChecksum").' <span class="opacitymedium">('.$algo.')</span></td>';
 	print '</tr>'."\n";
 
 	print '<tr><td>';

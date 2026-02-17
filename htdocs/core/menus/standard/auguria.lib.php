@@ -191,7 +191,6 @@ function print_auguria_menu($db, $atarget, $type_user, &$tabMenu, &$menu, $noout
 
 	foreach ($menu->liste as $menuval) {
 		print_start_menu_entry_auguria($menuval['idsel'], $menuval['classname'], $menuval['enabled']);
-		// @phan-ignore-next-line
 		// @phpstan-ignore-next-line
 		print_text_menu_entry_auguria($menuval['titre'], $menuval['enabled'], ($menuval['url'] != '#' ? DOL_URL_ROOT : '').$menuval['url'], $menuval['id'], $menuval['idsel'], $menuval['classname'], ($menuval['target'] ? $menuval['target'] : $atarget), $menuval);
 		print_end_menu_entry_auguria($menuval['enabled']);
@@ -631,7 +630,7 @@ function print_left_auguria_menu($db, $menu_array_before, $menu_array_after, &$t
 					}
 
 					// print ($menu_array[$i]['prefix'] ? $menu_array[$i]['prefix'] : '');
-					print $menu_array[$i]['titre'];
+					print ucfirst($menu_array[$i]['titre']);
 					if ($shorturlwithoutparam) {
 						print '</a>';
 					} else {
@@ -645,7 +644,7 @@ function print_left_auguria_menu($db, $menu_array_before, $menu_array_after, &$t
 					if (!empty($menu_array[$i]['prefix'])) {
 						print $menu_array[$i]['prefix'];
 					}
-					print $menu_array[$i]['titre'];
+					print ucfirst($menu_array[$i]['titre']);
 					print '</span>';
 					print '</div>'."\n";
 					$lastlevel0 = 'greyed';
@@ -673,7 +672,7 @@ function print_left_auguria_menu($db, $menu_array_before, $menu_array_after, &$t
 					} else {
 						print '<span class="vsmenu" title="'.dol_escape_htmltag($menu_array[$i]['titre']).'">';
 					}
-					print $menu_array[$i]['titre'];
+					print ucfirst($menu_array[$i]['titre']);
 					if ($shorturlwithoutparam) {
 						print '</a>';
 					} else {
@@ -688,7 +687,7 @@ function print_left_auguria_menu($db, $menu_array_before, $menu_array_after, &$t
 					// Not enabled but visible (so greyed), except if parent was not enabled.
 					print '<div class="menu_contenu'.$cssmenu.'">';
 					print $tabstring;
-					print '<span class="spanlilevel0 vsmenudisabled vsmenudisabledmargin">'.$menu_array[$i]['titre'].'</span><br>';
+					print '<span class="spanlilevel0 vsmenudisabled vsmenudisabledmargin">'.ucfirst($menu_array[$i]['titre']).'</span><br>';
 					print '</div>'."\n";
 				}
 			}

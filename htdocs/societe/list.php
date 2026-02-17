@@ -111,7 +111,7 @@ $search_vat = trim(GETPOST('search_vat', 'alpha'));
 $search_sale = "";
 if (GETPOSTISARRAY('search_sale')) {
 	$search_sale = GETPOST('search_sale', 'array:int');
-} elseif (GETPOSTISSET('search_sale')) {
+} elseif (GETPOSTISSET('search_sale') && GETPOSTINT('search_sale') > 0) {
 	$search_sale = array(GETPOSTINT('search_sale'));
 }
 $search_categ_cus = GETPOSTINT("search_categ_cus");
@@ -1707,7 +1707,7 @@ if (!empty($arrayfields['s.ref_ext']['checked'])) {
 	$totalarray['nbfield']++;
 }
 if (!empty($arrayfields['s.barcode']['checked'])) {
-	print_liste_field_titre($arrayfields['s.barcode']['label'], $_SERVER["PHP_SELF"], "s.barcode", $param, '', '', $sortfield, $sortorder);
+	print_liste_field_titre($arrayfields['s.barcode']['label'], $_SERVER["PHP_SELF"], "s.barcode", '', $param, '', $sortfield, $sortorder);
 	$totalarray['nbfield']++;
 }
 if (!empty($arrayfields['s.code_client']['checked'])) {

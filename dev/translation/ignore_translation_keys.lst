@@ -130,7 +130,6 @@ AvailabilityType
 BAN
 BI
 BOMs
-Back
 Bad value for email, email was not verified by Google
 Bad value for returned userinfo[aud]
 Bad value for returned userinfo[exp]. Token expired.
@@ -146,8 +145,6 @@ Barcode
 BarcodeDesc
 BarcodeStickersMask
 BillOfMaterialsLine
-BlockLogNeedAmountsValue
-BlockLogNeedElement
 BlockedLogAuthorityNeededToStoreYouFingerprintsInNonAlterableRemote
 BlockedLogAuthorityUrl
 BlockedLogSetup
@@ -942,7 +939,6 @@ Don
 ECM
 EmptyMessageNotAllowedError
 ErrorInputRequired
-ErrorLDAPFunctionsAreDisabledOnThisPHP
 ErrorUpdating
 Extra
 FailedToConnectToSFTPAfterSSHAuthentication
@@ -1017,7 +1013,6 @@ TicketMessageMailSignatureText
 TicketSetupPage
 Timeline
 Transfer
-TryAnotherConnectionMode
 UndefinedKey
 UnknownType
 UpdateMember

@@ -316,7 +316,7 @@ if (empty($reshook)) {
 			}
 
 			if ($objecttmp->id > 0) {
-				$res = $objecttmp->add_object_linked($objecttmp->origin, $id_sending);
+				$res = $objecttmp->add_object_linked($objecttmp->origin_type, $id_sending);
 
 				if ($res == 0) {
 					$errors[] = $expd->ref.' : '.$langs->trans($objecttmp->errors[0]);
@@ -446,7 +446,7 @@ if (empty($reshook)) {
 								$product_type,
 								$rang,
 								$lines[$i]->special_code,
-								$objecttmp->origin,
+								$objecttmp->origin_type,
 								$lines[$i]->rowid,
 								$fk_parent_line,
 								$lines[$i]->fk_fournprice,
@@ -611,8 +611,8 @@ if (empty($reshook)) {
 			$db->rollback();
 
 			$action = 'create';
-			$_GET["origin"] = $_POST["origin"];
-			$_GET["originid"] = $_POST["originid"];
+			$_GET["origin"] = GETPOST("origin", 'alpha');
+			$_GET["originid"] = GETPOSTINT("originid");
 			if (!empty($errors)) {
 				setEventMessages(null, $errors, 'errors');
 			} else {

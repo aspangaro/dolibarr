@@ -179,7 +179,7 @@ class Societe extends CommonObject
 	 */
 
 	/**
-	 * @var array<string,array{type:string,label:string,langfile?:string,enabled:int<0,2>|string,position:int,notnull?:int,visible:int<-6,6>|string,alwayseditable?:int<0,1>|string,noteditable?:int<0,1>,default?:string,index?:int,foreignkey?:string,searchall?:int<0,1>,isameasure?:int<0,1>,css?:string,cssview?:string,csslist?:string,help?:string,showoncombobox?:int<0,4>|string,disabled?:int<0,1>,arrayofkeyval?:array<int|string,string>,autofocusoncreate?:int<0,1>,comment?:string,copytoclipboard?:int<1,2>,validate?:int<0,1>,showonheader?:int<0,1>}>  Array with all fields and their property. Do not use it as a static var. It may be modified by constructor.
+	 * @var array<string,array{type:string,label:string,langfile?:string,enabled:int<0,2>|string,position:int,notnull?:int,visible:int<-6,6>|string,alwayseditable?:int<0,1>|string,noteditable?:int<0,1>,default?:string,index?:int,foreignkey?:string,searchall?:int<0,1>,isameasure?:int<0,1>,css?:string,cssview?:string,csslist?:string,help?:string,showoncombobox?:int<0,4>|string,disabled?:int<0,1>,arrayofkeyval?:array<int|string,string>,autofocusoncreate?:int<0,1>,comment?:string,copytoclipboard?:int<1,2>,validate?:int<0,1>,showonheader?:int<0,1>,searchmulti?:int<0,1>}>  Array with all fields and their property. Do not use it as a static var. It may be modified by constructor.
 	 */
 	public $fields = array(
 		'rowid' => array('type' => 'integer', 'label' => 'TechnicalID', 'enabled' => 1, 'visible' => -2, 'noteditable' => 1, 'notnull' => 1, 'index' => 1, 'position' => 1, 'comment' => 'Id', 'css' => 'left'),
@@ -216,14 +216,13 @@ class Societe extends CommonObject
 		'idprof4' => array('type' => 'varchar(128)', 'label' => 'Idprof4', 'enabled' => 1, 'visible' => -1, 'position' => 205),
 		'idprof5' => array('type' => 'varchar(128)', 'label' => 'Idprof5', 'enabled' => 1, 'visible' => -1, 'position' => 206),
 		'idprof6' => array('type' => 'varchar(128)', 'label' => 'Idprof6', 'enabled' => 1, 'visible' => -1, 'position' => 207),
-		'tva_intra' => array('type' => 'varchar(20)', 'label' => 'Tva intra', 'enabled' => 1, 'visible' => -1, 'position' => 210),
+		'tva_intra' => array('type' => 'varchar(20)', 'label' => 'VATIntra', 'enabled' => 1, 'visible' => -1, 'position' => 210),
 		'capital' => array('type' => 'double(24,8)', 'label' => 'Capital', 'enabled' => 1, 'visible' => -1, 'position' => 215),
 		'fk_stcomm' => array('type' => 'integer', 'label' => 'CommercialStatus', 'enabled' => 1, 'visible' => -1, 'notnull' => 1, 'position' => 220),
 		'note_public' => array('type' => 'html', 'label' => 'NotePublic', 'enabled' => 1, 'visible' => 0, 'position' => 225),
 		'note_private' => array('type' => 'html', 'label' => 'NotePrivate', 'enabled' => 1, 'visible' => 0, 'position' => 230),
-		'prefix_comm' => array('type' => 'varchar(5)', 'label' => 'Prefix comm', 'enabled' => "getDolGlobalInt('SOCIETE_USEPREFIX')", 'visible' => -1, 'position' => 235),
-		'client' => array('type' => 'tinyint(4)', 'label' => 'Client', 'enabled' => 1, 'visible' => -1, 'position' => 240),
-		'fournisseur' => array('type' => 'tinyint(4)', 'label' => 'Fournisseur', 'enabled' => 1, 'visible' => -1, 'position' => 245),
+		'client' => array('type' => 'tinyint(4)', 'label' => 'Customer', 'enabled' => 1, 'visible' => -1, 'position' => 240),
+		'fournisseur' => array('type' => 'tinyint(4)', 'label' => 'Supplier', 'enabled' => 1, 'visible' => -1, 'position' => 245),
 		'supplier_account' => array('type' => 'varchar(32)', 'label' => 'Supplier account', 'enabled' => 1, 'visible' => -1, 'position' => 250),
 		'fk_prospectlevel' => array('type' => 'varchar(12)', 'label' => 'ProspectLevel', 'enabled' => 1, 'visible' => -1, 'position' => 255),
 		'customer_bad' => array('type' => 'tinyint(4)', 'label' => 'Customer bad', 'enabled' => 1, 'visible' => -1, 'position' => 260),
@@ -239,8 +238,8 @@ class Societe extends CommonObject
 		'mode_reglement_supplier' => array('type' => 'integer', 'label' => 'Mode reglement supplier', 'enabled' => 1, 'visible' => -1, 'position' => 305),
 		'cond_reglement_supplier' => array('type' => 'integer', 'label' => 'Cond reglement supplier', 'enabled' => 1, 'visible' => -1, 'position' => 308),
 		'outstanding_limit' => array('type' => 'double(24,8)', 'label' => 'OutstandingBill', 'enabled' => 1, 'visible' => -1, 'position' => 310, 'isameasure' => 1),
-		'order_min_amount' => array('type' => 'double(24,8)', 'label' => 'Order min amount', 'enabled' => 'isModEnabled("order") && !empty($conf->global->ORDER_MANAGE_MIN_AMOUNT)', 'visible' => -1, 'position' => 315, 'isameasure' => 1),
-		'supplier_order_min_amount' => array('type' => 'double(24,8)', 'label' => 'Supplier order min amount', 'enabled' => 'isModEnabled("order") && !empty($conf->global->ORDER_MANAGE_MIN_AMOUNT)', 'visible' => -1, 'position' => 320, 'isameasure' => 1),
+		'order_min_amount' => array('type' => 'double(24,8)', 'label' => 'Order min amount', 'enabled' => 'isModEnabled("order") && getDolGlobalInt("ORDER_MANAGE_MIN_AMOUNT")', 'visible' => -1, 'position' => 315, 'isameasure' => 1),
+		'supplier_order_min_amount' => array('type' => 'double(24,8)', 'label' => 'Supplier order min amount', 'enabled' => 'isModEnabled("order") && getDolGlobalInt("ORDER_MANAGE_MIN_AMOUNT")', 'visible' => -1, 'position' => 320, 'isameasure' => 1),
 		'fk_shipping_method' => array('type' => 'integer', 'label' => 'ShippingMode', 'enabled' => 1, 'visible' => -1, 'position' => 330),
 		'tva_assuj' => array('type' => 'tinyint(4)', 'label' => 'VATIsUsed', 'enabled' => 1, 'visible' => -1, 'position' => 335),
 		'localtax1_assuj' => array('type' => 'tinyint(4)', 'label' => 'LocalTax1IsUsed', 'enabled' => 1, 'visible' => -1, 'position' => 340),
@@ -249,7 +248,7 @@ class Societe extends CommonObject
 		'localtax2_value' => array('type' => 'double(6,3)', 'label' => 'LocalTax2 value', 'enabled' => 1, 'visible' => -1, 'position' => 355),
 		'vat_reverse_charge' => array('type' => 'tinyint(4)', 'label' => 'Vat reverse charge', 'enabled' => 1, 'visible' => -1, 'position' => 335),
 		'barcode' => array('type' => 'varchar(255)', 'label' => 'Barcode', 'enabled' => 1, 'visible' => -1, 'position' => 360),
-		'price_level' => array('type' => 'integer', 'label' => 'Price level', 'enabled' => '$conf->global->PRODUIT_MULTIPRICES || getDolGlobalString("PRODUIT_CUSTOMER_PRICES_BY_QTY_MULTIPRICES") || getDolGlobalString("PRODUIT_CUSTOMER_PRICES_AND_MULTIPRICES")', 'visible' => -1, 'position' => 365),
+		'price_level' => array('type' => 'integer', 'label' => 'Price level', 'enabled' => 'getDolGlobalString("PRODUIT_MULTIPRICES") || getDolGlobalString("PRODUIT_CUSTOMER_PRICES_BY_QTY_MULTIPRICES") || getDolGlobalString("PRODUIT_CUSTOMER_PRICES_AND_MULTIPRICES")', 'visible' => -1, 'position' => 365),
 		'default_lang' => array('type' => 'varchar(6)', 'label' => 'Default lang', 'enabled' => 1, 'visible' => -1, 'position' => 370),
 		'canvas' => array('type' => 'varchar(32)', 'label' => 'Canvas', 'enabled' => 1, 'visible' => -1, 'position' => 375),
 		'fk_barcode_type' => array('type' => 'integer', 'label' => 'Fk barcode type', 'enabled' => 1, 'visible' => -1, 'position' => 405),
@@ -278,7 +277,7 @@ class Societe extends CommonObject
 	public $nom;
 
 	/**
-	 * @var ?string Thirdparty name
+	 * @var string Thirdparty name
 	 */
 	public $name;
 
@@ -1142,11 +1141,11 @@ class Societe extends CommonObject
 					}
 				}
 
-				// Ajout du commercial affecte
+				// Addition of the assigned sales representative
 				if ($this->commercial_id != '' && $this->commercial_id != -1) {
 					$this->add_commercial($user, $this->commercial_id);
 				} elseif (!$user->hasRight('societe', 'client', 'voir')) {
-					// si un commercial cree un client il lui est affecte automatiquement
+					// If a sales representative creates a customer, they are automatically assigned to them.
 					$this->add_commercial($user, $user->id);
 				}
 
@@ -1507,9 +1506,9 @@ class Societe extends CommonObject
 		$this->order_min_amount = price2num($this->order_min_amount);
 		$this->supplier_order_min_amount = price2num($this->supplier_order_min_amount);
 
-		$this->tva_assuj = (is_numeric($this->tva_assuj)) ? (int) trim((string) $this->tva_assuj) : 0;
-		$this->tva_intra = dol_sanitizeFileName($this->tva_intra ?? '', '');
-		$this->vat_reverse_charge = empty($this->vat_reverse_charge) ? 0 : 1;
+		$this->tva_assuj			= (is_numeric($this->tva_assuj)) ? (int) trim((string) $this->tva_assuj) : 0;
+		$this->tva_intra			= trim($this->tva_intra);
+		$this->vat_reverse_charge	= empty($this->vat_reverse_charge) ? 0 : 1;
 		if (empty($this->status)) {
 			$this->status = 0;
 		}
@@ -1880,7 +1879,7 @@ class Societe extends CommonObject
 				}
 			} else {
 				if ($this->db->errno() == 'DB_ERROR_RECORD_ALREADY_EXISTS') {
-					// Doublon
+					// Duplicate
 					$this->error = $langs->trans("ErrorDuplicateField");
 					$result = -1;
 				} else {
@@ -1914,7 +1913,7 @@ class Societe extends CommonObject
 	 *    @param    string	$ref_alias 		Name_alias of third party (Warning, this can return several records)
 	 * 	  @param	int		$is_client		Only client third party
 	 *    @param	int		$is_supplier	Only supplier third party
-	 *    @return   int						>0 if OK, <0 if KO or if two records found for same ref or idprof, 0 if not found.
+	 *    @return   int						>0 if OK, <0 if KO (-2 if two records found for same ref or idprof, other negative for error), 0 if not found.
 	 */
 	public function fetch($rowid, $ref = '', $ref_ext = '', $barcode = '', $idprof1 = '', $idprof2 = '', $idprof3 = '', $idprof4 = '', $idprof5 = '', $idprof6 = '', $email = '', $ref_alias = '', $is_client = 0, $is_supplier = 0)
 	{
@@ -2043,7 +2042,7 @@ class Societe extends CommonObject
 			$num = $this->db->num_rows($resql);
 			if ($num > 1) {
 				$this->error = 'Fetch found several records. Rename one of thirdparties to avoid duplicate.';
-				dol_syslog($this->error, LOG_ERR);
+				dol_syslog($this->error, LOG_WARNING);
 				$result = -2;
 			} elseif ($num) {   // $num = 1
 				$obj = $this->db->fetch_object($resql);
@@ -2180,7 +2179,7 @@ class Societe extends CommonObject
 				$this->order_min_amount			= $obj->order_min_amount;
 				$this->supplier_order_min_amount = $obj->supplier_order_min_amount;
 
-				// multiprix
+				// multi price
 				$this->price_level = $obj->price_level;
 
 				// warehouse
@@ -2242,7 +2241,7 @@ class Societe extends CommonObject
 	 *    @param    string	$ref_alias 		Name_alias of third party (Warning, this can return several records)
 	 * 	  @param	int		$is_client		Only client third party
 	 *    @param	int		$is_supplier	Only supplier third party
-	 *    @return   int						ID of thirdparty found if OK, <0 if KO or if two records found, 0 if not found.
+	 *    @return   int						ID of thirdparty found if OK, <0 if KO (-2 if two records found or other negative if error), 0 if not found.
 	 */
 	public function findNearest($rowid = 0, $ref = '', $ref_ext = '', $barcode = '', $idprof1 = '', $idprof2 = '', $idprof3 = '', $idprof4 = '', $idprof5 = '', $idprof6 = '', $email = '', $ref_alias = '', $is_client = 0, $is_supplier = 0)
 	{
@@ -2322,7 +2321,7 @@ class Societe extends CommonObject
 				$num = $this->db->num_rows($resql);
 				if ($num > 1) {
 					$this->error = 'Fetch found several records. Rename one of thirdparties to avoid duplicate.';
-					dol_syslog($this->error, LOG_ERR);
+					dol_syslog($this->error, LOG_WARNING);
 					$result = -2;
 				} elseif ($num) {
 					$obj = $this->db->fetch_object($resql);
@@ -2375,7 +2374,7 @@ class Societe extends CommonObject
 				$num = $this->db->num_rows($resql);
 				if ($num > 1) {
 					$this->error = 'Fetch found several records. Rename one of thirdparties to avoid duplicate.';
-					dol_syslog($this->error, LOG_ERR);
+					dol_syslog($this->error, LOG_WARNING);
 					$result = -2;
 				} elseif ($num) {
 					$obj = $this->db->fetch_object($resql);
@@ -2568,7 +2567,7 @@ class Societe extends CommonObject
 		if ($this->id) {
 			$newclient = 1;
 			if (($this->client == 2 || $this->client == 3) && !getDolGlobalInt('SOCIETE_DISABLE_PROSPECTSCUSTOMERS')) {
-				$newclient = 3; //If prospect, we keep prospect tag
+				$newclient = 3; // If prospected, we keep prospect tag
 			}
 			$sql = "UPDATE ".MAIN_DB_PREFIX.$this->table_element;
 			$sql .= " SET client = ".((int) $newclient);
@@ -3868,7 +3867,7 @@ class Societe extends CommonObject
 				return 1;
 			}
 			if ($mod->code_modifiable) {
-				return 1; // A mettre en dernier
+				return 1; // To be put last
 			}
 			return 0;
 		} else {
@@ -3909,7 +3908,7 @@ class Societe extends CommonObject
 				return 1;
 			}
 			if ($mod->code_modifiable) {
-				return 1; // A mettre en dernier
+				return 1; // To be put last
 			}
 			return 0;
 		} else {
@@ -4436,11 +4435,9 @@ class Societe extends CommonObject
 	 */
 	public function isACompany()
 	{
-		//global $mysoc;
-
 		// Define if third party is treated as company (or not) when nature is unknown
 		//$defaultvalue = in_array($mysoc->country_code, array('FR')) ? 0 : 1;	// TODO On old version, default was 1 for everybody, move this to defaultvalue = 0 for everybody
-		$defaultvalue = 1;
+		$defaultvalue = 0;
 		$isACompany = getDolGlobalInt('MAIN_UNKNOWN_CUSTOMERS_ARE_COMPANIES', $defaultvalue);
 
 		// Now try to guess using different tips
@@ -4675,7 +4672,7 @@ class Societe extends CommonObject
 			}
 		}
 
-		$name = $socname;
+		$name = (string) $socname;
 		$alias = $socalias ? $socalias : '';
 
 		// Positionne parameters
@@ -4704,7 +4701,7 @@ class Societe extends CommonObject
 
 		$this->db->begin();
 
-		// Cree et positionne $this->id
+		// Creates and positions $this->id
 		$result = $this->create($user);
 
 		if ($result >= 0) {
@@ -4741,7 +4738,7 @@ class Societe extends CommonObject
 				return -1;
 			}
 		} else {
-			// $this->error deja positionne
+			// $this->error already positioned
 			dol_syslog(get_class($this)."::create_from_member - 2 - ".$this->error." - ".implode(',', $this->errors), LOG_ERR);
 
 			$this->db->rollback();
@@ -5266,6 +5263,8 @@ class Societe extends CommonObject
 	 */
 	public function getOutstandingBills($mode = 'customer', $late = 0)
 	{
+		include_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
+
 		$table = 'facture';
 		if ($mode == 'supplier') {
 			$table = 'facture_fourn';
@@ -5344,7 +5343,7 @@ class Societe extends CommonObject
 					$arrayofrefopened[$obj->rowid] = $obj->ref;
 				}
 			}
-			return array('opened' => $outstandingOpened, 'total_ht' => $outstandingTotal, 'total_ttc' => $outstandingTotalIncTax, 'refs' => $arrayofref, 'refsopened' => $arrayofrefopened); // 'opened' is 'incl taxes'
+			return array('opened' => $outstandingOpened, 'total_ht' => $outstandingTotal, 'total_ttc' => $outstandingTotalIncTax, 'refs' => $arrayofref, 'refsopened' => $arrayofrefopened); // 'opened' is 'amount incl taxes' > 0
 		} else {
 			dol_syslog("Sql error ".$this->db->lasterror, LOG_ERR);
 			return array();
@@ -5390,6 +5389,31 @@ class Societe extends CommonObject
 
 
 	/**
+	 * Calculate VAT intracommunity number for a thirdparty if missing, from the professional ID
+	 *
+	 * @param 	mixed 	$thirdparty		A thirdparty object
+	 * @return 	string					A VAT number
+	 */
+	public function calculateVATNumberFromProperties($thirdparty)
+	{
+		if ($thirdparty->country_code == 'FR' && empty($thirdparty->tva_intra) && !empty($thirdparty->tva_assuj)) {
+			$siren = trim($thirdparty->idprof1);
+			if (empty($siren)) {
+				$siren = (int) substr(str_replace(' ', '', $thirdparty->idprof2), 0, 9);
+			}
+			if (!empty($siren)) {
+				// [FR + code clé  + numéro SIREN ]
+				// Key VAT = [12 + 3 × (SIREN modulo 97)] modulo 97
+				$cle = (12 + 3 * $siren % 97) % 97;
+				$tva_intra = 'FR' . $cle . $siren;
+			}
+		}
+
+		return $tva_intra ?? '';
+	}
+
+
+	/**
 	 *  Create a document onto disk according to template module.
 	 *
 	 *	@param	string					$modele			Generator to use. Caller must set it to obj->model_pdf.
@@ -5416,7 +5440,7 @@ class Societe extends CommonObject
 			$result = $companybankaccount->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
 			$this->last_main_doc = $companybankaccount->last_main_doc;
 		} else {
-			// Positionne le modele sur le nom du modele a utiliser
+			// Set the model to the name of the model to be used
 			if (!dol_strlen($modele)) {
 				if (getDolGlobalString('COMPANY_ADDON_PDF')) {
 					$modele = getDolGlobalString('COMPANY_ADDON_PDF');

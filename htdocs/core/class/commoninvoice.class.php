@@ -5,7 +5,7 @@
  * Copyright (C) 2023		Nick Fragoulis
  * Copyright (C) 2024-2025  Frédéric France             <frederic.france@free.fr>
  * Copyright (C) 2024-2025	MDW							<mdeweerd@users.noreply.github.com>
- * Copyright (C) 2024		Alexandre Spangaro			<alexandre@inovea-conseil.com>
+ * Copyright (C) 2024-2026	Alexandre Spangaro			<alexandre@inovea-conseil.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ abstract class CommonInvoice extends CommonObject
 	public $type = self::TYPE_STANDARD;
 
 	/**
-	 * @var int		Sub type of invoice (A subtype code coming from llx_invoice_subtype table. May be used by some countries like Greece)
+	 * @var ?int		Sub type of invoice (A subtype code coming from llx_invoice_subtype table, we store the rowid. May be used by some countries like Greece)
 	 */
 	public $subtype;
 
@@ -283,14 +283,20 @@ abstract class CommonInvoice extends CommonObject
 	const STATUS_ABANDONED = 3;
 
 
-	const CLOSECODE_DISCOUNTVAT = 'discount_vat'; // Abandoned remain - escompte
-	const CLOSECODE_BADDEBT = 'badcustomer'; // Abandoned remain - bad customer
-	const CLOSECODE_BANKCHARGE = 'bankcharge'; // Abandoned remain - bank charge
-	const CLOSECODE_WITHHOLDINGTAX = 'withholdingtax';	// Abandoned remain - source tax
-	const CLOSECODE_OTHER = 'other'; // Abandoned remain - other
+	const CLOSECODE_DISCOUNTVAT = 'discount_vat'; // Abandoned (the remain to pay) - escompte
+	const CLOSECODE_BADDEBT = 'badcustomer'; // Abandoned (the remain to pay) - bad customer
+	const CLOSECODE_BANKCHARGE = 'bankcharge'; // Abandoned (the remain to pay) - bank charge
+	const CLOSECODE_WITHHOLDINGTAX = 'withholdingtax';	// Abandoned (the remain to pay) - source tax
+	const CLOSECODE_OTHER = 'other'; // Abandoned (the remain to pay) - other
+	const CLOSECODE_ABANDONED = 'abandon'; // Abandoned (no payment at all) - other
+	const CLOSECODE_REPLACED = 'replaced'; // Abandoned (no payment at all) - replacedby another invoice (feature disabled by default)
 
-	const CLOSECODE_ABANDONED = 'abandon'; // Abandoned - other
-	const CLOSECODE_REPLACED = 'replaced'; // Closed after doing a replacement invoice
+	const ARRAY_OF_DISPUTE_STATUS = array(
+		0 => array('label' => "None"),
+		1 => array('label' => "DisputeOpen"),
+		8 => array('label' => "DisputeLost"),
+		9 => array('label' => "DisputeWon")
+	);
 
 
 	/**
@@ -689,6 +695,29 @@ abstract class CommonInvoice extends CommonObject
 		return $retarray;
 	}
 
+	// phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+	/**
+	 *  Return if an invoice can be set back to draft.
+	 *	Rule is:
+	 *  If invoice is draft and has a temporary ref -> yes (1)
+	 *  If hidden option INVOICE_CAN_NEVER_BE_REMOVED is 1 -> no (0)
+	 *  If invoice is transferred in bookkeeping -> no (-1)
+	 *  If invoice has a definitive ref, is not last in ref -> no (-2)
+	 *  If invoice has a definitive ref, is not last in a situation cycle -> no (-3)
+	 *  If there is one payment -> no (-4)
+	 *  If already sent by email -> no (-5)
+	 *  If already printed -> no (-6)
+	 *  If running a LNE version and customer invoice was validated -> no (-7)
+	 *  Otherwise -> yes (2)
+	 *
+	 *  @return    int         Return integer <=0 if no, >0 if yes
+	 */
+	public function isEditable()
+	{
+		$test = $this->is_erasable();
+
+		return $test;
+	}
 
 	// phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
 	/**
@@ -697,9 +726,13 @@ abstract class CommonInvoice extends CommonObject
 	 *  If invoice is draft and has a temporary ref -> yes (1)
 	 *  If hidden option INVOICE_CAN_NEVER_BE_REMOVED is 1 -> no (0)
 	 *  If invoice is transferred in bookkeeping -> no (-1)
-	 *  If invoice has a definitive ref, is not last in ref and INVOICE_CAN_ALWAYS_BE_REMOVED off -> no (-2)
-	 *  If invoice has a definitive ref, is not last in a situation cycle and INVOICE_CAN_ALWAYS_BE_REMOVED off  -> no (-3)
-	 *  If there is one payment and INVOICE_CAN_ALWAYS_BE_REMOVED off  -> no (-4)
+	 *  If invoice has a definitive ref, is not last in ref -> no (-2)
+	 *  If invoice has a definitive ref, is not last in a situation cycle -> no (-3)
+	 *  If there is one payment -> no (-4)
+	 *  If already sent by email -> no (-5)
+	 *  If already printed -> no (-6)
+	 *  If running a LNE version and customer invoice was validated -> no (-7)
+	 *  Other value (may be returned by a hook -10, -11, ...)
 	 *  Otherwise -> yes (2)
 	 *
 	 *  @return    int         Return integer <=0 if no, >0 if yes
@@ -707,6 +740,7 @@ abstract class CommonInvoice extends CommonObject
 	public function is_erasable()
 	{
 		// phpcs:enable
+		global $hookmanager, $action;
 
 		// We check if invoice is a temporary number (PROVxxxx)
 		$tmppart = substr($this->ref, 1, 4);
@@ -721,6 +755,26 @@ abstract class CommonInvoice extends CommonObject
 
 		// If not a draft invoice and not temporary invoice
 		if ($tmppart !== 'PROV') {
+			if ($this instanceOf Facture) {
+				/* @var Facture $this */
+				// If sent by email, we refuse
+				if ((int) $this->email_sent_counter > 0) {
+					return -5;
+				}
+
+				// If printed, we refuse
+				if ((int) $this->pos_print_counter > 0) {
+					return -6;
+				}
+
+				include_once DOL_DOCUMENT_ROOT.'/blockedlog/lib/blockedlog.lib.php';
+				if (isALNERunningVersion()) {
+					$this->error = 'Action not allowed on the certified version';
+					return -7;
+				}
+			}
+
+			// If in accountancy, we refuse
 			$ventilExportCompta = $this->getVentilExportCompta();
 			if ($ventilExportCompta != 0) {
 				return -1;
@@ -729,31 +783,44 @@ abstract class CommonInvoice extends CommonObject
 			// Get last number of validated invoice
 			if ($this->element != 'invoice_supplier') {
 				if (empty($this->thirdparty)) {
-					$this->fetch_thirdparty(); // We need to have this->thirdparty defined, in case of numbering rule use tags that depend on thirdparty (like {t} tag).
+					$this->fetch_thirdparty(); // We need to have this->thirdparty defined, in case of the numbering rule uses tags that depend on thirdparty (like {t} tag).
 				}
 				$maxref = $this->getNextNumRef($this->thirdparty, 'last');
+				// $maxref can be '' (means not found) if there is no invoice yet, but also if there is no invoice for the new period when there is a reset at each period
 
-				// If there is no invoice into the reset range and not already transferred in accounting, we can delete
-				// If invoice to delete is last one and not already transferred, we can delete
-				if (!getDolGlobalString('INVOICE_CAN_ALWAYS_BE_REMOVED') && $maxref != '' && $maxref != $this->ref) {
+				// If invoice to delete is not the last one, we refuse
+				if ($maxref != '' && $maxref != $this->ref) {
 					return -2;
 				}
 
 				// TODO If there is payment in bookkeeping, check the payment is not dispatched in accounting and return -2.
 				// ...
 
-				if (!getDolGlobalString('INVOICE_CAN_ALWAYS_BE_REMOVED') && $this->situation_cycle_ref && method_exists($this, 'is_last_in_cycle')) {
+				// If invoice is situation type, we refuse it it is not the last in situation cycle
+				if (!getDolGlobalString('INVOICE_SITUATION_CAN_BE_REMOVED_EVEN_IF_NOT_LAST') && $this->situation_cycle_ref && method_exists($this, 'is_last_in_cycle')) {
 					$last = $this->is_last_in_cycle();
 					if (!$last) {
 						return -3;
 					}
 				}
 			}
-		}
 
-		// Test if there is at least one payment. If yes, refuse to delete.
-		if (!getDolGlobalString('INVOICE_CAN_ALWAYS_BE_REMOVED') && $this->getSommePaiement() > 0) {
-			return -4;
+			// Test if there is at least one payment. If yes, we refuse to delete.
+			if ($this->getSommePaiement() > 0) {
+				return -4;
+			}
+
+			$parameters = array();
+			$reshook = $hookmanager->executeHooks('isEditable', $parameters, $this, $action);
+			if (!empty($hookmanager->resArray['result'])) {
+				$this->error = $hookmanager->resArray['error'];
+				if (!empty($hookmanager->resArray['errors'])) {
+					$this->errors[] = array_merge($this->errors, $this->error, $hookmanager->resArray['errors']);
+				} else {
+					$this->errors[] = array_merge($this->errors, $this->error);
+				}
+				return $hookmanager->resArray('result');
+			}
 		}
 
 		return 2;
@@ -1062,14 +1129,16 @@ abstract class CommonInvoice extends CommonObject
 			$paramsBadge['badgeParams' ]['attr']['title'] = $titlestringtoshow;
 		}
 
-		/*
-		if (isset($moreparams['dispute_status'])) {
-			$statusdispute = $moreparams['dispute_status'] ? img_picto($langs->trans("DisputeOpen"), 'warning') : '';
-		}
-		*/
 		if (isset($moreparams['dispute_status']) && $moreparams['dispute_status']) {
-			$labelStatus .= ' - '.$langs->trans("DisputeOpen");
-			$statusType = 'status8';
+			$labelStatus .= ' - ';
+			if ($moreparams['dispute_status'] == 8) {
+				$labelStatus .= $langs->trans("DisputeLost");
+			} elseif ($moreparams['dispute_status'] == 9) {
+				$labelStatus .= $langs->trans("DisputeWon");
+			} else {
+				$labelStatus .= $langs->trans("DisputeOpen");
+				$statusType = 'status8';
+			}
 		}
 
 		$statusbadge = dolGetStatus($labelStatus, $labelStatusShort, '', $statusType, $mode, '', $paramsBadge);
@@ -1161,7 +1230,7 @@ abstract class CommonInvoice extends CommonObject
 
 			$diff = $date_piece - $date_lim_current;
 
-			if ($diff < 0) {
+			if ($diff <= 0) {
 				$datelim = $date_lim_current;
 			} else {
 				$datelim = $date_lim_next;
@@ -1600,7 +1669,7 @@ abstract class CommonInvoice extends CommonObject
 												$charge->customer = $customer->id;
 											} elseif ($paymentintent->status === 'requires_action') {
 												//paymentintent->status may be => 'requires_action' (no error in such a case)
-												dol_syslog(var_export($paymentintent, true), LOG_DEBUG);
+												dol_syslog(formatLogObject($paymentintent), LOG_DEBUG);
 
 												$charge->status = 'failed';
 												$charge->customer = $customer->id;
@@ -1611,7 +1680,7 @@ abstract class CommonInvoice extends CommonObject
 												$stripefailuremessage = 'Action required. Contact the support at ';// . $conf->global->SELLYOURSAAS_MAIN_EMAIL;
 												$stripefailuredeclinecode = $stripe->declinecode;
 											} else {
-												dol_syslog(var_export($paymentintent, true), LOG_DEBUG);
+												dol_syslog(formatLogObject($paymentintent), LOG_DEBUG);
 
 												$charge->status = 'failed';
 												$charge->customer = $customer->id;
@@ -1898,8 +1967,14 @@ abstract class CommonInvoice extends CommonObject
 	{
 		global $mysoc;
 
-		// Convert total_ttc to a string with 2 decimal places
-		$totalTTCString = number_format($this->total_ttc, 2, '.', '');
+		// Get the amount to pay
+		$amount_to_pay = $this->getRemainToPay();
+
+		// Prevent negative values (e.g. overpayments)
+		$amount_to_pay = max(0, $amount_to_pay);
+
+		// Ensure numeric formatting for EPC QR code
+		$amount_to_pay = price2num($amount_to_pay, 'MT');
 
 		// Initialize an array to hold the lines of the QR code
 		$lines = array();
@@ -1940,7 +2015,7 @@ abstract class CommonInvoice extends CommonObject
 		}
 
 		// Add the amount and reference
-		$lines[] = 'EUR' . $totalTTCString; // Amount (optional)
+		$lines[] = 'EUR' . $amount_to_pay; // Amount (optional)
 		$lines[] = ''; // Purpose (optional)
 		$lines[] = ''; // Payment reference (optional)
 		$lines[] = $this->ref; // Remittance Information (optional)
@@ -2325,7 +2400,7 @@ abstract class CommonInvoiceLine extends CommonObjectLine
 	/**
 	 * List of cumulative options:
 	 * Bit 0:	0 for common VAT - 1 if VAT french NPR
-	 * Bit 1:	0 si ligne normal - 1 si bit discount (link to line into llx_remise_except)
+	 * Bit 1:	0 if standard line - 1 if bit discount (link to line into llx_remise_except)
 	 * @var int
 	 */
 	public $info_bits = 0;
@@ -2355,5 +2430,10 @@ abstract class CommonInvoiceLine extends CommonObjectLine
 	/**
 	 * @var int
 	 */
-	public $fk_accounting_account;
+	public $fk_code_ventilation;
+
+	/**
+	 * @var float 		Situation advance percentage (default 100 for standard invoices)
+	 */
+	public $situation_percent = 100;
 }

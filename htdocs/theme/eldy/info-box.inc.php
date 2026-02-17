@@ -104,6 +104,11 @@ if (!defined('ISLOADEDBYSTEELSHEET')) {
 	font-size: 2.8em;
 	background: var(--colorbacktitle1) !important;
 }
+<?php if (!colorIsLight(getDolGlobalString('THEME_ELDY_BACKTITLE1'))) { ?>
+.info-box-icon i.fa, .info-box-icon i.fa:before {
+	color: #fff !important;
+}
+<?php } ?>
 
 .info-box-module .info-box-icon {
 	padding-top: 5px;
@@ -157,7 +162,7 @@ a.info-box-text-a i.fa.fa-exclamation-triangle, span.badge i.fa.fa-exclamation-t
 }
 
 .info-box-line {
-	line-height: 1.35em;
+	line-height: 1.25em;
 }
 .info-box-line-text {
 	overflow: hidden;
@@ -256,8 +261,8 @@ a.info-box-text-a i.fa.fa-exclamation-triangle, span.badge i.fa.fa-exclamation-t
 .info-box-content {
 	padding-top: 5px;
 	padding-bottom: 5px;
-	padding-left: 10px;
-	padding-right: 5px;
+	padding-<?php echo $left; ?>: 14px;
+	padding-<?php echo $right; ?>: 5px;
 	margin-left: 84px;
 }
 .info-box-sm .info-box-content {
@@ -279,21 +284,21 @@ a.info-box-text-a i.fa.fa-exclamation-triangle, span.badge i.fa.fa-exclamation-t
 }
 .progress-description,
 .info-box-text,
-.info-box-title{
+.info-box-title {
 	display: block;
 	font-size: 12px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.info-box-title{
+.info-box-title {
 	text-transform: uppercase;
-	font-weight: bold;
+	/* font-weight: bold; */
 	margin-bottom: 3px;	/* not too much space so we can add another lines */
-	opacity: 0.6;
+	opacity: 0.5;
 	/* color: var(--colortexttitlenotab); */
 }
-.info-box-text{
+.info-box-text {
 	font-size: 0.92em;
 }
 /* Force values for small screen 480 */
@@ -345,6 +350,9 @@ a.info-box-text{ text-decoration: none;}
 .infobox-haslink .info-box-icon .info-box-createlink span.fas {
 	margin:auto;
 }
+.infobox-haslink i.fa.fa-exclamation-triangle.hideonsmartphone {
+	display: none;
+}
 
 
 /* ICONS INFO BOX */
@@ -375,8 +383,11 @@ if (GETPOSTISSET('THEME_SATURATE_RATIO')) {
 }
 
 .spannature {
-	padding-top: 5px !important;
+	padding-top: 6px !important;
 	padding-bottom: 6px !important;
+	vertical-align: middle;
+	white-space: nowrap;
+	display: inline-block;
 }
 
 .nonature-back {
@@ -480,6 +491,9 @@ a.vmenu span, span.vmenu, span.vmenu span {
 }
 .infobox-holiday{
 	color: #755114;
+}
+.infobox-portal {
+	color: #304;
 }
 
 
@@ -668,7 +682,6 @@ a.vmenu span, span.vmenu, span.vmenu span {
 		width: 250px;
 	}
 }
-
 
 
 

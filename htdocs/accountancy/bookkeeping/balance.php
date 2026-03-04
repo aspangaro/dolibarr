@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2016       Olivier Geffroy         <jeff@jeffinfo.com>
  * Copyright (C) 2016       Florian Henry           <florian.henry@open-concept.pro>
- * Copyright (C) 2016-2025  Alexandre Spangaro      <alexandre@inovea-conseil.com>
+ * Copyright (C) 2016-2026  Alexandre Spangaro      <alexandre@inovea-conseil.com>
  * Copyright (C) 2018-2025  Frédéric France         <frederic.france@free.fr>
  * Copyright (C) 2024       MDW                     <mdeweerd@users.noreply.github.com>
  *
@@ -65,14 +65,18 @@ $search_date_end = GETPOSTDATE('date_end', 'getpostend', 'auto', 'search_date_en
 
 $search_ledger_code = GETPOST('search_ledger_code', 'array');
 $search_accountancy_code_start = GETPOST('search_accountancy_code_start', 'alpha');
-if ($search_accountancy_code_start == - 1) {
+if ($search_accountancy_code_start == -1) {
 	$search_accountancy_code_start = '';
 }
 $search_accountancy_code_end = GETPOST('search_accountancy_code_end', 'alpha');
-if ($search_accountancy_code_end == - 1) {
+if ($search_accountancy_code_end == -1) {
 	$search_accountancy_code_end = '';
 }
 $search_not_reconciled = GETPOST('search_not_reconciled', 'alpha');
+
+// Fiscal year selector for balance (N, N-1, N-2)
+// -1 means "no fiscal year filter" (use date filters only, live bookkeeping)
+$search_fiscalyear_id = GETPOSTISSET('search_fiscalyear_id') ? GETPOSTINT('search_fiscalyear_id') : -1;
 
 // Load variable for pagination
 $limit = GETPOSTINT('limit') ? GETPOSTINT('limit') : $conf->liste_limit;
@@ -100,9 +104,40 @@ $hookmanager->initHooks(array($contextpage));  // Note that conf->hooks_modules 
 $formaccounting = new FormAccounting($db);
 $form = new Form($db);
 
-if (empty($search_date_start) && empty($search_date_end) && !GETPOSTISSET('formfilteraction')) {
+// Load the last 3 fiscal years (N, N-1, N-2) for the selector
+$fiscalyears_list = array();
+$sql_fy  = "SELECT fy.rowid, fy.label, fy.date_start, fy.date_end, fy.statut";
+$sql_fy .= " FROM ".MAIN_DB_PREFIX."accounting_fiscalyear AS fy";
+$sql_fy .= " WHERE fy.entity = ".(int) $conf->entity;
+$sql_fy .= " ORDER BY fy.date_start DESC";
+$sql_fy .= " ".$db->plimit(3);
+$res_fy = $db->query($sql_fy);
+if ($res_fy) {
+	while ($obj_fy = $db->fetch_object($res_fy)) {
+		$fiscalyears_list[$obj_fy->rowid] = $obj_fy;
+	}
+}
+
+// On first load (no formfilteraction), default to the current fiscal year
+if (!GETPOSTISSET('formfilteraction') && $search_fiscalyear_id == -1) {
+	// Find the current or most recent fiscal year
+	foreach ($fiscalyears_list as $fy) {
+		if ($search_fiscalyear_id == -1) {
+			$search_fiscalyear_id = $fy->rowid; // First = most recent (sorted DESC)
+		}
+	}
+}
+
+// When a fiscal year is selected, override date filters with its date range
+$fiscalyear_selected = null;
+if ($search_fiscalyear_id > 0 && isset($fiscalyears_list[$search_fiscalyear_id])) {
+	$fiscalyear_selected = $fiscalyears_list[$search_fiscalyear_id];
+	$search_date_start = $db->jdate($fiscalyear_selected->date_start);
+	$search_date_end   = $db->jdate($fiscalyear_selected->date_end);
+} elseif (empty($search_date_start) && empty($search_date_end) && !GETPOSTISSET('formfilteraction')) {
+	// Fallback to current fiscal year dates if no fiscal year matched
 	$sql = "SELECT date_start, date_end";
-	$sql .=" FROM ".MAIN_DB_PREFIX."accounting_fiscalyear ";
+	$sql .= " FROM ".MAIN_DB_PREFIX."accounting_fiscalyear";
 	if (getDolGlobalInt('ACCOUNTANCY_FISCALYEAR_DEFAULT')) {
 		$sql .= " WHERE rowid = " . getDolGlobalInt('ACCOUNTANCY_FISCALYEAR_DEFAULT');
 	} else {
@@ -132,6 +167,21 @@ if (empty($search_date_start) && empty($search_date_end) && !GETPOSTISSET('formf
 	}
 }
 
+// Check if the selected fiscal year has a snapshot available — if yes, load from snapshot, otherwise fall back to live bookkeeping
+$use_snapshot = false;
+if (!empty($fiscalyear_selected) && $fiscalyear_selected->status == Fiscalyear::STATUS_CLOSED) {
+	$sql_snap  = "SELECT COUNT(rowid) as nb FROM ".MAIN_DB_PREFIX."accounting_balance_snapshot";
+	$sql_snap .= " WHERE fk_fiscalyear = ".(int) $fiscalyear_selected->rowid;
+	$sql_snap .= " AND entity = ".(int) $conf->entity;
+	$res_snap = $db->query($sql_snap);
+	if ($res_snap) {
+		$obj_snap = $db->fetch_object($res_snap);
+		if ($obj_snap->nb > 0) {
+			$use_snapshot = true;
+		}
+	}
+}
+
 if (!isModEnabled('accounting')) {
 	accessforbidden();
 }
@@ -143,7 +193,6 @@ if (!$user->hasRight('accounting', 'mouvements', 'lire')) {
 }
 
 $permissiontoadd = $user->hasRight('accounting', 'mouvements', 'creer');
-
 
 /*
  * Action
@@ -168,6 +217,7 @@ if (empty($reshook)) {
 		$search_accountancy_code_end = '';
 		$search_not_reconciled = '';
 		$search_ledger_code = array();
+		$search_fiscalyear_id = -1;
 		unset($_SESSION['DOLDATE_search_date_start_accountancy_day']);
 		unset($_SESSION['DOLDATE_search_date_start_accountancy_month']);
 		unset($_SESSION['DOLDATE_search_date_start_accountancy_year']);
@@ -213,21 +263,34 @@ if (empty($reshook)) {
 	if (!empty($show_subgroup)) {
 		$param .= '&show_subgroup='.urlencode($show_subgroup);
 	}
-
-	// param with type of list
-	$url_param = substr($param, 1); // remove first "&"
-	if (!empty($type)) {
-		$param = '&type=' . $type . $param;
+	if ($search_fiscalyear_id > 0) {
+		$param .= '&search_fiscalyear_id='.(int) $search_fiscalyear_id;
 	}
+}
+
+// param with type of list
+$url_param = substr($param, 1); // remove first "&"
+if (!empty($type)) {
+	$param = '&type='.$type.$param;
 }
 
 if ($action == 'export' && $user->hasRight('accounting', 'mouvements', 'lire')) {
 	$exportType = GETPOST('export_type');
 
-	if ($type == 'sub') {
-		$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, 0, $filter, 'AND', 1);
+	if ($use_snapshot) {
+		// Load balance from frozen snapshot (closed fiscal year)
+		if ($type == 'sub') {
+			$result = $object->fetchBalanceFromSnapshot($fiscalyear_selected->rowid, $conf->entity, 1);
+		} else {
+			$result = $object->fetchBalanceFromSnapshot($fiscalyear_selected->rowid, $conf->entity, 0);
+		}
 	} else {
-		$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, 0, $filter);
+		// Load balance from live bookkeeping entries
+		if ($type == 'sub') {
+			$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, 0, $filter, 'AND', 1);
+		} else {
+			$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, 0, $filter);
+		}
 	}
 	if ($result < 0) {
 		setEventMessages($object->error, $object->errors, 'errors');
@@ -265,9 +328,7 @@ if ($action == 'export' && $user->hasRight('accounting', 'mouvements', 'lire')) 
 			$pdf->toDate = dol_mktime(12, 0, 0, GETPOSTINT('date_endmonth'), GETPOSTINT('date_endday'), GETPOSTINT('date_endyear'));
 		}
 		$pdf->balanceType = $type;
-
 		$result = $pdf->write_file($object, $langs);
-
 		if ($result < 0) {
 			setEventMessage($pdf->error, "errors");
 		} else {
@@ -276,7 +337,6 @@ if ($action == 'export' && $user->hasRight('accounting', 'mouvements', 'lire')) 
 		}
 	}
 }
-
 
 /*
  * View
@@ -292,28 +352,40 @@ $help_url = 'EN:Module_Double_Entry_Accounting|FR:Module_Comptabilit&eacute;_en_
 
 llxHeader('', $title_page, $help_url, '', 0, 0, '', '', '', 'mod-accountancy accountancy-consultation page-'.(($type == 'sub') ? 'sub' : '').'balance');
 
-
 if ($action != 'export') {
 	// List
 	$nbtotalofrecords = '';
 	if (!getDolGlobalInt('MAIN_DISABLE_FULL_SCANLIST')) {
-		if ($type == 'sub') {
-			$nbtotalofrecords = $object->fetchAllBalance($sortorder, $sortfield, 0, 0, $filter, 'AND', 1);
+		if ($use_snapshot) {
+			// Count snapshot lines for this fiscal year
+			$nbtotalofrecords = $object->fetchBalanceFromSnapshot($fiscalyear_selected->rowid, $conf->entity, ($type == 'sub') ? 1 : 0);
 		} else {
-			$nbtotalofrecords = $object->fetchAllBalance($sortorder, $sortfield, 0, 0, $filter);
+			if ($type == 'sub') {
+				$nbtotalofrecords = $object->fetchAllBalance($sortorder, $sortfield, 0, 0, $filter, 'AND', 1);
+			} else {
+				$nbtotalofrecords = $object->fetchAllBalance($sortorder, $sortfield, 0, 0, $filter);
+			}
 		}
-
 		if ($nbtotalofrecords < 0) {
 			setEventMessages($object->error, $object->errors, 'errors');
 		}
 	}
 
-	if ($type == 'sub') {
-		$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, $offset, $filter, 'AND', 1);
+	if ($use_snapshot) {
+		// Load balance from frozen snapshot — fiscal year is closed and snapshot exists
+		if ($type == 'sub') {
+			$result = $object->fetchBalanceFromSnapshot($fiscalyear_selected->rowid, $conf->entity, 1);
+		} else {
+			$result = $object->fetchBalanceFromSnapshot($fiscalyear_selected->rowid, $conf->entity, 0);
+		}
 	} else {
-		$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, $offset, $filter);
+		// Standard behavior: load balance from live bookkeeping entries
+		if ($type == 'sub') {
+			$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, $offset, $filter, 'AND', 1);
+		} else {
+			$result = $object->fetchAllBalance($sortorder, $sortfield, $limit, $offset, $filter);
+		}
 	}
-
 	if ($result < 0) {
 		setEventMessages($object->error, $object->errors, 'errors');
 	}
@@ -336,11 +408,9 @@ if ($action != 'export') {
 
 	$parameters = array();
 	$reshook = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
-
 	if ($reshook < 0) {
 		setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 	}
-
 	$newcardbutton = empty($hookmanager->resPrint) ? '' : $hookmanager->resPrint;
 
 	if (empty($reshook)) {
@@ -391,6 +461,38 @@ if ($action != 'export') {
 
 	$moreforfilter = '';
 
+	// Fiscal year tabs (N, N-1, N-2) — snapshot used automatically if available, otherwise live bookkeeping
+	if (!empty($fiscalyears_list)) {
+		$moreforfilter .= '<div class="divsearchfield">';
+		$moreforfilter .= '<div class="inline-block">';
+		foreach ($fiscalyears_list as $fy_id => $fy) {
+			$fy_url = $_SERVER['PHP_SELF'].'?search_fiscalyear_id='.$fy_id.'&formfilteraction=list'.(!empty($type) ? '&type='.$type : '');
+			$selected = ($search_fiscalyear_id == $fy_id);
+			// Show snapshot badge if fiscal year is closed and has snapshot
+			$has_snap = false;
+			if ($fy->statut == Fiscalyear::STATUS_CLOSED) {
+				$sql_chk  = "SELECT COUNT(rowid) as nb FROM ".MAIN_DB_PREFIX."accounting_balance_snapshot";
+				$sql_chk .= " WHERE fk_fiscalyear = ".(int) $fy_id." AND entity = ".(int) $conf->entity;
+				$r = $db->query($sql_chk);
+				if ($r) {
+					$o = $db->fetch_object($r);
+					$has_snap = ($o->nb > 0);
+				}
+			}
+			$badge = $has_snap ? ' <span class="badge badge-status4" title="'.$langs->trans('BalanceFromSnapshot').'">&#x1F4BE;</span>' : '';
+			$css = 'btn btn-sm '.($selected ? 'btn-primary' : 'btn-default');
+			$moreforfilter .= '<a href="'.$fy_url.'" class="'.$css.'" style="margin-right:4px">';
+			$moreforfilter .= dol_escape_htmltag($fy->label).$badge;
+			$moreforfilter .= '</a>';
+		}
+		$moreforfilter .= '</div>';
+		// Show source info when snapshot is active
+		if ($use_snapshot) {
+			$moreforfilter .= ' &nbsp;<span class="opacitymedium"><i class="fa fa-database"></i> '.$langs->trans('BalanceDisplayedFromSnapshot', dol_escape_htmltag($fiscalyear_selected->label)).'</span>';
+		}
+		$moreforfilter .= '</div>';
+	}
+
 	$moreforfilter .= '<div class="divsearchfield">';
 	$moreforfilter .= $langs->trans('DateStart').': ';
 	$moreforfilter .= $form->selectDate($search_date_start ? $search_date_start : -1, 'date_start', 0, 0, 1, '', 1, 0);
@@ -408,7 +510,7 @@ if ($action != 'export') {
 	$moreforfilter .= $formaccounting->multi_select_journal($search_ledger_code, 'search_ledger_code', 0, 1, 1, 1);
 	$moreforfilter .= '</div>';
 
-	//$moreforfilter .= '<br>';
+	$moreforfilter .= '<br>';
 	$moreforfilter .= '<div class="divsearchfield">';
 	// Accountancy account
 	$moreforfilter .= $langs->trans('AccountAccounting').': ';

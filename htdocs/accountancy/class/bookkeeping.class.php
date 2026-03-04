@@ -3220,6 +3220,15 @@ class BookKeeping extends CommonObject
 			}
 		}
 
+		// Save balance snapshot for comparative balance (N-1, N-2)
+		if (!$error) {
+			$nb_snapshot = $this->saveBalanceSnapshot($fiscal_period_id, $conf->entity, strtotime($fiscal_period->date_start), strtotime($fiscal_period->date_end));
+			if ($nb_snapshot < 0) {
+				$this->errors[] = 'Failed to save balance snapshot';
+				$error++;
+			}
+		}
+
 		if ($error) {
 			$this->db->rollback();
 			return -1;
@@ -3802,6 +3811,146 @@ class BookKeeping extends CommonObject
 			$this->db->commit();
 			return 1;
 		}
+	}
+
+	/**
+	 * Save a frozen balance snapshot for the closed fiscal year.
+	 * Called at the end of closeFiscalPeriod() (Step 2 of the closure).
+	 *
+	 * @param  int    $fk_fiscalyear  Fiscal year ID being closed
+	 * @param  int    $entity         Entity ID
+	 * @param  int    $date_start     Timestamp start of fiscal year
+	 * @param  int    $date_end       Timestamp end of fiscal year
+	 * @return int                    Number of lines inserted/updated, or <0 on error
+	 */
+	public function saveBalanceSnapshot($fk_fiscalyear, $entity, $date_start, $date_end)
+	{
+		$now = dol_now();
+
+		// Aggregate general accounts & sub-accounts in a single pass
+		$sql  = "SELECT t.numero_compte AS account_number,";
+		$sql .= " MAX(t.label_compte) AS account_label,";
+		$sql .= " NULL AS subledger_account,";
+		$sql .= " NULL AS subledger_label,";
+		$sql .= " SUM(t.debit) AS debit,";
+		$sql .= " SUM(t.credit) AS credit";
+		$sql .= " FROM " . MAIN_DB_PREFIX . "accounting_bookkeeping AS t";
+		$sql .= " WHERE t.entity = " . (int) $entity;
+		$sql .= " AND t.doc_date >= '" . $this->db->idate($date_start) . "'";
+		$sql .= " AND t.doc_date <= '" . $this->db->idate($date_end) . "'";
+		$sql .= " GROUP BY t.numero_compte";
+
+		$sql .= " UNION ALL";
+		$sql .= " SELECT t.numero_compte AS account_number,";
+		$sql .= " MAX(t.label_compte) AS account_label,";
+		$sql .= " t.subledger_account,";
+		$sql .= " MAX(t.subledger_label) AS subledger_label,";
+		$sql .= " SUM(t.debit) AS debit,";
+		$sql .= " SUM(t.credit) AS credit";
+		$sql .= " FROM " . MAIN_DB_PREFIX . "accounting_bookkeeping AS t";
+		$sql .= " WHERE t.entity = " . (int) $entity;
+		$sql .= " AND t.subledger_account IS NOT NULL";
+		$sql .= " AND t.subledger_account != ''";
+		$sql .= " AND t.doc_date >= '" . $this->db->idate($date_start) . "'";
+		$sql .= " AND t.doc_date <= '" . $this->db->idate($date_end) . "'";
+		$sql .= " GROUP BY t.numero_compte, t.subledger_account";
+
+		$resql = $this->db->query($sql);
+		if (!$resql) {
+			return -1;
+		}
+
+		$values = array();
+		while ($row = $this->db->fetch_object($resql)) {
+			$subledger_account = !empty($row->subledger_account) ? "'" . $this->db->escape($row->subledger_account) . "'" : 'NULL';
+			$subledger_label   = !empty($row->subledger_label)   ? "'" . $this->db->escape($row->subledger_label)   . "'" : 'NULL';
+
+			$values[] = "(
+            " . (int) $entity . ",
+            " . (int) $fk_fiscalyear . ",
+            '" . $this->db->escape($row->account_number) . "',
+            '" . $this->db->escape($row->account_label ?? '') . "',
+            " . $subledger_account . ",
+            " . $subledger_label . ",
+            " . (float) price2num($row->debit,  'MT') . ",
+            " . (float) price2num($row->credit, 'MT') . ",
+            '" . $this->db->idate($now) . "'
+        )";
+		}
+		$this->db->free($resql);
+
+		if (empty($values)) {
+			return 0;
+		}
+
+		$sql  = "INSERT INTO " . MAIN_DB_PREFIX . "accounting_balance_snapshot";
+		$sql .= " (entity, fk_fiscalyear, account_number, account_label,";
+		$sql .= "  subledger_account, subledger_label, debit, credit, date_snapshot)";
+		$sql .= " VALUES " . implode(', ', $values);
+		$sql .= " ON DUPLICATE KEY UPDATE";
+		$sql .= "   account_label   = VALUES(account_label),";
+		$sql .= "   subledger_label = VALUES(subledger_label),";
+		$sql .= "   debit           = VALUES(debit),";
+		$sql .= "   credit          = VALUES(credit),";
+		$sql .= "   date_snapshot   = VALUES(date_snapshot)";
+
+		$resql = $this->db->query($sql);
+		return $resql ? $this->db->affected_rows($resql) : -1;
+	}
+
+	/**
+	 * Load balance lines from snapshot table for a closed fiscal year.
+	 *
+	 * @param  int $fk_fiscalyear  Fiscal year ID
+	 * @param  int $entity         Entity ID
+	 * @param  int $option         0 = general accounts, 1 = subledger accounts
+	 * @return int                 Number of lines loaded, or <0 on error
+	 */
+	public function fetchBalanceFromSnapshot($fk_fiscalyear, $entity, $option = 0)
+	{
+		$this->lines = array();
+
+		$sql  = "SELECT s.account_number AS numero_compte,";
+		$sql .= " s.account_label AS label_compte,";
+		if ($option) {
+			$sql .= " s.subledger_account, s.subledger_label,";
+		}
+		$sql .= " s.debit, s.credit";
+		$sql .= " FROM ".MAIN_DB_PREFIX."accounting_balance_snapshot AS s";
+		$sql .= " WHERE s.fk_fiscalyear = ".(int) $fk_fiscalyear;
+		$sql .= " AND s.entity = ".(int) $entity;
+		if ($option) {
+			// Subledger accounts only
+			$sql .= " AND s.subledger_account IS NOT NULL AND s.subledger_account != ''";
+			$sql .= " ORDER BY s.account_number ASC, s.subledger_account ASC";
+		} else {
+			// General accounts only (no subledger)
+			$sql .= " AND (s.subledger_account IS NULL OR s.subledger_account = '')";
+			$sql .= " ORDER BY s.account_number ASC";
+		}
+
+		$resql = $this->db->query($sql);
+		if (!$resql) {
+			$this->errors[] = $this->db->lasterror();
+			return -1;
+		}
+
+		$num = $this->db->num_rows($resql);
+		while ($obj = $this->db->fetch_object($resql)) {
+			$line = new BookKeepingLine($this->db);
+			$line->numero_compte     = $obj->numero_compte;
+			$line->label_compte       = $obj->label_compte;
+			$line->debit             = $obj->debit;
+			$line->credit            = $obj->credit;
+			if ($option) {
+				$line->subledger_account = $obj->subledger_account;
+				$line->subledger_label   = $obj->subledger_label;
+			}
+			$this->lines[] = $line;
+		}
+		$this->db->free($resql);
+
+		return $num;
 	}
 }
 

@@ -853,6 +853,7 @@ if (getDolGlobalInt('ACCOUNTING_ENABLE_LETTERING') && $user->hasRight('accountin
 		$arrayofmassactions['letteringpartial'] = img_picto('', 'check', 'class="pictofixedwidth"') . $langs->trans('LetteringPartial');
 	}
 	$arrayofmassactions['preunletteringmanual'] = img_picto('', 'uncheck', 'class="pictofixedwidth"') . $langs->trans('UnletteringManual');
+	$arrayofmassactions['letteringwithgap'] = img_picto('', 'check', 'class="pictofixedwidth"') . $langs->trans('LetteringWithGap');
 }
 if ($user->hasRight('accounting', 'mouvements', 'creer')) {
 	$arrayofmassactions['preclonebookkeepingwriting'] = img_picto('', 'clone', 'class="pictofixedwidth"').$langs->trans("Clone");
@@ -927,6 +928,19 @@ if ($massaction == 'preunletteringauto') {
 	print $form->formconfirm($_SERVER["PHP_SELF"], $langs->trans("ConfirmMassUnletteringAuto"), $langs->trans("ConfirmMassUnletteringQuestion", count($toselect)), "unletteringauto", null, '', 0, 200, 500, 1);
 } elseif ($massaction == 'preunletteringmanual') {
 	print $form->formconfirm($_SERVER["PHP_SELF"], $langs->trans("ConfirmMassUnletteringManual"), $langs->trans("ConfirmMassUnletteringQuestion", count($toselect)), "unletteringmanual", null, '', 0, 200, 500, 1);
+} elseif ($massaction == 'letteringwithgap' && $permissiontoadd) {
+	// Retrieve the configured deviation threshold (e.g., €10.00 by default)
+	$maxgap = getDolGlobalFloat('ACCOUNTING_LETTERING_MAX_GAP', '10.0');
+
+	$lettering = new Lettering($db);
+	$result = $lettering->updateLetteringWithGap($toselect, $maxgap);
+	if ($result < 0) {
+		setEventMessages('', $lettering->errors, 'errors');
+	} else {
+		setEventMessages($langs->trans('AccountancyOneLetteringModifiedSuccessfully'), array(), 'mesgs');
+		header('Location: ' . $_SERVER['PHP_SELF'] . '?noreset=1' . $param);
+		exit();
+	}
 } elseif ($massaction == 'predeletebookkeepingwriting') {
 	print $form->formconfirm($_SERVER["PHP_SELF"], $langs->trans("ConfirmMassDeleteBookkeepingWriting"), $langs->trans("ConfirmMassDeleteBookkeepingWritingQuestion", count($toselect)), "deletebookkeepingwriting", null, '', 0, 200, 500, 1);
 } elseif ($massaction == 'preassignaccountbookkeepingwriting') {

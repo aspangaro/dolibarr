@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2004-2005  Rodolphe Quiedeville    <rodolphe@quiedeville.org>
  * Copyright (C) 2013       Olivier Geffroy         <jeff@jeffinfo.com>
- * Copyright (C) 2013-2024  Alexandre Spangaro      <alexandre@inovea-conseil.com>
+ * Copyright (C) 2013-2026  Alexandre Spangaro      <alexandre@inovea-conseil.com>
  * Copyright (C) 2018-2026  Frédéric France         <frederic.france@free.fr>
  * Copyright (C) 2024-2025	MDW						<mdeweerd@users.noreply.github.com>
  *
@@ -582,6 +582,249 @@ class Lettering extends BookKeeping
 		} else {
 			return $nb_lettering;
 		}
+	}
+
+	/**
+	 * Lettering with payment gap tolerance.
+	 * Generates a compensating entry using account 658 (expense) or 758 (income).
+	 *
+	 * @param array $ids         IDs of llx_accounting_bookkeeping lines to letter
+	 * @param float $maxgap      Maximum allowed gap (e.g. 0.05)
+	 * @param int   $notrigger   0=with trigger, 1=without trigger
+	 * @return int               <0 on error, number of lettered lines otherwise
+	 */
+	public function updateLetteringWithGap(array $ids, float $maxgap = 0.05, int $notrigger = 0): int
+	{
+		global $conf, $user, $langs;
+
+		$error = 0;
+		$now = dol_now();
+
+		// --- 1. Fetch the selected bookkeeping lines ---
+		$sql = "SELECT ab.rowid, ab.debit, ab.credit, ab.subledger_account, ab.subledger_label,";
+		$sql .= " ab.numero_compte, ab.label_compte, ab.code_journal,";
+		$sql .= " ab.fk_doc, ab.doc_type, ab.doc_ref, ab.doc_date, ab.piece_num";
+		$sql .= " FROM " . MAIN_DB_PREFIX . "accounting_bookkeeping AS ab";
+		$sql .= " WHERE ab.rowid IN (" . $this->db->sanitize(implode(',', $ids)) . ")";
+		$sql .= " AND ab.entity IN (" . getEntity('accountancy') . ")";
+
+		$resql = $this->db->query($sql);
+		if (!$resql) {
+			$this->errors[] = $this->db->lasterror();
+			return -1;
+		}
+
+		$totalDebit  = 0;
+		$totalCredit = 0;
+		$numero_compte  = '';
+		$label_compte   = '';
+		$subledger_account  = '';
+		$subledger_label    = '';
+		$lines       = [];
+
+		while ($obj = $this->db->fetch_object($resql)) {
+			$totalDebit  += (float) $obj->debit;
+			$totalCredit += (float) $obj->credit;
+			$numero_compte  = $obj->numero_compte;
+			$label_compte   = $obj->label_compte;
+			$subledger_account  = $obj->subledger_account;
+			$subledger_label    = $obj->subledger_label;
+			$lines[]      = $obj;
+		}
+		$this->db->free($resql);
+
+		// --- 2. Compute the gap ---
+		$gap = round($totalDebit - $totalCredit, 2);
+		$absGap = abs($gap);
+
+		if ($absGap == 0) {
+			// No gap → standard lettering
+			return $this->updateLettering($ids, $notrigger);
+		}
+
+		if ($absGap > $maxgap) {
+			$this->errors[] = $langs->trans('AccountancyGapTooLarge', $absGap, $maxgap);
+			return -1;
+		}
+
+		// --- 3. Determine the offset account ---
+		// gap > 0 : debit > credit → overpayment → exceptional income account 758
+		// gap < 0 : credit > debit → underpayment → exceptional expense account 658
+		$compteEcart = ($gap > 0) ? getDolGlobalString('ACCOUNTING_ACCOUNT_DISCOUNT_RECEIVED', '758') : getDolGlobalString('ACCOUNTING_ACCOUNT_DISCOUNT_GRANTED', '658');
+		$libelleEcart = ($gap > 0) ? $langs->trans('AccountancyGapGain') : $langs->trans('AccountancyGapLoss');
+
+		// fetch last piece_num
+		$bookKeepingstatic = new BookKeeping($this->db);
+		$nextPn = $bookKeepingstatic->getNextNumMvt();
+		if ($nextPn < 0) {
+			$this->errors[] = $this->db->lasterror();
+			$this->db->rollback();
+			return -1;
+		}
+
+
+		// Fetch the miscellaneous operations journal (nature = 3 by default, or from config)
+		$journalOD = getDolGlobalString('ACCOUNTING_LETTERING_GAP_JOURNAL');
+		$journalODLabel = '';
+		if (!empty($journalOD)) {
+			require_once DOL_DOCUMENT_ROOT.'/accountancy/class/accountingjournal.class.php';
+
+			$journalstatic = new AccountingJournal($this->db);
+			$journalstatic->fetch($journalOD);
+			$journalOD = $journalstatic->code;
+			$journalODLabel = $journalstatic->label;
+		} else {
+			// Look for the first journal of type OD (nature = 1)
+			$sqlj = "SELECT code, label FROM " . MAIN_DB_PREFIX . "accounting_journal";
+			$sqlj .= " WHERE nature = 1 AND entity = " . (int) $conf->entity;
+			$sqlj .= " LIMIT 1";
+			$resj = $this->db->query($sqlj);
+			if ($resj && $obj = $this->db->fetch_object($resj)) {
+				$journalOD = $obj->code;
+				$journalODLabel = $obj->label;
+			}
+		}
+
+		// --- 4. Insert the gap entry ---
+		$this->db->begin();
+
+		// Fetch the next transaction number
+		$sqlpn = "SELECT MAX(piece_num) as maxpn FROM " . MAIN_DB_PREFIX . "accounting_bookkeeping";
+		$sqlpn .= " WHERE entity IN (" . getEntity('accountancy') . ")";
+		$respn  = $this->db->query($sqlpn);
+		$nextPn = 1;
+		if ($respn && $objpn = $this->db->fetch_object($respn)) {
+			$nextPn = (int) $objpn->maxpn + 1;
+		}
+
+		// Line 1: subledger account (gap settlement line)
+		// gap > 0 (debit > credit) → credit the subledger account for the gap amount
+		// gap < 0 (credit > debit) → debit the subledger account for the gap amount
+		$debitAux  = ($gap < 0) ? $absGap : 0;
+		$creditAux = ($gap > 0) ? $absGap : 0;
+
+		$sqlins1  = "INSERT INTO " . MAIN_DB_PREFIX . "accounting_bookkeeping";
+		$sqlins1 .= " (entity";
+		$sqlins1 .= ", fk_doc";
+		$sqlins1 .= ", fk_docdet";
+		$sqlins1 .= ", fk_user_author";
+		$sqlins1 .= ", doc_type";
+		$sqlins1 .= ", doc_ref";
+		$sqlins1 .= ", doc_date";
+		$sqlins1 .= ", date_creation";
+		$sqlins1 .= ", code_journal";
+		$sqlins1 .= ", journal_label";
+		$sqlins1 .= ", numero_compte";
+		$sqlins1 .= ", label_compte";
+		$sqlins1 .= ", subledger_account";
+		$sqlins1 .= ", subledger_label";
+		$sqlins1 .= ", label_operation";
+		$sqlins1 .= ", debit";
+		$sqlins1 .= ", credit";
+		$sqlins1 .= ", montant";
+		$sqlins1 .= ", sens";
+		$sqlins1 .= ", piece_num)";
+		$sqlins1 .= " VALUES (";
+		$sqlins1 .= (int) $conf->entity . ",";
+		$sqlins1 .= "0,";
+		$sqlins1 .= "0,";
+		$sqlins1 .= $user->id.",";
+		$sqlins1 .= "'misc',";
+		$sqlins1 .= "'" . $this->db->escape('GAP-' . dol_print_date($now, '%Y%m%d')) . "',";
+		$sqlins1 .= "'" . $this->db->idate($now) . "',";
+		$sqlins1 .= "'" . $this->db->idate($now) . "',";
+		$sqlins1 .= "'" . $this->db->escape($journalOD) . "',";
+		$sqlins1 .= "'" . $this->db->escape($langs->trans($journalODLabel)) . "',";
+		$sqlins1 .= $this->db->escape($numero_compte) . ",";
+		$sqlins1 .= '"' . $this->db->escape($label_compte) . '",';
+		$sqlins1 .= "'" . $this->db->escape($subledger_account) . "',";
+		$sqlins1 .= '"' . $this->db->escape($subledger_label) . '",';
+		$sqlins1 .= "'" . $this->db->escape($libelleEcart) . "',";
+		$sqlins1 .= price2num($debitAux) . ",";
+		$sqlins1 .= price2num($creditAux) . ",";
+		$sqlins1 .= price2num($absGap) . ",";
+		$sqlins1 .= ($debitAux > 0 ? "'D'" : "'C'") . ",";
+		$sqlins1 .= (int) $this->db->escape($nextPn);
+		$sqlins1 .= ")";
+
+		if (!$this->db->query($sqlins1)) {
+			$this->errors[] = $this->db->lasterror();
+			$error++;
+		}
+
+		$newIdAux = $this->db->last_insert_id(MAIN_DB_PREFIX . 'accounting_bookkeeping');
+
+		// Line 2: offset account 658 or 758 (counterpart entry)
+		$debit758  = ($gap > 0) ? $absGap : 0;
+		$credit758 = ($gap < 0) ? $absGap : 0;
+
+		$sqlins2  = "INSERT INTO " . MAIN_DB_PREFIX . "accounting_bookkeeping";
+		$sqlins2 .= " (entity";
+		$sqlins2 .= ", fk_doc";
+		$sqlins2 .= ", fk_docdet";
+		$sqlins2 .= ", fk_user_author";
+		$sqlins2 .= ", doc_type";
+		$sqlins2 .= ", doc_ref";
+		$sqlins2 .= ", doc_date";
+		$sqlins2 .= ", date_creation";
+		$sqlins2 .= ", code_journal";
+		$sqlins2 .= ", journal_label";
+		$sqlins2 .= ", numero_compte";
+		$sqlins2 .= ", label_compte";
+		$sqlins2 .= ", subledger_account";
+		$sqlins2 .= ", subledger_label";
+		$sqlins2 .= ", label_operation";
+		$sqlins2 .= ", debit";
+		$sqlins2 .= ", credit";
+		$sqlins2 .= ", montant";
+		$sqlins2 .= ", sens";
+		$sqlins2 .= ", piece_num)";
+		$sqlins2 .= " VALUES (";
+		$sqlins2 .= (int) $conf->entity . ",";
+		$sqlins2 .= "0,";
+		$sqlins2 .= "0,";
+		$sqlins2 .= $user->id . ",";
+		$sqlins2 .= "'misc',";
+		$sqlins2 .= "'" . $this->db->escape('GAP-' . dol_print_date($now, '%Y%m%d')) . "',";
+		$sqlins2 .= "'" . $this->db->idate($now) . "',";
+		$sqlins2 .= "'" . $this->db->idate($now) . "',";
+		$sqlins2 .= "'" . $this->db->escape($journalOD) . "',";
+		$sqlins2 .= '"' . $this->db->escape($langs->trans($journalODLabel)) . '",';
+		$sqlins2 .= "'" . $this->db->escape($compteEcart) . "',";
+		$sqlins2 .= '"' . $this->db->escape($libelleEcart) . '",';
+		$sqlins2 .= "'',";
+		$sqlins2 .= "'',";
+		$sqlins2 .= "'" . $this->db->escape($libelleEcart) . "',";
+		$sqlins2 .= price2num($debit758) . ",";
+		$sqlins2 .= price2num($credit758) . ",";
+		$sqlins2 .= price2num($absGap) . ",";
+		$sqlins2 .= ($debit758 > 0 ? "'D'" : "'C'") . ",";
+		$sqlins2 .= (int) $this->db->escape($nextPn);
+		$sqlins2 .= ")";
+
+		if (!$this->db->query($sqlins2)) {
+			$this->errors[] = $this->db->lasterror();
+			$error++;
+		}
+
+		$newId758 = $this->db->last_insert_id(MAIN_DB_PREFIX . 'accounting_bookkeeping');
+
+		if ($error) {
+			$this->db->rollback();
+			return -1;
+		}
+
+		// --- 5. Letter ALL lines (original + the 2 new gap entries) ---
+		$allIds = array_merge($ids, [$newIdAux, $newId758]);
+		$result = $this->updateLettering($allIds, $notrigger);
+
+		if ($result < 0) {
+			$this->db->rollback();
+			return -1;
+		}
+
+		$this->db->commit();
+		return $result;
 	}
 
 	/**

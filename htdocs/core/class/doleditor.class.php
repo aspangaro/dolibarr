@@ -106,8 +106,8 @@ class DolEditor
 	 *  @param	bool|int			$uselocalbrowser				Enabled to add links to local object with a local media filemanager. -1 or true = auto, false = only external images URL can be added into content, or images saved inline with src="data:..." with a cut/paste.
 	 *  @param  bool|int|string		$okforextendededitor    		1 or True=Allow usage of extended editor tool if qualified (like ckeditor). If 'textarea', force use of simple textarea. If 'ace', force use of Ace.
 	 *                          	                        		Warning: If you use 'ace', don't forget to also include ace.js in page header. Also, the button "save" must have class="buttonforacesave".
-	 *  @param  int					$rows                   		Size of rows for textarea tool
-	 *  @param  string				$cols                   		Size of cols for textarea tool (textarea number of cols '70' or percent 'x%')
+	 *  @param  int					$rows                   		Size of rows for textarea text tool
+	 *  @param  string				$cols                   		Size of cols for textarea text tool (textarea number of cols '70' or percent recommended 'x%')
 	 *  @param	int<0,1>			$readonly						0=Read/Edit, 1=Read only
 	 *  @param	array{x?:string,y?:string,find?:string}	$poscursor	Array for initial cursor position array('x'=>x, 'y'=>y).
 	 *                      	                       				array('find'=> 'word')  can be used to go to line were the word has been found
@@ -230,13 +230,21 @@ class DolEditor
 		if (in_array($this->tool, array('textarea', 'ckeditor', 'tinymce'))) {
 			$found = 1;
 
-			$out .= "\n".'<!-- Output '.dol_string_nohtmltag($this->tool).' '.dol_string_nohtmltag($this->htmlname).' toolbarname = '.dol_string_nohtmltag($this->toolbarname).' -->'."\n";
+			$out .= "\n".'<!-- Output textarea '.dol_string_nohtmltag($this->tool).' '.dol_string_nohtmltag($this->htmlname).' toolbarname = '.dol_string_nohtmltag($this->toolbarname).' -->'."\n";
 
 			// Note: We do not put the attribute 'disabled' tag because on a read form, it change style with grey.
 			$out .= '<textarea id="'.$this->htmlname.'" name="'.$this->htmlname.'"';
 			$out .= ' rows="'.$this->rows.'"';
-			//$out .= ' style="height: 700px; min-height: 700px;"';
-			$out .= (preg_match('/%/', $this->cols) ? ' style="margin-top: 5px; width: '.$this->cols.'"' : ' cols="'.$this->cols.'"');
+			if (preg_match('/%/', $this->cols)) {	// ->cols is a percent
+				$out .= ' style="margin-top: 5px; width: ';
+				if ($this->tool == 'tinymce') {
+					$out .= $this->cols;
+				} else {
+					$out .= 'calc('.$this->cols.' - 20px)';	// The with in percent minus the margin.
+				}
+			} else {
+				$out   .= ' cols="'.$this->cols.'"';
+			}
 			$out .= ' '.($moreparam ? $moreparam : '');
 			$out .= ' class="flat '.dol_string_nohtmltag($this->toolbarname).' '.$morecss.'">';
 			$out .= htmlspecialchars($this->content);
@@ -290,7 +298,7 @@ class DolEditor
 									versionCheck: false,
             						readOnly: '.($this->readonly ? 'true' : 'false').',
                             		htmlEncodeOutput: '.dol_escape_js($htmlencode_force).',
-            						allowedContent: '.($restrictContent ? 'false' : 'true').',		/* Advanced Content Filter (ACF) is on when allowedContent is false */
+            						allowedContent: '.($restrictContent ? 'false' : 'true').',			/* Advanced Content Filter (ACF) is on when allowedContent is false */
             						extraAllowedContent: \''.dol_escape_js($extraAllowedContent).'\',	/* Allow a tag with attribute target, allow section tag and allow the style float and display into div to default other allowed tags */
 									disallowedContent: \'\',											/* Tags that are not allowed */
             						fullPage: '.($fullpage ? 'true' : 'false').',						/* if true, the html, header and body tags are kept */
@@ -328,24 +336,14 @@ class DolEditor
 					// Note: ckeditorFilebrowserBrowseUrl and ckeditorFilebrowserImageBrowseUrl are defined in header by main.inc.php. They include url to browser with url of upload connector in parameter
 					$out .= '    filebrowserBrowseUrl : ckeditorFilebrowserBrowseUrl,';
 					$out .= '    filebrowserImageBrowseUrl : ckeditorFilebrowserImageBrowseUrl,';
-					//$out.= '    filebrowserUploadUrl : \''.DOL_URL_ROOT.'/includes/fckeditor/editor/filemanagerdol/connectors/php/upload.php?Type=File\',';
-					//$out.= '    filebrowserImageUploadUrl : \''.DOL_URL_ROOT.'/includes/fckeditor/editor/filemanagerdol/connectors/php/upload.php?Type=Image\',';
 					$out .= "\n";
-					// To use filemanager with ckfinder (Non free) and ckfinder directory is inside htdocs/includes
-					/* $out.= '    filebrowserBrowseUrl : \''.DOL_URL_ROOT.'/includes/ckfinder/ckfinder.html\',
-							   filebrowserImageBrowseUrl : \''.DOL_URL_ROOT.'/includes/ckfinder/ckfinder.html?Type=Images\',
-							   filebrowserFlashBrowseUrl : \''.DOL_URL_ROOT.'/includes/ckfinder/ckfinder.html?Type=Flash\',
-							   filebrowserUploadUrl : \''.DOL_URL_ROOT.'/includes/ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Files\',
-							   filebrowserImageUploadUrl : \''.DOL_URL_ROOT.'/includes/ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Images\',
-							   filebrowserFlashUploadUrl : \''.DOL_URL_ROOT.'/includes/ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Flash\','."\n";
-					*/
 					$out .= '    filebrowserWindowWidth : \'900\',
                                filebrowserWindowHeight : \'500\',
                                filebrowserImageWindowWidth : \'900\',
                                filebrowserImageWindowHeight : \'500\'';
 				}
 				$out .= '	})'.$morejs;	// end CKEditor.replace
-				// Show the CKEditor javascript object once loaded is ready 'For debug)
+				// Show the CKEditor javascript object once loaded is ready (For debug)
 				//$out .= '; CKEDITOR.on(\'instanceReady\', function(ck) { ck.editor.removeMenuItem(\'maximize\'); ck.editor.removeMenuItem(\'Undo\'); ck.editor.removeMenuItem(\'undo\'); console.log(ck.editor); console.log(ck.editor.toolbar[0]); }); ';
 				$out .= '});'."\n";	// end document.ready
 				$out .= '</script>'."\n";
@@ -370,6 +368,9 @@ class DolEditor
 				$out .= '	var toolbars = (window.dolTinymceToolbars || {});'."\n";
 				$out .= '	var toolbarStr = toolbars[toolbarName] || toolbars["dolibarr_details"] || "undo redo | bold italic | link | code";'."\n";
 				$out .= '	var pluginsStr = (typeof window.dolTinymcePluginsFor === "function") ? window.dolTinymcePluginsFor(toolbarName) : "advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen table help wordcount";'."\n";
+				if (!getDolGlobalString('FCKEDITOR_ENABLE_SPECIALCHAR')) {
+					$out .= 'pluginsStr = pluginsStr.replace(\' charmap\', \'\');'."\n";
+				}
 				$out .= '	var tinyLang = "'.dol_escape_js($langs->defaultlang).'";'."\n";
 				$out .= '	var tinyConf = {'."\n";
 				$out .= '		selector: "textarea#'.dol_escape_js($this->htmlname).'",'."\n";
@@ -383,7 +384,7 @@ class DolEditor
 				$out .= '		promotion: false,'."\n";
 				$out .= '		license_key: "gpl",'."\n";
 				$out .= '		readonly: '.($this->readonly ? 'true' : 'false').','."\n";
-				$out .= '		height: '.((int) $this->height + 60).','."\n";
+				$out .= '		height: '.((int) $this->height + 80).','."\n";
 				if ($this->width) {
 					$out .= '		width: "'.dol_escape_js($this->width).'",'."\n";
 				}
@@ -395,7 +396,7 @@ class DolEditor
 				$out .= '		protect: [/<\?[\s\S]*?\?>/g],'."\n";	// protect PHP tags like CKEditor did
 				$out .= '		paste_data_images: true,'."\n";
 				$out .= '		content_style: \'p { margin: unset; line-height: 1.2em; } .mce-content-body { margin: 10px; } \',';
-				$out .= '		toolbar_mode: '.($this->toolbarstartexpanded ? '"wrap"' : '"sliding"').','."\n";
+				$out .= '		toolbar_mode: "sliding",'."\n";
 				$out .= '		browser_spellcheck: '.(getDolGlobalString('CKEDITOR_NATIVE_SPELLCHECKER') ? 'true' : 'false').','."\n";
 				$out .= '		language: (tinyLang && tinyLang.indexOf("en") === 0) ? "en" : tinyLang,'."\n";
 				$out .= '		htmlEncodeOutput: '.dol_escape_js($htmlencode_force).','."\n";

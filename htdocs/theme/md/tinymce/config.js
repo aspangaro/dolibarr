@@ -11,10 +11,10 @@
  * Same mapping as theme/eldy/tinymce/config.js.
  */
 window.dolTinymceToolbars = {
-	'Full': 'fullscreen | undo redo | styles fontfamily fontsize | bold italic underline strikethrough superscript | forecolor backcolor removeformat | align | numlist bullist outdent indent blockquote | ltr rtl | link unlink | image table hr charmap | pastetext searchreplace visualblocks preview | code',
-	'dolibarr_mailings': 'fullscreen | styles fontfamily fontsize | bold italic underline strikethrough forecolor removeformat | numlist bullist outdent indent | align | link unlink image table hr charmap | searchreplace visualblocks preview | code',
-	'dolibarr_notes': 'fullscreen | styles fontsize | bold italic underline strikethrough forecolor removeformat | numlist bullist outdent indent | align | link unlink image table hr charmap | searchreplace preview | code',
-	'dolibarr_details': 'fullscreen | styles fontsize | bold italic underline strikethrough forecolor removeformat | numlist bullist outdent indent | align | link unlink charmap | code',
+	'Full': 'fullscreen preview searchreplace visualblocks | undo redo | styles fontfamily fontsize | bold italic underline strikethrough superscript | forecolor backcolor removeformat align | numlist bullist | outdent indent blockquote | ltr rtl | link unlink | image table hr charmap | pastetext | code',
+	'dolibarr_mailings': 'fullscreen preview searchreplace | styles fontfamily fontsize | bold italic underline strikethrough forecolor removeformat | numlist bullist | outdent indent align | link unlink image table hr charmap | code',
+	'dolibarr_notes': 'fullscreen searchreplace | styles fontsize | bold italic underline strikethrough forecolor removeformat | numlist bullist | outdent indent align | link unlink image table hr charmap | code',
+	'dolibarr_details': 'fullscreen | styles fontsize | bold italic underline strikethrough forecolor removeformat | numlist bullist | outdent indent align | link unlink charmap | code',
 	'dolibarr_readonly': 'fullscreen'
 };
 

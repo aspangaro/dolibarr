@@ -84,6 +84,8 @@ class AccountancyExport
 	/** @var int */
 	public static $EXPORT_TYPE_GESTIMUMV5 = 135;
 	/** @var int */
+	public static $EXPORT_TYPE_GESTIMUMV12 = 140;
+	/** @var int */
 	public static $EXPORT_TYPE_ISUITEEXPERT = 200;
 	/** @var int */
 	public static $EXPORT_TYPE_ISTEA = 205;
@@ -160,8 +162,9 @@ class AccountancyExport
 			self::$EXPORT_TYPE_CHARLEMAGNE => $langs->trans('Modelcsv_charlemagne'),
 			self::$EXPORT_TYPE_LDCOMPTA => $langs->trans('Modelcsv_LDCompta'),
 			self::$EXPORT_TYPE_LDCOMPTA10 => $langs->trans('Modelcsv_LDCompta10'),
-			self::$EXPORT_TYPE_GESTIMUMV3 => $langs->trans('Modelcsv_Gestinumv3'),
-			self::$EXPORT_TYPE_GESTIMUMV5 => $langs->trans('Modelcsv_Gestinumv5'),
+			self::$EXPORT_TYPE_GESTIMUMV3 => $langs->trans('Modelcsv_Gestimumv3'),
+			self::$EXPORT_TYPE_GESTIMUMV5 => $langs->trans('Modelcsv_Gestimumv5'),
+			self::$EXPORT_TYPE_GESTIMUMV12 => $langs->trans('Modelcsv_Gestimumv12'),
 			self::$EXPORT_TYPE_ISUITEEXPERT => 'Export iSuite Expert',
 			self::$EXPORT_TYPE_ISTEA => $langs->trans('Modelcsv_ISTEA'),
 		);
@@ -223,6 +226,7 @@ class AccountancyExport
 			self::$EXPORT_TYPE_LDCOMPTA10 => 'ldcompta10',
 			self::$EXPORT_TYPE_GESTIMUMV3 => 'gestimumv3',
 			self::$EXPORT_TYPE_GESTIMUMV5 => 'gestimumv5',
+			self::$EXPORT_TYPE_GESTIMUMV12 => 'gestimumv12',
 			self::$EXPORT_TYPE_FEC => 'fec',
 			self::$EXPORT_TYPE_FEC2 => 'fec2',
 			self::$EXPORT_TYPE_ISUITEEXPERT => 'isuiteexpert',
@@ -302,11 +306,15 @@ class AccountancyExport
 					'label' => $langs->trans('Modelcsv_LDCompta10'),
 				),
 				self::$EXPORT_TYPE_GESTIMUMV3 => array(
-					'label' => $langs->trans('Modelcsv_Gestinumv3'),
+					'label' => $langs->trans('Modelcsv_Gestimumv3'),
 					'ACCOUNTING_EXPORT_FORMAT' => 'txt',
 				),
 				self::$EXPORT_TYPE_GESTIMUMV5 => array(
-					'label' => $langs->trans('Modelcsv_Gestinumv5'),
+					'label' => $langs->trans('Modelcsv_Gestimumv5'),
+					'ACCOUNTING_EXPORT_FORMAT' => 'txt',
+				),
+				self::$EXPORT_TYPE_GESTIMUMV12 => array(
+					'label' => $langs->trans('Modelcsv_Gestimumv12'),
 					'ACCOUNTING_EXPORT_FORMAT' => 'txt',
 				),
 				self::$EXPORT_TYPE_FEC => array(
@@ -538,6 +546,9 @@ class AccountancyExport
 				break;
 			case self::$EXPORT_TYPE_GESTIMUMV5:
 				$this->exportGestimumV5($TData, $exportFile);
+				break;
+			case self::$EXPORT_TYPE_GESTIMUMV12:
+				$this->exportGestimumV12($TData, $exportFile);
 				break;
 			case self::$EXPORT_TYPE_FEC:
 				$archiveFileList = $this->exportFEC($TData, $exportFile, $archiveFileList, $withAttachment);
@@ -2734,6 +2745,168 @@ class AccountancyExport
 					fwrite($exportFile, $output);
 				} else {
 					print $output;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Export format Gestimum V12 (12.5) - Variable width format
+	 * Text CSV file, comma separator, UTF-8 encoding.
+	 * Ref: https://docs.gestimum.com/docs/Imports/ImportEcritures/StructureFichierEcrituresGestimumComptaVariable/1/FormatGestimumGestionComptableLV
+	 *
+	 * Entry line structure (17 fields, comma separated):
+	 *  1  Line number            optional
+	 *  2  Entry date             DD/MM/YYYY   mandatory
+	 *  3  Journal code           max 10       mandatory
+	 *  4  Account number         max 25       mandatory
+	 *  5  Auto label code        max 15       optional
+	 *  6  Label                  max 60 quoted  mandatory*
+	 *  7  Piece number           max 15 quoted  mandatory**
+	 *  8  Currency code          max  3       optional
+	 *  9  Amount                 decimal dot  mandatory
+	 * 10  Direction              D or C       optional
+	 * 11  Lettering code         max  3       optional
+	 * 12  Due date               MUST be empty if an E line follows
+	 * 13  Quantity               number       optional
+	 * 14  Payment method code    max  8       optional
+	 * 15  Complementary piece nb max 15       optional
+	 * 16  Reference              max 60       optional
+	 * 17  Complementary date     DD/MM/YYYY   optional
+	 *
+	 * Due date line structure (prefix "E" glued to date, no comma between E and date):
+	 *   E<DD/MM/YYYY>,<payment method>,<percentage>,<amount>,<external origin>
+	 *   Example: E31/12/2019,CB,100,120.00,
+	 *
+	 * WARNING: field 12 (due date) of the entry line MUST be empty if an E line follows,
+	 * otherwise Gestimum ignores all following due date lines.
+	 *
+	 * NOTE: the total amount of due date lines must equal the amount of the entry line,
+	 * otherwise the entry will be rejected.
+	 *
+	 * Last review: 2026-06-28 Alexandre Spangaro (alexandre@inovea-conseil.com)
+	 *
+	 * @param   BookKeepingLine[]   $objectLines    data
+	 * @param   resource|null       $exportFile     File resource to export or print if null
+	 * @return  void
+	 */
+	public function exportGestimumV12($objectLines, $exportFile = null)
+	{
+		$separator = ',';
+		$endline = "\n";
+
+		$i = 0;
+		foreach ($objectLines as $line) {
+			// Skip zero-amount lines
+			if ($line->debit == 0 && $line->credit == 0) {
+				continue;
+			}
+
+			$i++;
+
+			// Field 2 - Entry date in DD/MM/YYYY format
+			$datedocument = dol_print_date($line->doc_date, 'd/m/Y');
+
+			// Field 4 - Account number: subledger account takes priority over general account
+			if (!empty($line->subledger_account)) {
+				$numcompte = length_accounta($line->subledger_account);
+			} else {
+				$numcompte = length_accountg($line->numero_compte);
+			}
+
+			// Field 6 - Label (max 60 chars, quoted, internal quotes replaced by single quotes)
+			$libelle = dol_trunc(str_replace('"', "'", $line->label_operation), 60, 'right', 'UTF-8', 1);
+
+			// Field 7 - Piece number (max 15 chars, quoted)
+			$numpiece = dol_trunc(str_replace('"', "'", (string) $line->piece_num), 15, 'right', 'UTF-8', 1);
+
+			// Field 9 - Amount always positive, decimal dot separator
+			$montant = number_format(abs($line->debit - $line->credit), 2, '.', '');
+
+			// Field 8 - Currency code
+			$devise = !empty($line->multicurrency_code) ? $line->multicurrency_code : 'EUR';
+
+			// Check if a due date line (E) needs to be generated after this entry line
+			$hasEcheance = !empty($line->date_lim_reglement);
+
+			// Build entry line (17 fields)
+			$tab = array();
+
+			// 1  Line number
+			$tab[] = $i;
+
+			// 2  Entry date
+			$tab[] = $datedocument;
+
+			// 3  Journal code
+			$tab[] = dol_trunc($line->code_journal, 10, 'right', 'UTF-8', 1);
+
+			// 4  Account number
+			$tab[] = $numcompte;
+
+			// 5  Auto label code (empty)
+			$tab[] = '';
+
+			// 6  Label
+			$tab[] = '"' . $libelle . '"';
+
+			// 7  Piece number
+			$tab[] = '"' . $numpiece . '"';
+
+			// 8  Currency code
+			$tab[] = $devise;
+
+			// 9  Amount
+			$tab[] = $montant;
+
+			// 10 Direction (D or C)
+			$tab[] = $line->sens;
+
+			// 11 Matching code
+			$tab[] = (!empty($line->lettering_code) ? $line->lettering_code : '');
+
+			// 12 Due date (MUST be empty if E line follows)
+			$tab[] = '';
+
+			// 13 Quantity
+			$tab[] = '';
+
+			// 14 Payment method code
+			$tab[] = '';
+
+			// 15 Complementary piece number
+			$tab[] = '';
+
+			// 16 Reference
+			$tab[] = '"' . dol_trunc(str_replace('"', "'", $line->doc_ref), 60, 'right', 'UTF-8', 1) . '"';
+
+			// 17 Complementary piece date
+			$tab[] = '';
+
+			$output = implode($separator, $tab) . $endline;
+			if ($exportFile) {
+				fwrite($exportFile, $output);
+			} else {
+				print $output;
+			}
+
+			// Due date line: "E<DD/MM/YYYY>,<payment method>,<percentage>,<amount>,<external origin>"
+			// The "E" prefix is glued directly to the date with no comma (e.g. "E31/12/2019,CB,100,120.00,")
+			// Amount must equal the entry line amount (single due date at 100%), otherwise Gestimum rejects the entry.
+			if ($hasEcheance) {
+				$dateech = dol_print_date($line->date_lim_reglement, 'd/m/Y');
+				$tabE = array();
+				$tabE[] = 'E' . $dateech;  // Type E glued to date (no comma between E and DD/MM/YYYY)
+				$tabE[] = '';              // Payment method code (empty = default)
+				$tabE[] = '100';           // Percentage: 100% on this single due date
+				$tabE[] = $montant;        // Amount must equal the entry line amount
+				$tabE[] = '';              // External origin number
+
+				$outputE = implode($separator, $tabE) . $endline;
+				if ($exportFile) {
+					fwrite($exportFile, $outputE);
+				} else {
+					print $outputE;
 				}
 			}
 		}
